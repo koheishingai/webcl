@@ -14,7 +14,8 @@ r78407
 ------------
 How to build
 ------------
-1. Download a zipped file from Downloads menu to your work directory (let's say, ~/work).
+1. Download a zipped file from Downloads menu to your work directory 
+   (let's say, ~/work).
 2. tar -zvxf webcl-20110630.tar.gz
 3. cd webkit
 4. Tools/Scripts/build-webkit
@@ -28,8 +29,8 @@ How to run samples
 	$ Tools/Scripts/run-safari Examples/WebCL/Nbody/index.html
 2. Deform example:
 	$ Tools/Scripts/run-safari Examples/WebCL/Deform/index.html
-3. Sobel image filter example:
-	$ Tools/Scripts/run-safari Examples/WebCL/Sobel/index.html
+3. Hello example:
+	$ Tools/Scripts/run-safari Examples/WebCL/Hello/index.html
    
 -----------------------------------
 How to update source code using svn
