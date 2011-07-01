@@ -1,0 +1,8 @@
+module html {
+        interface [
+                Conditional=WEBCL,
+        ] WebCLEvent {
+
+        };
+}
+

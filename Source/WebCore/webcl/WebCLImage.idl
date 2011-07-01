@@ -1,0 +1,7 @@
+module html {
+	interface [
+		Conditional=WEBCL,
+	] WebCLImage {
+	
+	};
+}
