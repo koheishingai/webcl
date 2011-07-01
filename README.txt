@@ -23,18 +23,18 @@ How to build
 ------------------
 How to run samples
 ------------------
-0. Enable WebGL
+1. Enable WebGL
 	$ defaults write com.apple.Safari WebKitWebGLEnabled -bool YES
-1. N-body example:
-	$ Tools/Scripts/run-safari Examples/WebCL/Nbody/index.html
-2. Deform example:
-	$ Tools/Scripts/run-safari Examples/WebCL/Deform/index.html
-3. Hello example:
+2. Hello example:
 	$ Tools/Scripts/run-safari Examples/WebCL/Hello/index.html
+3. N-body example:
+	$ Tools/Scripts/run-safari Examples/WebCL/Nbody/index.html
+4. Deform example:
+	$ Tools/Scripts/run-safari Examples/WebCL/Deform/index.html
    
 -----------------------------------
 How to update source code using svn
 -----------------------------------
-0. cd ~/work
-1. svn checkout https://webcl.googlecode.com/svn/trunk/ webcl --usename <you_email_address>
-2. cp -Ri webcl/* webkit
+1. cd ~/work
+2. svn checkout https://webcl.googlecode.com/svn/trunk/ webcl --usename <you_email_address>
+3. cp -Ri webcl/* webkit
