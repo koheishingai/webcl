@@ -14,7 +14,7 @@ r78407
 ------------
 How to build
 ------------
-1. Download a zipped file from Downloads menu.
+1. Download a zipped file from Downloads menu to your work directory (let's say, ~/work).
 2. tar -zvxf webcl-20110630.tar.gz
 3. cd webkit
 4. Tools/Scripts/build-webkit
@@ -34,4 +34,6 @@ How to run samples
 -----------------------------------
 How to update source code using svn
 -----------------------------------
-TODO
+0. cd ~/work
+1. svn checkout https://webcl.googlecode.com/svn/trunk/ webcl --usename <you_email_address>
+2. cp -Ri webcl/* webkit
