@@ -25,29 +25,34 @@
 * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef WebCLProgram_h
-#define WebCLProgram_h
+#ifndef JSCustomWebCLFinishCallback_h
+#define JSCustomWebCLFinishCallback_h
 
-#include <Opencl/opencl.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "JSCallbackData.h"
+#include "WebCLFinishCallback.h"
+#include <wtf/Forward.h>
 
 namespace WebCore {
 
+class JSDOMGlobalObject;
 class WebCLComputeContext;
 
-class WebCLProgram : public RefCounted<WebCLProgram> {
+
+class JSCustomWebCLFinishCallback : public WebCLFinishCallback {
 public:
-	virtual ~WebCLProgram();
-	static PassRefPtr<WebCLProgram> create(WebCLComputeContext*, cl_program);
-	cl_program getCLProgram();
-	
+    static PassRefPtr<JSCustomWebCLFinishCallback> create(JSC::JSObject* callback, JSDOMGlobalObject* globalObject)
+    {
+        return adoptRef(new JSCustomWebCLFinishCallback(callback, globalObject));
+    }
+    
 private:
-	WebCLProgram(WebCLComputeContext*, cl_program);
-	WebCLComputeContext* m_context;
-	cl_program m_cl_program;
+    JSCustomWebCLFinishCallback(JSC::JSObject* callback, JSDOMGlobalObject*);
+
+    virtual void handleEvent(WebCLComputeContext*);
+    
+    JSCallbackData m_data; 
 };
+    
+} // namespace WebCore 
 
-} // namespace WebCore
-
-#endif // WebCLProgram_h
+#endif // JSWebCLFInishCallback_h

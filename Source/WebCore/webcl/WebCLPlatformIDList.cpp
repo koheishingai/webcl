@@ -1,11 +1,29 @@
 /*
- *  WebCLPlatformIDList.cpp
- *  WebCore
- *
- *  Created by Won Jeon on 2/23/11.
- *  Copyright 2011 Samsung. All rights reserved.
- *
- */
+* Copyright (C) 2011 Samsung Electronics Corporation. All rights reserved.
+* 
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided the following conditions
+* are met:
+* 
+* 1.  Redistributions of source code must retain the above copyright
+*     notice, this list of conditions and the following disclaimer.
+* 
+* 2.  Redistributions in binary form must reproduce the above copyright
+*     notice, this list of conditions and the following disclaimer in the
+*     documentation and/or other materials provided with the distribution.
+* 
+* THIS SOFTWARE IS PROVIDED BY SAMSUNG ELECTRONICS CORPORATION AND ITS
+* CONTRIBUTORS "AS IS", AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING
+* BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+* FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SAMSUNG
+* ELECTRONICS CORPORATION OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+* INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES(INCLUDING
+* BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+* DATA, OR PROFITS, OR BUSINESS INTERRUPTION), HOWEVER CAUSED AND ON ANY THEORY
+* OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT(INCLUDING
+* NEGLIGENCE OR OTHERWISE ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
 #include "config.h"
 
@@ -26,26 +44,24 @@ WebCLPlatformIDList::~WebCLPlatformIDList()
 
 PassRefPtr<WebCLPlatformIDList> WebCLPlatformIDList::create(WebCLComputeContext* ctx)
 {
-	printf("WebCLPlatformIDList::create\n");
 	
 	return adoptRef(new WebCLPlatformIDList(ctx));
 }
 
 WebCLPlatformIDList::WebCLPlatformIDList(WebCLComputeContext* ctx) : m_context(ctx)
 {
-	printf("WebCLPlatformIDList::WebCLPlatformIDList\n");
 	
 	cl_int err;
 	
 	err = clGetPlatformIDs(0, NULL, &m_num_platforms);
 	if (err != CL_SUCCESS) {
-		printf("Error: Failed to get platform IDs\n");
+		// TODO (siba samal) Error handling
 	}
 	
 	m_cl_platforms = new cl_platform_id[m_num_platforms];
 	err = clGetPlatformIDs(m_num_platforms, m_cl_platforms, NULL);
 	if (err != CL_SUCCESS) {
-		printf("Error: Failed to create a platform\n");
+		// TODO (siba samal) Error handling
 	}
 	
 	for (unsigned int i = 0 ; i < m_num_platforms; i++) {
@@ -53,7 +69,7 @@ WebCLPlatformIDList::WebCLPlatformIDList(WebCLComputeContext* ctx) : m_context(c
 		if (o != NULL) {
 			m_platform_id_list.append(o);
 		} else {
-			printf("Error: o null\n");
+			// TODO (siba samal) Error handling
 		}
 	}
 	
@@ -66,18 +82,14 @@ cl_platform_id WebCLPlatformIDList::getCLPlatformIDs()
 
 unsigned WebCLPlatformIDList::length() const
 {
-	//return m_list.size();
 	return m_num_platforms;
 }
 
 WebCLPlatformID* WebCLPlatformIDList::item(unsigned index)
 {
-	printf("WebCLPlatformIDList::item index %d\n", index);
-	
 	if (index >= m_num_platforms) {
 		return 0;
 	}
-	//return (WebCLPlatformID*)(m_cl_platform_id[index]);
 	WebCLPlatformID* ret = (m_platform_id_list[index]).get();
 	return ret;
 }

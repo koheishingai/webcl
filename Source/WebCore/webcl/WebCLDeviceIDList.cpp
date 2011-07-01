@@ -1,11 +1,29 @@
 /*
- *  WebCLDeviceIDList.cpp
- *  WebCore
- *
- *  Created by Won Jeon on 2/23/11.
- *  Copyright 2011 Samsung. All rights reserved.
- *
- */
+* Copyright (C) 2011 Samsung Electronics Corporation. All rights reserved.
+* 
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided the following conditions
+* are met:
+* 
+* 1.  Redistributions of source code must retain the above copyright
+*     notice, this list of conditions and the following disclaimer.
+* 
+* 2.  Redistributions in binary form must reproduce the above copyright
+*     notice, this list of conditions and the following disclaimer in the
+*     documentation and/or other materials provided with the distribution.
+* 
+* THIS SOFTWARE IS PROVIDED BY SAMSUNG ELECTRONICS CORPORATION AND ITS
+* CONTRIBUTORS "AS IS", AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING
+* BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+* FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SAMSUNG
+* ELECTRONICS CORPORATION OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+* INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES(INCLUDING
+* BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+* DATA, OR PROFITS, OR BUSINESS INTERRUPTION), HOWEVER CAUSED AND ON ANY THEORY
+* OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT(INCLUDING
+* NEGLIGENCE OR OTHERWISE ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
 #include "config.h"
 
@@ -23,15 +41,12 @@ WebCLDeviceIDList::~WebCLDeviceIDList()
 PassRefPtr<WebCLDeviceIDList> WebCLDeviceIDList::create(WebCLComputeContext* compute_context, 
 		cl_platform_id platform_id, int device_type)
 {
-	printf("WebCLDeviceIDList::create\n");
 	return adoptRef(new WebCLDeviceIDList(compute_context, platform_id, device_type));
 }
 
 WebCLDeviceIDList::WebCLDeviceIDList(WebCLComputeContext* compute_context,
 		cl_platform_id platform_id, int device_type) : m_context(compute_context)
 {
-	printf("WebCLDeviceIDList::WebCLDeviceIDList\n");
-	
 	cl_int err = 0;
 	cl_uint num_devices;
 	
@@ -43,15 +58,15 @@ WebCLDeviceIDList::WebCLDeviceIDList(WebCLComputeContext* compute_context,
 		err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_CPU, 1, NULL, &num_devices);
 		break;
 	default:
-		printf("what else?\n");
+		// TODO (siba samal) error handling
 		break;
 	}
-	printf("num_devices=%d\n", num_devices);
 	m_num_devices = num_devices;
 	
 	if (err != CL_SUCCESS)
 	{
-		printf("Error: getDeviceIDs\n");
+		// TODO (siba samal) error handling for clGetDeviceIDs
+		return;
 	} 
 	
 	m_cl_devices = new cl_device_id[num_devices];
@@ -63,7 +78,7 @@ WebCLDeviceIDList::WebCLDeviceIDList(WebCLComputeContext* compute_context,
 		err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_CPU, 1, m_cl_devices, &num_devices);
 		break;
 	default:
-		printf("what else?\n");
+		// TODO (siba samal) error handling
 		break;
 	}
 	for (unsigned int i = 0; i < m_num_devices; i++) {
@@ -71,7 +86,7 @@ WebCLDeviceIDList::WebCLDeviceIDList(WebCLComputeContext* compute_context,
 		if (o != NULL) {
 			m_device_id_list.append(o);
 		} else {
-			printf("Error: o null\n");
+			// TODO (siba samal) error handling
 		}
 	}
 }
@@ -88,8 +103,6 @@ unsigned WebCLDeviceIDList::length() const
 
 WebCLDeviceID* WebCLDeviceIDList::item(unsigned index)
 {
-	printf("WebCLDeviceIDList::item index %d\n", index);
-	
 	if (index >= m_num_devices) {
 		return 0;
 	}

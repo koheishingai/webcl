@@ -25,29 +25,43 @@
 * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef WebCLProgram_h
-#define WebCLProgram_h
+#include "config.h"
+#include "JSCustomWebCLFinishCallback.h"
 
-#include <Opencl/opencl.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#if ENABLE(WEBCL)
+
+#include "Frame.h"
+#include "JSWebCLComputeContext.h"
+#include "ScriptController.h"
+#include <runtime/JSLock.h>
 
 namespace WebCore {
 
-class WebCLComputeContext;
+using namespace JSC;
 
-class WebCLProgram : public RefCounted<WebCLProgram> {
-public:
-	virtual ~WebCLProgram();
-	static PassRefPtr<WebCLProgram> create(WebCLComputeContext*, cl_program);
-	cl_program getCLProgram();
-	
-private:
-	WebCLProgram(WebCLComputeContext*, cl_program);
-	WebCLComputeContext* m_context;
-	cl_program m_cl_program;
-};
+JSCustomWebCLFinishCallback::JSCustomWebCLFinishCallback(JSObject* callback, JSDOMGlobalObject* globalObject)
+    : WebCLFinishCallback(globalObject->scriptExecutionContext())
+    , m_data(callback, globalObject)
+{
+}
+
+//void JSCustomWebCLFinishCallback::handleEvent(int user_data)
+void JSCustomWebCLFinishCallback::handleEvent(WebCLComputeContext* webCLComputeContext )
+{
+
+    // ActiveDOMObject will null our pointer to the ScriptExecutionContext when it goes away.
+    if (!scriptExecutionContext())
+        return;
+
+    RefPtr<JSCustomWebCLFinishCallback> protect(this);
+
+    JSC::JSLock lock(SilenceAssertionsOnly);
+    ExecState* exec = m_data.globalObject()->globalExec();
+    MarkedArgumentBuffer args;
+    args.append(toJS(exec, deprecatedGlobalObjectForPrototype(exec), webCLComputeContext));
+    m_data.invokeCallback(args);
+}
 
 } // namespace WebCore
 
-#endif // WebCLProgram_h
+#endif // ENABLE(GEOLOCATION)
