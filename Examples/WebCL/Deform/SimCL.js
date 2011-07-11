@@ -273,10 +273,10 @@ function SimulateCL(cl)
         return;
     }
     
-    cl.finish(queue, GetResults, 0);
+    cl.finish(queue, GetResults, cl);
 }   
 
-function GetResults(userData)
+function GetResults(cl)
 { 
     if(GLCL_SHARE_MODE) {
         cl.enqueueReleaseGLObjects(queue, curPosBuffer, null);
