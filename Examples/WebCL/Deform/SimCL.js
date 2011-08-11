@@ -205,11 +205,17 @@ function InitCLBuffers(cl) {
     console.log("uiActive: " + uiActive);
     console.log("uiQueued: " + uiQueued);
     
-    localWorkSize[0] = 64; //uiActive;
-    localWorkSize[1] = 4; //uiQueued;
+    localWorkSize[0] = workGroupSize/8; //uiActive;
+    localWorkSize[1] = workGroupSize/64;//uiQueued;
 
-    globalWorkSize[0] = 256; //uiSplitCount; //divide_up(uiSplitCount, uiActive) * uiActive;
-    globalWorkSize[1] = 256; //uiSplitCount; //divide_up(uiSplitCount, uiQueued) * uiQueued;
+    globalWorkSize[0] = workGroupSize/2; //uiSplitCount; //divide_up(uiSplitCount, uiActive) * uiActive;
+    globalWorkSize[1] = workGroupSize/2; //uiSplitCount; //divide_up(uiSplitCount, uiQueued) * uiQueued;
+    
+    //localWorkSize[0] = 64; //uiActive;
+    //localWorkSize[1] = 4; //uiQueued;
+
+    //globalWorkSize[0] = 256; //uiSplitCount; //divide_up(uiSplitCount, uiActive) * uiActive;
+    //globalWorkSize[1] = 256; //uiSplitCount; //divide_up(uiSplitCount, uiQueued) * uiQueued;
     
     console.log(localWorkSize[0]);
     console.log(localWorkSize[1]);

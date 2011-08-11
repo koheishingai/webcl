@@ -39,16 +39,17 @@ VPATH = \
     $(WebCore)/inspector \
     $(WebCore)/loader/appcache \
     $(WebCore)/notifications \
+    $(WebCore)/p2p \
     $(WebCore)/page \
     $(WebCore)/plugins \
     $(WebCore)/storage \
     $(WebCore)/xml \
     $(WebCore)/webaudio \
-    $(WebCore)/wml \
     $(WebCore)/workers \
     $(WebCore)/svg \
+    $(WebCore)/testing \
     $(WebCore)/websockets \
-	$(WebCore)/webcl
+	$(WebCore)/webcl \
 #
 
 DOM_CLASSES = \
@@ -56,6 +57,7 @@ DOM_CLASSES = \
     AbstractWorker \
     Attr \
     AudioBuffer \
+    AudioBufferCallback \
     AudioBufferSourceNode \
     AudioChannelSplitter \
     AudioChannelMerger \
@@ -69,17 +71,21 @@ DOM_CLASSES = \
     AudioParam \
     AudioProcessingEvent \
     AudioSourceNode \
+    BiquadFilterNode \
     ConvolverNode \
     DelayNode \
+    DynamicsCompressorNode \
     HighPass2FilterNode \
     JavaScriptAudioNode \
     LowPass2FilterNode \
+    OfflineAudioCompletionEvent \
     RealtimeAnalyserNode \
+    WaveShaperNode \
     BarInfo \
     BeforeLoadEvent \
     BeforeProcessEvent \
     Blob \
-    BlobBuilder \
+    WebKitBlobBuilder \
     CDATASection \
     CSSCharsetRule \
     CSSFontFaceRule \
@@ -103,6 +109,7 @@ DOM_CLASSES = \
     Int8Array \
     WebGLContextAttributes \
     Float32Array \
+    Float64Array \
     WebGLFramebuffer \
     CanvasGradient \
     Int32Array \
@@ -123,6 +130,7 @@ DOM_CLASSES = \
     ClientRect \
     ClientRectList \
     Clipboard \
+    CloseEvent \
     Comment \
     CompositionEvent \
     Console \
@@ -130,8 +138,8 @@ DOM_CLASSES = \
     Counter \
     Crypto \
     CustomEvent \
-    DataGridColumn \
-    DataGridColumnList \
+    DataTransferItem \
+    DataTransferItems \
     DedicatedWorkerContext \
     DOMApplicationCache \
     DOMCoreException \
@@ -151,6 +159,8 @@ DOM_CLASSES = \
     DOMTokenList \
     DOMURL \
     DOMWindow \
+    DataTransferItem \
+    DataTransferItems \
     Database \
     DatabaseCallback \
     DatabaseSync \
@@ -193,7 +203,7 @@ DOM_CLASSES = \
     FileWriterCallback \
     FileWriterSync \
     FileSystemCallback \
-    Flags \
+    WebKitFlags \
     Geolocation \
     Geoposition \
     HashChangeEvent \
@@ -211,10 +221,6 @@ DOM_CLASSES = \
     HTMLButtonElement \
     HTMLCanvasElement \
     HTMLCollection \
-    HTMLDataGridElement \
-    HTMLDataGridCellElement \
-    HTMLDataGridColElement \
-    HTMLDataGridRowElement \
     HTMLDataListElement \
     HTMLDetailsElement \
     HTMLDListElement \
@@ -271,6 +277,7 @@ DOM_CLASSES = \
     HTMLTableSectionElement \
     HTMLTextAreaElement \
     HTMLTitleElement \
+    HTMLTrackElement \
     HTMLUListElement \
     HTMLVideoElement \
     IDBAny \
@@ -278,25 +285,29 @@ DOM_CLASSES = \
     IDBDatabaseError \
     IDBDatabaseException \
     IDBDatabase \
-    IDBErrorEvent \
-    IDBEvent \
     IDBFactory \
     IDBIndex \
     IDBKey \
     IDBKeyRange \
     IDBObjectStore \
     IDBRequest \
-    IDBSuccessEvent \
     IDBTransaction \
     ImageData \
     InjectedScriptHost \
     InspectorFrontendHost \
+    Internals \
     KeyboardEvent \
+    LocalMediaStream \
     Location \
     MediaError \
     MediaList \
     MediaQueryList \
     MediaQueryListListener \
+    MediaStream \
+    MediaStreamEvent \
+    MediaStreamList \
+    MediaStreamTrack \
+    MediaStreamTrackList \
     MemoryInfo \
     MessageChannel \
     MessageEvent \
@@ -307,6 +318,9 @@ DOM_CLASSES = \
     MutationEvent \
     NamedNodeMap \
     Navigator \
+    NavigatorUserMediaError \
+    NavigatorUserMediaErrorCallback \
+    NavigatorUserMediaSuccessCallback \
     Node \
     NodeFilter \
     NodeIterator \
@@ -316,13 +330,19 @@ DOM_CLASSES = \
     NotificationCenter \
     OESStandardDerivatives \
     OESTextureFloat \
+     OESVertexArrayObject \
+     WebGLVertexArrayObjectOES \
+    OperationNotAllowedException \
     OverflowEvent \
     PageTransitionEvent \
+    PeerConnection \
     Performance \
     PerformanceNavigation \
     PerformanceTiming \
     PopStateEvent \
+    PositionCallback \
     PositionError \
+    PositionErrorCallback \
     ProcessingInstruction \
     ProgressEvent \
     RGBColor \
@@ -333,6 +353,7 @@ DOM_CLASSES = \
     SharedWorkerContext \
     ScriptProfile \
     ScriptProfileNode \
+    SignalingCallback \
     SpeechInputEvent \
     SpeechInputResult \
     SpeechInputResultList \
@@ -349,11 +370,19 @@ DOM_CLASSES = \
     SQLTransactionSyncCallback \
     Storage \
     StorageEvent \
+    StorageInfo \
+    StorageInfoErrorCallback \
+    StorageInfoQuotaCallback \
+    StorageInfoUsageCallback \
+    StringCallback \
     SVGAElement \
+    SVGAltGlyphDefElement \
     SVGAltGlyphElement \
+    SVGAltGlyphItemElement \
     SVGAngle \
     SVGAnimateColorElement \
     SVGAnimateElement \
+    SVGAnimateMotionElement \
     SVGAnimateTransformElement \
     SVGAnimatedAngle \
     SVGAnimatedBoolean \
@@ -390,6 +419,7 @@ DOM_CLASSES = \
     SVGFEDiffuseLightingElement \
     SVGFEDisplacementMapElement \
     SVGFEDistantLightElement \
+    SVGFEDropShadowElement \
     SVGFEFloodElement \
     SVGFEFuncAElement \
     SVGFEFuncBElement \
@@ -418,6 +448,7 @@ DOM_CLASSES = \
     SVGForeignObjectElement \
     SVGGElement \
     SVGGlyphElement \
+    SVGGlyphRefElement \
     SVGGradientElement \
     SVGHKernElement \
     SVGImageElement \
@@ -432,6 +463,7 @@ DOM_CLASSES = \
     SVGMatrix \
     SVGMetadataElement \
     SVGMissingGlyphElement \
+    SVGMPathElement \
     SVGNumber \
     SVGNumberList \
     SVGPaint \
@@ -495,6 +527,7 @@ DOM_CLASSES = \
     SVGZoomAndPan \
     SVGZoomEvent \
     Screen \
+    StringCallback \
     StyleMedia \
     StyleSheet \
     StyleSheetList \
@@ -508,7 +541,9 @@ DOM_CLASSES = \
     TreeWalker \
     UIEvent \
     ValidityState \
+    WebKitAnimation \
     WebKitAnimationEvent \
+    WebKitAnimationList \
     WebKitCSSKeyframeRule \
     WebKitCSSKeyframesRule \
     WebKitCSSMatrix \
@@ -533,20 +568,22 @@ DOM_CLASSES = \
     XPathNSResolver \
     XPathResult \
     XSLTProcessor \
-	WebCLComputeContext \
-	WebCLPlatformIDList \
-	WebCLPlatformID \
-	WebCLDeviceIDList \
-	WebCLDeviceID \
-	WebCLContext \
-	WebCLCommandQueue \
-	WebCLProgram \
+	 WebCLComputeContext \
+        WebCLPlatformIDList \
+        WebCLPlatformID \
+        WebCLDeviceIDList \
+        WebCLDeviceID \
+        WebCLContext \
+        WebCLCommandQueue \
+        WebCLProgram \
 	WebCLKernel \
-	WebCLEvent \
-	WebCLMem \
-	WebCLSampler \
-	WebCLBuffer \
-	WebCLImage \
+        WebCLKernelList \
+        WebCLEvent \
+        WebCLEventList \
+        WebCLMem \
+        WebCLSampler \
+        WebCLBuffer \
+        WebCLImage \
 #
 
 .PHONY : all
@@ -572,8 +609,6 @@ all : \
     HTMLElementFactory.cpp \
     HTMLEntityTable.cpp \
     HTMLNames.cpp \
-    WMLElementFactory.cpp \
-    WMLNames.cpp \
     JSSVGElementWrapperFactory.cpp \
     SVGElementFactory.cpp \
     SVGNames.cpp \
@@ -585,7 +620,6 @@ all : \
     MathMLNames.cpp \
     XPathGrammar.cpp \
     tokenizer.cpp \
-    HeaderDetection.h \
 #
 
 # --------
@@ -640,20 +674,13 @@ ifeq ($(ENABLE_DASHBOARD_SUPPORT), 1)
     WEBCORE_CSS_PROPERTY_NAMES := $(WEBCORE_CSS_PROPERTY_NAMES) $(WebCore)/css/DashboardSupportCSSPropertyNames.in
 endif
 
-# The grep commands below reject output containing anything other than:
-# 1. Lines beginning with '#'
-# 2. Lines containing only whitespace
-# These two types of lines will be ignored by make{prop,values}.pl.
 CSSPropertyNames.h : $(WEBCORE_CSS_PROPERTY_NAMES) css/makeprop.pl
-	if sort $(WEBCORE_CSS_PROPERTY_NAMES) | uniq -d | grep -E -v '(^#)|(^[[:space:]]*$$)'; then echo 'Duplicate value!'; exit 1; fi
 	cat $(WEBCORE_CSS_PROPERTY_NAMES) > CSSPropertyNames.in
-	perl "$(WebCore)/css/makeprop.pl"
+	perl -I$(WebCore)/bindings/scripts "$(WebCore)/css/makeprop.pl" --defines "$(FEATURE_DEFINES)"
 
 CSSValueKeywords.h : $(WEBCORE_CSS_VALUE_KEYWORDS) css/makevalues.pl
-	# Lower case all the values, as CSS values are case-insensitive
-	perl -ne 'print lc' $(WEBCORE_CSS_VALUE_KEYWORDS) > CSSValueKeywords.in
-	if sort CSSValueKeywords.in | uniq -d | grep -E -v '(^#)|(^[[:space:]]*$$)'; then echo 'Duplicate value!'; exit 1; fi
-	perl "$(WebCore)/css/makevalues.pl"
+	cat $(WEBCORE_CSS_VALUE_KEYWORDS) > CSSValueKeywords.in
+	perl -I$(WebCore)/bindings/scripts "$(WebCore)/css/makevalues.pl" --defines "$(FEATURE_DEFINES)"
 
 # --------
 
@@ -661,6 +688,24 @@ CSSValueKeywords.h : $(WEBCORE_CSS_VALUE_KEYWORDS) css/makevalues.pl
 
 DocTypeStrings.cpp : html/DocTypeStrings.gperf $(WebCore)/make-hash-tools.pl
 	perl $(WebCore)/make-hash-tools.pl . $(WebCore)/html/DocTypeStrings.gperf
+
+# --------
+
+# XMLViewer CSS
+
+all : XMLViewerCSS.h
+
+XMLViewerCSS.h : xml/XMLViewer.css
+	perl $(WebCore)/inspector/xxd.pl XMLViewer_css $(WebCore)/xml/XMLViewer.css XMLViewerCSS.h
+
+# --------
+
+# XMLViewer JS
+
+all : XMLViewerJS.h
+
+XMLViewerJS.h : xml/XMLViewer.js
+	perl $(WebCore)/inspector/xxd.pl XMLViewer_js $(WebCore)/xml/XMLViewer.js XMLViewerJS.h
 
 # --------
 
@@ -723,10 +768,6 @@ ifeq ($(findstring ENABLE_SVG,$(FEATURE_DEFINES)), ENABLE_SVG)
     USER_AGENT_STYLE_SHEETS := $(USER_AGENT_STYLE_SHEETS) $(WebCore)/css/svg.css 
 endif
 
-ifeq ($(findstring ENABLE_WML,$(FEATURE_DEFINES)), ENABLE_WML)
-    USER_AGENT_STYLE_SHEETS := $(USER_AGENT_STYLE_SHEETS) $(WebCore)/css/wml.css
-endif
-
 ifeq ($(findstring ENABLE_MATHML,$(FEATURE_DEFINES)), ENABLE_MATHML)
     USER_AGENT_STYLE_SHEETS := $(USER_AGENT_STYLE_SHEETS) $(WebCore)/css/mathml.css
 endif
@@ -737,11 +778,11 @@ ifeq ($(findstring ENABLE_VIDEO,$(FEATURE_DEFINES)), ENABLE_VIDEO)
 endif
 
 ifeq ($(findstring ENABLE_FULLSCREEN_API,$(FEATURE_DEFINES)), ENABLE_FULLSCREEN_API)
-    USER_AGENT_STYLE_SHEETS := $(USER_AGENT_STYLE_SHEETS) $(WebCore)/css/fullscreen.css
+    USER_AGENT_STYLE_SHEETS := $(USER_AGENT_STYLE_SHEETS) $(WebCore)/css/fullscreen.css $(WebCore)/css/fullscreenQuickTime.css
 endif
 
-UserAgentStyleSheets.h : css/make-css-file-arrays.pl $(USER_AGENT_STYLE_SHEETS)
-	perl $< $@ UserAgentStyleSheetsData.cpp $(USER_AGENT_STYLE_SHEETS)
+UserAgentStyleSheets.h : css/make-css-file-arrays.pl bindings/scripts/preprocessor.pm $(USER_AGENT_STYLE_SHEETS)
+	perl -I$(WebCore)/bindings/scripts $< --defines "$(FEATURE_DEFINES)" $@ UserAgentStyleSheetsData.cpp $(USER_AGENT_STYLE_SHEETS)
 
 # --------
 
@@ -749,6 +790,10 @@ UserAgentStyleSheets.h : css/make-css-file-arrays.pl $(USER_AGENT_STYLE_SHEETS)
 
 ifeq ($(findstring ENABLE_DATALIST,$(FEATURE_DEFINES)), ENABLE_DATALIST)
     HTML_FLAGS := $(HTML_FLAGS) ENABLE_DATALIST=1
+endif
+
+ifeq ($(findstring ENABLE_DETAILS,$(FEATURE_DEFINES)), ENABLE_DETAILS)
+    HTML_FLAGS := $(HTML_FLAGS) ENABLE_DETAILS=1
 endif
 
 ifeq ($(findstring ENABLE_METER_TAG,$(FEATURE_DEFINES)), ENABLE_METER_TAG)
@@ -761,6 +806,10 @@ endif
 
 ifeq ($(findstring ENABLE_VIDEO,$(FEATURE_DEFINES)), ENABLE_VIDEO)
     HTML_FLAGS := $(HTML_FLAGS) ENABLE_VIDEO=1
+endif
+
+ifeq ($(findstring ENABLE_VIDEO_TRACK,$(FEATURE_DEFINES)), ENABLE_VIDEO_TRACK)
+    HTML_FLAGS := $(HTML_FLAGS) ENABLE_VIDEO_TRACK=0
 endif
 
 ifdef HTML_FLAGS
@@ -830,25 +879,6 @@ XLinkNames.cpp : dom/make_names.pl svg/xlinkattrs.in
 	perl -I $(WebCore)/bindings/scripts $< --attrs $(WebCore)/svg/xlinkattrs.in
 
 # --------
-
-# WML tag and attribute names, and element factory
-
-ifeq ($(findstring ENABLE_WML,$(FEATURE_DEFINES)), ENABLE_WML)
-
-WMLElementFactory.cpp WMLNames.cpp : dom/make_names.pl wml/WMLTagNames.in wml/WMLAttributeNames.in
-	perl -I $(WebCore)/bindings/scripts $< --tags $(WebCore)/wml/WMLTagNames.in --attrs $(WebCore)/wml/WMLAttributeNames.in --factory --wrapperFactory
-
-else
-
-WMLElementFactory.cpp :
-	echo > $@
-
-WMLNames.cpp :
-	echo > $@
-
-endif
-
-# --------
  
 # MathML tag and attribute names, and element factory
 
@@ -863,13 +893,24 @@ GENERATE_SCRIPTS = \
     bindings/scripts/CodeGenerator.pm \
     bindings/scripts/IDLParser.pm \
     bindings/scripts/IDLStructure.pm \
-    bindings/scripts/generate-bindings.pl
+    bindings/scripts/generate-bindings.pl \
+    bindings/scripts/preprocessor.pm
 
 generator_script = perl $(addprefix -I $(WebCore)/, $(sort $(dir $(1)))) $(WebCore)/bindings/scripts/generate-bindings.pl
 
 # JS bindings generator
 
-IDL_INCLUDES = dom fileapi html css page notifications xml svg
+IDL_INCLUDES = \
+    $(WebCore)/dom \
+    $(WebCore)/fileapi \
+    $(WebCore)/html \
+    $(WebCore)/css \
+    $(WebCore)/p2p \
+    $(WebCore)/page \
+    $(WebCore)/notifications \
+    $(WebCore)/xml \
+    $(WebCore)/svg
+
 IDL_COMMON_ARGS = $(IDL_INCLUDES:%=--include %) --write-dependencies --outputDir .
 
 JS_BINDINGS_SCRIPTS = $(GENERATE_SCRIPTS) bindings/scripts/CodeGeneratorJS.pm
@@ -878,6 +919,9 @@ JS%.h : %.idl $(JS_BINDINGS_SCRIPTS)
 	$(call generator_script, $(JS_BINDINGS_SCRIPTS)) $(IDL_COMMON_ARGS) --defines "$(FEATURE_DEFINES) $(ADDITIONAL_IDL_DEFINES) LANGUAGE_JAVASCRIPT" --generator JS $<
 
 # Inspector interfaces generator
+
+Inspector.idl : Inspector.json inspector/generate-inspector-idl
+	python $(WebCore)/inspector/generate-inspector-idl -o Inspector.idl $(WebCore)/inspector/Inspector.json
 
 all : InspectorFrontend.h
 
@@ -950,18 +994,13 @@ endif # MACOS
 
 # ------------------------
 
-# header detection
+# Header detection
 
-ifeq ($(OS),MACOS)
+ifeq ($(OS),Windows_NT)
 
-HeaderDetection.h : DerivedSources.make /System/Library/CoreServices/SystemVersion.plist
-	rm -f $@
-	echo "/* This is a generated file. Do not edit. */" > $@
-	if [ -f $(SDKROOT)/System/Library/Frameworks/AppKit.framework/PrivateHeaders/NSScrollerImpPair_Private.h ]; then echo "#define USE_WK_SCROLLBAR_PAINTER_AND_CONTROLLER 1" >> $@; else echo >> $@; fi
+all : WebCoreHeaderDetection.h
 
-else
+WebCoreHeaderDetection.h : DerivedSources.make
+	if [ -f "$(WEBKITLIBRARIESDIR)/include/AVFoundationCF/AVCFBase.h" ]; then echo "#define HAVE_AVCF 1" > $@; else echo > $@; fi
 
-HeaderDetection.h :
-	echo > $@
-
-endif
+endif # Windows_NT

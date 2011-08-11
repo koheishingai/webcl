@@ -29,28 +29,64 @@
 
 #if ENABLE(WEBCL)
 
-#include "WebCLDeviceID.h"
+#include "WebCLKernelList.h"
+#include "WebCLComputeContext.h"
 
 namespace WebCore {
 
-WebCLDeviceID::~WebCLDeviceID()
+WebCLKernelList::WebCLKernelList()
 {
 }
 
-PassRefPtr<WebCLDeviceID> WebCLDeviceID::create(WebCLComputeContext* context, cl_device_id device_id)
-{
-	return adoptRef(new WebCLDeviceID(context, device_id));
-}
-
-WebCLDeviceID::WebCLDeviceID(WebCLComputeContext* context, cl_device_id device_id)
-	: m_context(context), m_cl_device_id(device_id)
+WebCLKernelList::~WebCLKernelList()
 {
 }
 
-cl_device_id WebCLDeviceID::getCLDeviceID()
+PassRefPtr<WebCLKernelList> WebCLKernelList::create(WebCLComputeContext* ctx , cl_kernel* kernellist, cl_uint num_kernels)
 {
-	return m_cl_device_id;
+	
+	return adoptRef(new WebCLKernelList(ctx ,kernellist, num_kernels));
 }
+
+WebCLKernelList::WebCLKernelList(WebCLComputeContext* ctx,cl_kernel* kernellist, cl_uint num_kernels ) : 
+					m_context(ctx),m_cl_kernels(kernellist),m_num_kernels(num_kernels)
+{
+	if (m_num_kernels == 0) {
+		printf("Error: Number of kernels is 0");
+	}
+	//m_cl_kernels = new m_cl_kernels[m_num_kernels];
+	
+	for (unsigned int i = 0 ; i < m_num_kernels; i++) {
+		RefPtr<WebCLKernel> o = WebCLKernel::create(m_context, m_cl_kernels[i]);
+		if (o != NULL) {
+			m_kernel_id_list.append(o);
+		} else {
+			// TODO (siba samal) Error handling
+		}
+	}
+	
+}
+
+cl_kernel WebCLKernelList::getCLKernels()
+{
+	return *m_cl_kernels;
+}
+
+unsigned WebCLKernelList::length() const
+{
+	return m_num_kernels;
+}
+
+WebCLKernel* WebCLKernelList::item(unsigned index)
+{
+	if (index >= m_num_kernels) {
+		printf("Error: Kernel Index Out of range");
+		return 0;
+	}
+	WebCLKernel* ret = (m_kernel_id_list[index]).get();
+	return ret;
+}
+
 
 } // namespace WebCore
 

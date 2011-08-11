@@ -29,28 +29,64 @@
 
 #if ENABLE(WEBCL)
 
-#include "WebCLDeviceID.h"
+#include "WebCLEventList.h"
+#include "WebCLComputeContext.h"
 
 namespace WebCore {
 
-WebCLDeviceID::~WebCLDeviceID()
+WebCLEventList::WebCLEventList()
 {
 }
 
-PassRefPtr<WebCLDeviceID> WebCLDeviceID::create(WebCLComputeContext* context, cl_device_id device_id)
-{
-	return adoptRef(new WebCLDeviceID(context, device_id));
-}
-
-WebCLDeviceID::WebCLDeviceID(WebCLComputeContext* context, cl_device_id device_id)
-	: m_context(context), m_cl_device_id(device_id)
+WebCLEventList::~WebCLEventList()
 {
 }
 
-cl_device_id WebCLDeviceID::getCLDeviceID()
+PassRefPtr<WebCLEventList> WebCLEventList::create(WebCLComputeContext* ctx , cl_event* eventlist, cl_uint num_events)
 {
-	return m_cl_device_id;
+	
+	return adoptRef(new WebCLEventList(ctx ,eventlist, num_events));
 }
+
+WebCLEventList::WebCLEventList(WebCLComputeContext* ctx,cl_event* eventlist, cl_uint num_events ) : 
+					m_context(ctx),m_cl_events(eventlist),m_num_events(num_events)
+{
+	if (m_num_events == 0) {
+		printf("Error: Number of events is 0");
+	}
+	//m_cl_events = new m_cl_events[m_num_events];
+	
+	for (unsigned int i = 0 ; i < m_num_events; i++) {
+		RefPtr<WebCLEvent> o = WebCLEvent::create(m_context, m_cl_events[i]);
+		if (o != NULL) {
+			m_event_id_list.append(o);
+		} else {
+			// TODO (siba samal) Error handling
+		}
+	}
+	
+}
+
+cl_event* WebCLEventList::getCLEvents()
+{
+	return m_cl_events;
+}
+
+unsigned WebCLEventList::length() const
+{
+	return m_num_events;
+}
+
+WebCLEvent* WebCLEventList::item(unsigned index)
+{
+	if (index >= m_num_events) {
+		printf("Error: Event Index Out of range");
+		return 0;
+	}
+	WebCLEvent* ret = (m_event_id_list[index]).get();
+	return ret;
+}
+
 
 } // namespace WebCore
 

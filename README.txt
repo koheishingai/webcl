@@ -9,7 +9,7 @@ Tested platform
 ---------------------
 Tested WebKit version
 ---------------------
-r78407
+r92365
 
 ------------
 How to build
@@ -37,4 +37,4 @@ How to update source code using svn
 -----------------------------------
 1. cd ~/work
 2. svn checkout https://webcl.googlecode.com/svn/trunk/ webcl --usename <you_email_address>
-3. cp -Ri webcl/* webkit
+3. cp -Ri webcl/trunk/* webkit

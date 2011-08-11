@@ -416,7 +416,9 @@ Conditional=WEBCL,
 				in long param_name);
 
 		// Availble in OpenCL 1.1
-		//WebCLEvent createUserEvent(in WebCLContext contextId);
+		WebCLEvent createUserEvent(in WebCLContext contextId);
+		void setUserEventStatus(in WebCLEvent event, in long execStatus);
+		void waitForEvents(in WebCLEventList events);
 
 		WebCLContext createContext(in long contextProperties, 
 				in WebCLDeviceIDList devices, 
@@ -426,6 +428,11 @@ Conditional=WEBCL,
 		WebCLContext createContext(in long contextProperties, 
 				in WebCLDeviceID device, 
 				in long notify, 
+				in long user_data);
+				
+		WebCLContext createContextFromType(in long contextProperties,
+				in long deviceType, 
+				in long notify,
 				in long user_data);
 
 		WebCLContext createSharedContext(in long deviceType, 
@@ -442,7 +449,20 @@ Conditional=WEBCL,
 
 		WebCLProgram createProgramWithSource(in WebCLContext contextId, 
 				in DOMString kernelSource);
+		WebCLProgram createProgramWithBinary(in WebCLContext contextId,
+										in WebCLDeviceIDList clDevices,
+										in DOMString kernelBinary);
 
+		void buildProgram(in WebCLProgram programId,
+						  in WebCLDeviceID deviceId,
+						  in long options,
+						  in long pfn,
+						  in long userData);
+		void buildProgram(in WebCLProgram programId,
+						  in WebCLDeviceIDList deviceIds,
+						  in long options,
+						  in long pfn,
+						  in long userData);
 		void buildProgram(in WebCLProgram programId, 
 				in long options, 
 				in long pfnNotify, 
@@ -450,6 +470,9 @@ Conditional=WEBCL,
 
 		WebCLKernel createKernel(in WebCLProgram programId, 
 				in DOMString kernelName);
+
+		WebCLKernelList createKernelsInProgram(
+					in WebCLProgram program);
 
 		WebCLMem createBuffer(in WebCLContext contextId, 
 				in long flags, 
@@ -519,9 +542,9 @@ Conditional=WEBCL,
 		void setKernelArg(in WebCLKernel kernelId, 
 				in unsigned long argIndex, 
 				in WebCLMem argValue);
-		//long setKernelArgGlobal(in WebCLKernel kernelId, 
-		//				in unsigned long argIndex, 
-		//				in WebCLMem argValue);
+		void setKernelArgGlobal(in WebCLKernel kernelId, 
+						in unsigned long argIndex, 
+						in WebCLMem argValue);
 		void setKernelArg(in WebCLKernel kernelId, 
 				in unsigned long argIndex, 
 				in long argValue);			
@@ -537,7 +560,10 @@ Conditional=WEBCL,
 				in unsigned long argIndex,
 				in unsigned long argSize);
 
-
+		WebCLSampler createSampler(in WebCLContext contextId,
+								   in boolean normCords, 
+								   in long addrMode,
+								   in long fltrMode);	
 
 		//void enqueueNDRangeKernel(in WebCLCommandQueue commandQueue, 
 		//							in WebCLKernel kernelId, 
@@ -556,6 +582,7 @@ Conditional=WEBCL,
 				in long eventWaitList);
 
 		[Custom] void finish(in WebCLCommandQueue commandQueue, in WebCLFinishCallback notifyCallback, in long userData);
+		void flush(in WebCLCommandQueue queue);
 
 		void releaseMemObject(in WebCLMem memobj);
 		void releaseProgram(in WebCLProgram programId);
@@ -584,10 +611,16 @@ Conditional=WEBCL,
 		WebCLMem createImage2D(in WebCLContext contextId, 
 				in long flags, 
 				in ImageData data);
-		WebCLMem createImage2D(	  in WebCLContext contextId, 				
+		WebCLMem createImage2D(in WebCLContext contextId, 				
 				in long flags,
 				in unsigned long width,
 				in unsigned long height,
+				in ArrayBuffer data);
+		WebCLMem createImage3D(in WebCLContext contextId, 
+				in long flags,
+				in unsigned long width,
+				in unsigned long height,
+				in unsigned long depth,
 				in ArrayBuffer data);
 		WebCLEvent enqueueWriteImage(in WebCLCommandQueue commandQueue, 
 				in WebCLMem image, 
@@ -630,6 +663,14 @@ Conditional=WEBCL,
 
 		void enqueueBarrier(in WebCLCommandQueue commandQueue);
 
+		void enqueueMarker(in WebCLCommandQueue commandQueue,in  WebCLEvent event);
+		
+		void enqueueWaitForEvents(in WebCLCommandQueue commandqueue,in WebCLEventList events);
+		
+		WebCLEvent enqueueTask(in WebCLCommandQueue commandqueue, in WebCLKernel kernel,
+							in long eventWaitList);
+
+		void unloadCompiler();
 
 	};
 }

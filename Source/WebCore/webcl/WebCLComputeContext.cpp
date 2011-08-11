@@ -50,7 +50,7 @@ class CanvasRenderingContext;
 
 using namespace JSC;
 
-namespace WebCore { 
+namespace WebCore {  
 
 WebCLComputeContext::WebCLComputeContext(ScriptExecutionContext* context) : ActiveDOMObject(context, this)
 										    , m_videoCache(4)
@@ -92,7 +92,7 @@ PassRefPtr<WebCLPlatformIDList> WebCLComputeContext::getPlatformIDs()
 PassRefPtr<WebCLDeviceIDList> WebCLComputeContext::getDeviceIDs(WebCLPlatformID* webcl_platform_id, 
 		int device_type)
 {
-	cl_platform_id platform_id;
+	cl_platform_id platform_id = NULL;
 
 	if (webcl_platform_id != NULL) {
 		platform_id = webcl_platform_id->getCLPlatformID();
@@ -103,6 +103,7 @@ PassRefPtr<WebCLDeviceIDList> WebCLComputeContext::getDeviceIDs(WebCLPlatformID*
 		}
 	} else {
 		printf("Error: webcl_platform_id null\n");
+		m_error_state = FAILURE;
 		return NULL;
 	}
 
@@ -116,14 +117,12 @@ PassRefPtr<WebCLDeviceIDList> WebCLComputeContext::getDeviceIDs(WebCLPlatformID*
 		m_error_state = FAILURE;
 		return NULL;
 	}
-
-	return NULL;
 }
 
 WebCLGetInfo WebCLComputeContext::getPlatformInfo (WebCLPlatformID* webcl_platform_id,
 		int platform_info)
 {
-	cl_platform_id platform_id;
+	cl_platform_id platform_id = NULL;
 	cl_int err = 0;
 
 	if (webcl_platform_id != NULL) {
@@ -202,8 +201,19 @@ WebCLGetInfo WebCLComputeContext::getPlatformInfo (WebCLPlatformID* webcl_platfo
 WebCLGetInfo  WebCLComputeContext::getDeviceInfo(WebCLDeviceID*   webcl_device_id,  
 		int device_type)
 {
-	cl_device_id cl_device;
+	cl_device_id cl_device = NULL;
 	cl_int err = 0;
+	char device_string[1024];
+	cl_uint uint_units = 0;
+	size_t sizet_units = 0;
+	cl_ulong  ulong_units = 0;
+	cl_bool bool_units = false;
+	cl_device_type type = 0;
+	cl_device_mem_cache_type global_type = 0;
+	cl_command_queue_properties queue_properties = 0;
+	cl_device_exec_capabilities exec = NULL;
+	cl_device_local_mem_type local_type = 0;
+
 	cl_device = webcl_device_id->getCLDeviceID();
 	if (cl_device == NULL) {
 		m_error_state = FAILURE;
@@ -215,302 +225,235 @@ WebCLGetInfo  WebCLComputeContext::getDeviceInfo(WebCLDeviceID*   webcl_device_i
 
 	switch(device_type)
 	{
-		char device_string[1024];
-		// Handling string cases
+		
 		case DEVICE_EXTENSIONS:
-		err=clGetDeviceInfo(cl_device, CL_DEVICE_EXTENSIONS, sizeof(device_string), &device_string, NULL);
-		if (err == CL_SUCCESS)
-			return WebCLGetInfo(String(device_string));	
-		break;
-
+			err=clGetDeviceInfo(cl_device, CL_DEVICE_EXTENSIONS, sizeof(device_string), &device_string, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(String(device_string));	
+			break;
 		case DEVICE_NAME:
-		err=clGetDeviceInfo(cl_device, CL_DEVICE_NAME, sizeof(device_string), &device_string, NULL);
-		if (err == CL_SUCCESS)
-			return WebCLGetInfo(String(device_string));	
-		break;
-
+			err=clGetDeviceInfo(cl_device, CL_DEVICE_NAME, sizeof(device_string), &device_string, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(String(device_string));	
+			break;
 		case DEVICE_PROFILE:
-		err=clGetDeviceInfo(cl_device, CL_DEVICE_PROFILE, sizeof(device_string), &device_string, NULL);
-		if (err == CL_SUCCESS)
-			return WebCLGetInfo(String(device_string));	
-		break;
-
+			err=clGetDeviceInfo(cl_device, CL_DEVICE_PROFILE, sizeof(device_string), &device_string, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(String(device_string));	
+			break;
 		case DEVICE_VENDOR:
-		err=clGetDeviceInfo(cl_device, CL_DEVICE_VENDOR, sizeof(device_string), &device_string, NULL);
-		if (err == CL_SUCCESS)
-			return WebCLGetInfo(String(device_string));
-		break;
-
+			err=clGetDeviceInfo(cl_device, CL_DEVICE_VENDOR, sizeof(device_string), &device_string, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(String(device_string));
+			break;
 		case DEVICE_VERSION:
-		err=clGetDeviceInfo(cl_device, CL_DEVICE_VERSION, sizeof(device_string), &device_string, NULL);
-		if (err == CL_SUCCESS)
-			return WebCLGetInfo(String(device_string));
-		break;
-
+			err=clGetDeviceInfo(cl_device, CL_DEVICE_VERSION, sizeof(device_string), &device_string, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(String(device_string));
+			break;
 		case DRIVER_VERSION:
-		err=clGetDeviceInfo(cl_device, CL_DRIVER_VERSION, sizeof(device_string), &device_string, NULL);
-		if (err == CL_SUCCESS)
-			return WebCLGetInfo(String(device_string));	
-		break;
-
-		// Handling uint cases
-		{
-			cl_uint uint_units;
-			case DEVICE_ADDRESS_BITS:
+			err=clGetDeviceInfo(cl_device, CL_DRIVER_VERSION, sizeof(device_string), &device_string, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(String(device_string));	
+			break;
+		case DEVICE_ADDRESS_BITS:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_ADDRESS_BITS , sizeof(cl_uint), &uint_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
 			break;
-
-			case DEVICE_GLOBAL_MEM_CACHELINE_SIZE:
+		case DEVICE_GLOBAL_MEM_CACHELINE_SIZE:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE,sizeof(cl_uint), &uint_units,NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
 			break;
-
-			case DEVICE_MAX_CLOCK_FREQUENCY:
+		case DEVICE_MAX_CLOCK_FREQUENCY:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_MAX_CLOCK_FREQUENCY, sizeof(cl_uint), &uint_units,NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));	
 			break;
-
-			case DEVICE_MAX_CONSTANT_ARGS:
+		case DEVICE_MAX_CONSTANT_ARGS:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_MAX_CONSTANT_ARGS, sizeof(cl_uint), &uint_units,NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
 			break;
-
-			case DEVICE_MAX_READ_IMAGE_ARGS:
+		case DEVICE_MAX_READ_IMAGE_ARGS:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_MAX_READ_IMAGE_ARGS, sizeof(cl_uint), &uint_units,NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));	
 			break;
-
-			case DEVICE_MAX_SAMPLERS:
+		case DEVICE_MAX_SAMPLERS:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_MAX_SAMPLERS, sizeof(cl_uint), &uint_units,NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
 			break;
-
-			case DEVICE_MAX_WRITE_IMAGE_ARGS:
+		case DEVICE_MAX_WRITE_IMAGE_ARGS:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_MAX_WRITE_IMAGE_ARGS, sizeof(cl_uint), &uint_units,NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
 			break;
-
-			case DEVICE_MEM_BASE_ADDR_ALIGN:
+		case DEVICE_MEM_BASE_ADDR_ALIGN:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_MEM_BASE_ADDR_ALIGN, sizeof(cl_uint), &uint_units,NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
 			break;
-
-			case DEVICE_MIN_DATA_TYPE_ALIGN_SIZE:
+		case DEVICE_MIN_DATA_TYPE_ALIGN_SIZE:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_MIN_DATA_TYPE_ALIGN_SIZE, sizeof(cl_uint), &uint_units,NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
 			break;
-
-			case DEVICE_VENDOR_ID:
+		case DEVICE_VENDOR_ID:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_VENDOR_ID, sizeof(cl_uint), &uint_units,NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
 			break;
-
-			case DEVICE_PREFERRED_VECTOR_WIDTH_CHAR:
+		case DEVICE_PREFERRED_VECTOR_WIDTH_CHAR:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_PREFERRED_VECTOR_WIDTH_CHAR, sizeof(cl_uint), &uint_units,NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
 			break;
-
-			case DEVICE_PREFERRED_VECTOR_WIDTH_SHORT:
+		case DEVICE_PREFERRED_VECTOR_WIDTH_SHORT:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_PREFERRED_VECTOR_WIDTH_SHORT, sizeof(cl_uint), &uint_units,NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
 			break;
-
-			case DEVICE_PREFERRED_VECTOR_WIDTH_INT:
+		case DEVICE_PREFERRED_VECTOR_WIDTH_INT:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_PREFERRED_VECTOR_WIDTH_INT, sizeof(cl_uint), &uint_units,NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
 			break;
-
-			case DEVICE_PREFERRED_VECTOR_WIDTH_LONG:
+		case DEVICE_PREFERRED_VECTOR_WIDTH_LONG:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_PREFERRED_VECTOR_WIDTH_LONG, sizeof(cl_uint), &uint_units,NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
 			break;
-
-			case DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT:
+		case DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT, sizeof(cl_uint), &uint_units,NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
 			break;
-
-			case DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE:
+		case DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE, sizeof(cl_uint), &uint_units,NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
 			break;
-
-			case DEVICE_MAX_COMPUTE_UNITS:
+		case DEVICE_MAX_COMPUTE_UNITS:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_MAX_COMPUTE_UNITS , sizeof(cl_uint), &uint_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
 			break;
-
-
-		}
-		// Handling size_t cases
-		{
-			size_t sizet_units;
-
-			case DEVICE_IMAGE2D_MAX_HEIGHT:
+		case DEVICE_IMAGE2D_MAX_HEIGHT:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_IMAGE2D_MAX_HEIGHT, sizeof(size_t), &sizet_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
 			break;
-
-			case DEVICE_IMAGE2D_MAX_WIDTH:
+		case DEVICE_IMAGE2D_MAX_WIDTH:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_IMAGE2D_MAX_WIDTH, sizeof(size_t), &sizet_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
 			break;
-
-			case DEVICE_IMAGE3D_MAX_DEPTH:
+		case DEVICE_IMAGE3D_MAX_DEPTH:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_IMAGE3D_MAX_DEPTH, sizeof(size_t), &sizet_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
 			break;
-
-			case DEVICE_IMAGE3D_MAX_HEIGHT:
+		case DEVICE_IMAGE3D_MAX_HEIGHT:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_IMAGE3D_MAX_HEIGHT, sizeof(size_t), &sizet_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
 			break;
-
-			case DEVICE_IMAGE3D_MAX_WIDTH:
+		case DEVICE_IMAGE3D_MAX_WIDTH:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_IMAGE3D_MAX_WIDTH, sizeof(size_t), &sizet_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
 			break;
-
-			case DEVICE_MAX_PARAMETER_SIZE:
+		case DEVICE_MAX_PARAMETER_SIZE:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_MAX_PARAMETER_SIZE, sizeof(size_t), &sizet_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
 			break;
-
-			case DEVICE_MAX_WORK_GROUP_SIZE:
+		case DEVICE_MAX_WORK_GROUP_SIZE:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &sizet_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
 			break;
-			case DEVICE_MAX_WORK_ITEM_SIZES:
+		case DEVICE_MAX_WORK_ITEM_SIZES:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(size_t), &sizet_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
 			break;
-
-			case DEVICE_PROFILING_TIMER_RESOLUTION:
+		case DEVICE_PROFILING_TIMER_RESOLUTION:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_PROFILING_TIMER_RESOLUTION, sizeof(size_t), &sizet_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
 			break;
-
-			case DEVICE_MAX_WORK_ITEM_DIMENSIONS:
+		case DEVICE_MAX_WORK_ITEM_DIMENSIONS:
 			err=clGetDeviceInfo(cl_device, DEVICE_MAX_WORK_ITEM_DIMENSIONS, sizeof(size_t), &sizet_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
 			break;
-		}
-		// Handling ulong cases
-		{
-			cl_ulong  ulong_units;
-
-			case DEVICE_LOCAL_MEM_SIZE:
+		case DEVICE_LOCAL_MEM_SIZE:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_LOCAL_MEM_SIZE, sizeof(cl_ulong), &ulong_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned long>(ulong_units));
 			break;
-
-			case DEVICE_MAX_CONSTANT_BUFFER_SIZE:
+		case DEVICE_MAX_CONSTANT_BUFFER_SIZE:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE, sizeof(cl_ulong), &ulong_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned long>(ulong_units));
 			break;
-
-			case DEVICE_MAX_MEM_ALLOC_SIZE:
+		case DEVICE_MAX_MEM_ALLOC_SIZE:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(cl_ulong), &ulong_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned long>(ulong_units));
 			break;
-
-			case DEVICE_GLOBAL_MEM_CACHE_SIZE:
+		case DEVICE_GLOBAL_MEM_CACHE_SIZE:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_GLOBAL_MEM_CACHE_SIZE, sizeof(cl_ulong), &ulong_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(ulong_units));
 			break;
-
-			case DEVICE_GLOBAL_MEM_SIZE:
+		case DEVICE_GLOBAL_MEM_SIZE:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &ulong_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(ulong_units));
 			break;
-
-		}
-		{
-			cl_bool bool_units;
-			case DEVICE_AVAILABLE:
+		case DEVICE_AVAILABLE:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_AVAILABLE , sizeof(cl_bool), &bool_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<bool>(bool_units));
 			break;
-
-			case DEVICE_COMPILER_AVAILABLE:
+		case DEVICE_COMPILER_AVAILABLE:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_COMPILER_AVAILABLE , sizeof(cl_bool), &bool_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<bool>(bool_units));
 			break;
-
-			case DEVICE_ENDIAN_LITTLE:
+		case DEVICE_ENDIAN_LITTLE:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_ENDIAN_LITTLE, sizeof(cl_bool), &bool_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<bool>(bool_units));
 			break;
-
-			case DEVICE_ERROR_CORRECTION_SUPPORT:
+		case DEVICE_ERROR_CORRECTION_SUPPORT:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_ERROR_CORRECTION_SUPPORT, sizeof(cl_bool), &bool_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<bool>(bool_units));
 			break;
-
-			case DEVICE_IMAGE_SUPPORT:
+		case DEVICE_IMAGE_SUPPORT:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_IMAGE_SUPPORT, sizeof(cl_bool), &bool_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<bool>(bool_units));
 			break;
-		}
-		// Handling other cases 
-		{
-			cl_device_type type;
-			case DEVICE_TYPE:
+		case DEVICE_TYPE:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_TYPE, sizeof(type), &type, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(type));
 			break;
-		} 
-		{
-			cl_command_queue_properties queue_properties;	
-			case DEVICE_QUEUE_PROPERTIES:
+		case DEVICE_QUEUE_PROPERTIES:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_QUEUE_PROPERTIES, 
 					sizeof(cl_command_queue_properties), &queue_properties, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(queue_properties));
 			break;
-		} 
-		{
 
-			//cl_device_fp_config fp_config;
+			//cl_device_fp_config fp_config = 0;
 			// Part of cl_ext.h (which isn't available in Khronos)
 			//case DEVICE_DOUBLE_FP_CONFIG:
 			//clGetDeviceInfo(cl_device, CL_DEVICE_DOUBLE_FP_CONFIG, sizeof(cl_device_fp_config), &fp_config, NULL);
@@ -520,38 +463,32 @@ WebCLGetInfo  WebCLComputeContext::getDeviceInfo(WebCLDeviceID*   webcl_device_i
 			//clGetDeviceInfo(cl_device, CL_DEVICE_SINGLE_FP_CONFIG, sizeof(cl_device_fp_config), &fp_config, NULL);
 			//return WebCLGetInfo(static_cast<unsigned int>(fp_config));
 
-		}
-		//Platform ID is not Supported
-		//case DEVICE_PLATFORM:
-		//cl_platform_id platform_id;
-		//clGetDeviceInfo(cl_device, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &platform_id, NULL);
-		//return WebCLGetInfo(static_cast<unsigned int>(platform_id));
+
+			//Platform ID is not Supported
+			//case DEVICE_PLATFORM:
+			//cl_platform_id platform_id = NULL;
+			//clGetDeviceInfo(cl_device, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &platform_id, NULL);
+			//return WebCLGetInfo(static_cast<unsigned int>(platform_id));
 
 		case DEVICE_EXECUTION_CAPABILITIES:
-		cl_device_exec_capabilities exec;
-		err=clGetDeviceInfo(cl_device, CL_DEVICE_EXECUTION_CAPABILITIES, sizeof(cl_device_exec_capabilities), &exec, NULL);
-		if (err == CL_SUCCESS)
-			return WebCLGetInfo(static_cast<unsigned int>(exec));
-		break;
-
-
+			err=clGetDeviceInfo(cl_device, CL_DEVICE_EXECUTION_CAPABILITIES, sizeof(cl_device_exec_capabilities), &exec, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(static_cast<unsigned int>(exec));
+			break;
 		case DEVICE_GLOBAL_MEM_CACHE_TYPE:
-		cl_device_mem_cache_type global_type;
-		err=clGetDeviceInfo(cl_device, CL_DEVICE_GLOBAL_MEM_CACHE_TYPE, sizeof(cl_device_mem_cache_type), &global_type, NULL);
-		if (err == CL_SUCCESS)
-			return WebCLGetInfo(static_cast<unsigned int>(global_type));
-		break;
-
+			err=clGetDeviceInfo(cl_device, CL_DEVICE_GLOBAL_MEM_CACHE_TYPE, sizeof(cl_device_mem_cache_type), &global_type, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(static_cast<unsigned int>(global_type));
+			break;
 		case DEVICE_LOCAL_MEM_TYPE:
-		cl_device_local_mem_type local_type;
-		err=clGetDeviceInfo(cl_device, CL_DEVICE_LOCAL_MEM_TYPE, sizeof(cl_device_local_mem_type), &local_type, NULL);
-		if (err == CL_SUCCESS)
-			return WebCLGetInfo(static_cast<unsigned int>(local_type));
-		break;
+			err=clGetDeviceInfo(cl_device, CL_DEVICE_LOCAL_MEM_TYPE, sizeof(cl_device_local_mem_type), &local_type, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(static_cast<unsigned int>(local_type));
+			break;
 		default:
-		m_error_state = FAILURE;
-		printf("Error:UNSUPPORTED DEVICE TYPE = %d ",device_type);
-		return WebCLGetInfo();
+			m_error_state = FAILURE;
+			printf("Error:UNSUPPORTED DEVICE TYPE = %d ",device_type);
+			return WebCLGetInfo();
 	}
 
 	switch (err) {
@@ -583,6 +520,12 @@ WebCLGetInfo WebCLComputeContext::getKernelInfo (WebCLKernel* kernel, int kernel
 {
 	cl_kernel cl_kernel_id = NULL;
 	cl_int err = 0;
+	char function_name[1024];
+	cl_uint uint_units = 0;
+	cl_program cl_program_id = NULL;
+	cl_context cl_context_id = NULL;
+	RefPtr<WebCLProgram> programObj = NULL;
+	RefPtr<WebCLContext> contextObj = NULL;
 
 	if (kernel != NULL) {
 		cl_kernel_id = kernel->getCLKernel();
@@ -596,50 +539,34 @@ WebCLGetInfo WebCLComputeContext::getKernelInfo (WebCLKernel* kernel, int kernel
 	switch(kernel_info)
 	{
 		case KERNEL_FUNCTION_NAME:
-			char function_name[1024];
 			err=clGetKernelInfo(cl_kernel_id, CL_KERNEL_FUNCTION_NAME, sizeof(function_name), &function_name, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(String(function_name));
 			break;
-
-			{
-				cl_uint uint_units;
-				case KERNEL_NUM_ARGS:
-				err=clGetKernelInfo(cl_kernel_id, CL_KERNEL_NUM_ARGS , sizeof(cl_uint), &uint_units, NULL);
-				if (err == CL_SUCCESS)
-					return WebCLGetInfo(static_cast<unsigned int>(uint_units));	
-				break;
-
-				case KERNEL_REFERENCE_COUNT:
-				err=clGetKernelInfo(cl_kernel_id, CL_KERNEL_REFERENCE_COUNT , sizeof(cl_uint), &uint_units, NULL);
-				if (err == CL_SUCCESS)
-					return WebCLGetInfo(static_cast<unsigned int>(uint_units));
-				break;
-
-			}
-			{
-				case KERNEL_PROGRAM:
-					cl_program cl_program_id;
-					err=clGetKernelInfo(cl_kernel_id, CL_KERNEL_PROGRAM, sizeof(cl_program_id), &cl_program_id, NULL);
-					RefPtr<WebCLProgram> obj = WebCLProgram::create(this, cl_program_id);
-					if (err == CL_SUCCESS)
-						return WebCLGetInfo(PassRefPtr<WebCLProgram>(obj));
-					break;
-			}
-			{
-				case KERNEL_CONTEXT:
-					cl_context cl_context_id;
-					err=clGetKernelInfo(cl_kernel_id, CL_KERNEL_CONTEXT, sizeof(cl_context), &cl_context_id, NULL);
-					RefPtr<WebCLContext> obj = WebCLContext::create(this, cl_context_id);
-					if (err == CL_SUCCESS)
-						return WebCLGetInfo(PassRefPtr<WebCLContext>(obj));
-					break;
-			}
+		case KERNEL_NUM_ARGS:
+			err=clGetKernelInfo(cl_kernel_id, CL_KERNEL_NUM_ARGS , sizeof(cl_uint), &uint_units, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(static_cast<unsigned int>(uint_units));	
+			break;
+		case KERNEL_REFERENCE_COUNT:
+			err=clGetKernelInfo(cl_kernel_id, CL_KERNEL_REFERENCE_COUNT , sizeof(cl_uint), &uint_units, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
+			break;
+		case KERNEL_PROGRAM:
+			err=clGetKernelInfo(cl_kernel_id, CL_KERNEL_PROGRAM, sizeof(cl_program_id), &cl_program_id, NULL);
+			programObj = WebCLProgram::create(this, cl_program_id);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(PassRefPtr<WebCLProgram>(programObj));
+			break;
+		case KERNEL_CONTEXT:
+			err=clGetKernelInfo(cl_kernel_id, CL_KERNEL_CONTEXT, sizeof(cl_context), &cl_context_id, NULL);
+			contextObj = WebCLContext::create(this, cl_context_id);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(PassRefPtr<WebCLContext>(contextObj));
+			break;
 		default:
-			char platform_string[1024];
 			m_error_state = FAILURE;
-			printf("Error: UNSUPPORTED kernel Info type = %d ",kernel_info);
-			strcpy(platform_string,"UNSUPPORTED KERNEL INFO TYPE");
 			return WebCLGetInfo();
 	}
 	switch (err) {
@@ -671,6 +598,11 @@ WebCLGetInfo WebCLComputeContext::getProgramInfo (WebCLProgram* program, int par
 {
 	cl_program cl_program_id = NULL;
 	cl_int err = 0;
+	cl_uint uint_units = 0;
+	size_t sizet_units = 0;
+	char program_string[4096];
+	cl_context cl_context_id = NULL;
+	RefPtr<WebCLContext> contextObj  = NULL;
 
 	if (program != NULL) {
 		cl_program_id = program->getCLProgram();
@@ -682,61 +614,43 @@ WebCLGetInfo WebCLComputeContext::getProgramInfo (WebCLProgram* program, int par
 	}
 	switch(param_name)
 	{   
-		{
-			cl_uint uint_units;
-			case PROGRAM_REFERENCE_COUNT:
+		case PROGRAM_REFERENCE_COUNT:
 			err=clGetProgramInfo(cl_program_id, CL_PROGRAM_REFERENCE_COUNT , sizeof(cl_uint), &uint_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));	
 			break;
-
-			case PROGRAM_NUM_DEVICES:
+		case PROGRAM_NUM_DEVICES:
 			err=clGetProgramInfo(cl_program_id, CL_PROGRAM_NUM_DEVICES , sizeof(cl_uint), &uint_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
 			break;
-		}			
-		{
-			case PROGRAM_BINARY_SIZES:
-				size_t sizet_units;
-				err=clGetProgramInfo(cl_program_id, CL_PROGRAM_BINARY_SIZES, sizeof(size_t), &sizet_units, NULL);
-				if (err == CL_SUCCESS)
-					return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
-				break;
-		}
-		{
-			// Handling string cases
-			char program_string[4096];
-			case PROGRAM_SOURCE:
+		case PROGRAM_BINARY_SIZES:
+			err=clGetProgramInfo(cl_program_id, CL_PROGRAM_BINARY_SIZES, sizeof(size_t), &sizet_units, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
+			break;
+		case PROGRAM_SOURCE:
 			err=clGetProgramInfo(cl_program_id, CL_PROGRAM_SOURCE, sizeof(program_string), &program_string, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(String(program_string));
 			break;
-
-			case PROGRAM_BINARIES:
+		case PROGRAM_BINARIES:
 			err=clGetProgramInfo(cl_program_id, CL_PROGRAM_BINARIES, sizeof(program_string), &program_string, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(String(program_string));
 			break;
-
-		}
-		{
-			case PROGRAM_CONTEXT:
-				cl_context cl_context_id;
-				err=clGetProgramInfo(cl_program_id, CL_PROGRAM_CONTEXT, sizeof(cl_context), &cl_context_id, NULL);
-				RefPtr<WebCLContext> obj = WebCLContext::create(this, cl_context_id);
-				if(obj == NULL)
-				{
-					m_error_state = FAILURE;
-					printf("Error : CL program context not NULL\n");
-					return WebCLGetInfo();
-				}
-				if (err == CL_SUCCESS)
-					return WebCLGetInfo(PassRefPtr<WebCLContext>(obj));
-				break;
-
-		}
-		{
+		case PROGRAM_CONTEXT:
+			err=clGetProgramInfo(cl_program_id, CL_PROGRAM_CONTEXT, sizeof(cl_context), &cl_context_id, NULL);
+			contextObj = WebCLContext::create(this, cl_context_id);
+			if(contextObj == NULL)
+			{
+				m_error_state = FAILURE;
+				printf("Error : CL program context not NULL\n");
+				return WebCLGetInfo();
+			}
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(PassRefPtr<WebCLContext>(contextObj));
+			break;
 			// TODO (siba samal)- Handle Array of cl_device_id 
 			//case PROGRAM_DEVICES:
 			//  size_t numDevices;
@@ -744,11 +658,10 @@ WebCLGetInfo WebCLComputeContext::getProgramInfo (WebCLProgram* program, int par
 			//  cl_device_id *devices = new cl_device_id[numDevices];
 			//  clGetProgramInfo( cl_program_id, CL_PROGRAM_DEVICES, numDevices, devices, &numDevices );
 			//  return WebCLGetInfo(PassRefPtr<WebCLContext>(obj));
-		}
 		default:
-		m_error_state = FAILURE;
-		printf("Error: UNSUPPORTED program Info type = %d ",param_name);
-		return WebCLGetInfo();
+			m_error_state = FAILURE;
+			printf("Error: UNSUPPORTED program Info type = %d ",param_name);
+			return WebCLGetInfo();
 	}
 	switch (err) {
 		case CL_INVALID_PROGRAM :
@@ -781,6 +694,8 @@ WebCLGetInfo WebCLComputeContext::getProgramBuildInfo(WebCLProgram* program, Web
 	cl_program program_id = NULL;
 	cl_device_id device_id = NULL;
 	cl_uint err = 0;
+	char buffer[8192];
+	size_t len = 0;
 
 	if (program != NULL) {
 		program_id = program->getCLProgram();
@@ -800,34 +715,27 @@ WebCLGetInfo WebCLComputeContext::getProgramBuildInfo(WebCLProgram* program, Web
 	}
 
 	switch (param_name) {
-		{
-			char buffer[8192];
-			size_t len;
-			case PROGRAM_BUILD_LOG:
+
+		case PROGRAM_BUILD_LOG:
 			err = clGetProgramBuildInfo(program_id, device_id, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &len);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(String(buffer));
 			break;
-
-
-			case PROGRAM_BUILD_OPTIONS:
+		case PROGRAM_BUILD_OPTIONS:
 			err = clGetProgramBuildInfo(program_id, device_id, CL_PROGRAM_BUILD_OPTIONS, sizeof(buffer), &buffer, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(String(buffer));
 			break;
-		}
-		{
-			case PROGRAM_BUILD_STATUS:
-				cl_build_status build_status;
-				err = clGetProgramBuildInfo(program_id, device_id, CL_PROGRAM_BUILD_STATUS, sizeof(cl_build_status), &build_status, NULL);
-				if (err == CL_SUCCESS)
-					return WebCLGetInfo(static_cast<unsigned int>(build_status));
-				break;
-		}
+		case PROGRAM_BUILD_STATUS:
+			cl_build_status build_status;
+			err = clGetProgramBuildInfo(program_id, device_id, CL_PROGRAM_BUILD_STATUS, sizeof(cl_build_status), &build_status, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(static_cast<unsigned int>(build_status));
+			break;
 		default:
-		m_error_state = FAILURE;
-		printf("Error: UNSUPPORTED Program Build Info   Type = %d ",param_name);
-		return WebCLGetInfo();			
+			m_error_state = FAILURE;
+			printf("Error: UNSUPPORTED Program Build Info   Type = %d ",param_name);
+			return WebCLGetInfo();			
 	}
 	switch (err) {
 		case CL_INVALID_DEVICE :
@@ -863,6 +771,10 @@ WebCLGetInfo WebCLComputeContext:: getCommandQueueInfo(WebCLCommandQueue* comman
 	printf("WebCLComputeContext::getCommandQueueInfo param name %d\n", param_name);
 	cl_command_queue cl_command_queue_id = NULL;
 	cl_int err = 0;
+	cl_uint uint_units = 0;
+	cl_context cl_context_id = NULL;
+	RefPtr<WebCLContext> contextObj = NULL;
+
 	if (command_queue != NULL) {
 		cl_command_queue_id = command_queue->getCLCommandQueue();
 		if (cl_command_queue_id == NULL) {
@@ -873,48 +785,43 @@ WebCLGetInfo WebCLComputeContext:: getCommandQueueInfo(WebCLCommandQueue* comman
 	}			
 	switch(param_name)
 	{
-		{
-			case QUEUE_REFERENCE_COUNT:
-				cl_uint uint_units;
-				err=clGetCommandQueueInfo(cl_command_queue_id, CL_QUEUE_REFERENCE_COUNT , sizeof(cl_uint), &uint_units, NULL);
-				if (err == CL_SUCCESS)
-					return WebCLGetInfo(static_cast<unsigned int>(uint_units));	
-				break;
-		}
-		{
-			case QUEUE_CONTEXT:
-				cl_context cl_context_id;
-				clGetCommandQueueInfo(cl_command_queue_id, CL_QUEUE_CONTEXT, sizeof(cl_context), &cl_context_id, NULL);
-				RefPtr<WebCLContext> obj = WebCLContext::create(this, cl_context_id);
-				if(obj != NULL)
-				{
-					m_error_state = FAILURE;
-					printf("SUCCESS: CL program context not NULL\n");
-				}
-				if (err == CL_SUCCESS)
-					return WebCLGetInfo(PassRefPtr<WebCLContext>(obj));
-				break;
 
-		}
-		// TODO (siba samal) Support for QUEUE_DEVICE & QUEUE_PROPERTIES
-		// {
-		// case QUEUE_DEVICE:
-		// cl_device_id device_id;
-		// clGetCommandQueueInfo(cl_command_queue_id, CL_QUEUE_DEVICE, sizeof(cl_device_id), &device_id, NULL);
-		// printf("SUCCESS: Cl Device ID  = %u\n",(unsigned int)device_id );
-		// return WebCLGetInfo(static_cast<unsigned int>(device_id));							
-		// }
-		// {
-		// case QUEUE_PROPERTIES:
-		// cl_command_queue_properties queue_properties;
-		// clGetCommandQueueInfo(cl_command_queue_id, CL_QUEUE_PROPERTIES, sizeof(cl_command_queue_properties), &queue_properties, NULL);
-		//return WebCLGetInfo(static_cast<unsigned int>(queue_properties));
+		case QUEUE_REFERENCE_COUNT:
+			err=clGetCommandQueueInfo(cl_command_queue_id, CL_QUEUE_REFERENCE_COUNT , sizeof(cl_uint), &uint_units, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(static_cast<unsigned int>(uint_units));	
+			break;
+		case QUEUE_CONTEXT:
+			clGetCommandQueueInfo(cl_command_queue_id, CL_QUEUE_CONTEXT, sizeof(cl_context), &cl_context_id, NULL);
+			contextObj = WebCLContext::create(this, cl_context_id);
+			if(contextObj != NULL)
+			{
+				m_error_state = FAILURE;
+				printf("SUCCESS: CL program context not NULL\n");
+			}
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(PassRefPtr<WebCLContext>(contextObj));
+			break;
+			// TODO (siba samal) Support for QUEUE_DEVICE & QUEUE_PROPERTIES
+			// {
+			// case QUEUE_DEVICE:
+			// cl_device_id device_id = NULL;
+			// clGetCommandQueueInfo(cl_command_queue_id, CL_QUEUE_DEVICE, sizeof(cl_device_id), &device_id, NULL);
+			// printf("SUCCESS: Cl Device ID  = %u\n",(unsigned int)device_id );
+			// return WebCLGetInfo(static_cast<unsigned int>(device_id));							
+			// }
+			// {
+			// case QUEUE_PROPERTIES:
+			// cl_command_queue_properties queue_properties = NULL;
+			// clGetCommandQueueInfo(cl_command_queue_id, CL_QUEUE_PROPERTIES, sizeof(cl_command_queue_properties), &queue_properties, NULL);
+			//return WebCLGetInfo(static_cast<unsigned int>(queue_properties));
 
-		//}
+			//}
 
 		default:
-		m_error_state = FAILURE;
-		return WebCLGetInfo();
+			m_error_state = FAILURE;
+			printf("Error: Unsupported Commans Queue Info type\n");
+			return WebCLGetInfo();
 	}
 	switch (err) {
 		case CL_INVALID_COMMAND_QUEUE:
@@ -945,6 +852,8 @@ WebCLGetInfo WebCLComputeContext::getContextInfo(WebCLContext* context_id, int p
 {
 	cl_context cl_context_id = NULL;
 	cl_int err = 0;
+	cl_uint uint_units = 0;
+
 	if (context_id != NULL) {
 		cl_context_id = context_id->getCLContext();
 		if (cl_context_id == NULL) {
@@ -956,18 +865,17 @@ WebCLGetInfo WebCLComputeContext::getContextInfo(WebCLContext* context_id, int p
 
 	switch(param_name)
 	{	
-		{
-			cl_uint uint_units;
-			case CONTEXT_REFERENCE_COUNT:
+		case CONTEXT_REFERENCE_COUNT:
 			err=clGetContextInfo(cl_context_id, CL_CONTEXT_REFERENCE_COUNT , sizeof(cl_uint), &uint_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));	
 			break;
-		}
-		// TODO (siba samal) Handle CONTEXT_DEVICES & CONTEXT_PROPERTIES
+
+			// TODO (siba samal) Handle CONTEXT_DEVICES & CONTEXT_PROPERTIES
 		default:
-		m_error_state = FAILURE;
-		return WebCLGetInfo();
+			m_error_state = FAILURE;
+			printf("Error: Unsupported Context Info type\n");
+			return WebCLGetInfo();
 	}
 	switch (err) {
 		case CL_INVALID_CONTEXT:
@@ -998,6 +906,8 @@ WebCLGetInfo WebCLComputeContext::getKernelWorkGroupInfo(WebCLKernel* kernel, We
 	cl_int err = 0;
 	cl_kernel cl_kernel_id = NULL;
 	cl_device_id cl_device = NULL;
+	size_t sizet_units = 0;
+	cl_ulong  ulong_units = 0;
 
 	if (kernel != NULL) {
 		cl_kernel_id = kernel->getCLKernel();
@@ -1016,30 +926,25 @@ WebCLGetInfo WebCLComputeContext::getKernelWorkGroupInfo(WebCLKernel* kernel, We
 		}
 	}
 	switch (param_name) {
-		{
-			size_t sizet_units;
-			case KERNEL_WORK_GROUP_SIZE:
+
+		case KERNEL_WORK_GROUP_SIZE:
 			err = clGetKernelWorkGroupInfo(cl_kernel_id, cl_device, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &sizet_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
 			break;
-
-			case KERNEL_COMPILE_WORK_GROUP_SIZE:
+		case KERNEL_COMPILE_WORK_GROUP_SIZE:
 			err =clGetKernelWorkGroupInfo(cl_kernel_id, cl_device, CL_KERNEL_COMPILE_WORK_GROUP_SIZE, sizeof(size_t), &sizet_units, NULL);
 			return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
 			break;
-		}
-		{
-			case KERNEL_LOCAL_MEM_SIZE:
-				cl_ulong  ulong_units;
-				err =clGetKernelWorkGroupInfo(cl_kernel_id, cl_device, CL_KERNEL_LOCAL_MEM_SIZE, sizeof(cl_ulong), &ulong_units, NULL);
-				if (err == CL_SUCCESS)
-					return WebCLGetInfo(static_cast<unsigned long>(ulong_units));
-				break;
-		}
+		case KERNEL_LOCAL_MEM_SIZE:
+			err =clGetKernelWorkGroupInfo(cl_kernel_id, cl_device, CL_KERNEL_LOCAL_MEM_SIZE, sizeof(cl_ulong), &ulong_units, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(static_cast<unsigned long>(ulong_units));
+			break;
 		default:
-		m_error_state = FAILURE;
-		return WebCLGetInfo();
+			m_error_state = FAILURE;
+			printf("Error: Unsupported Kernrl Info type\n");
+			return WebCLGetInfo();
 	}
 
 	printf("Error: clGetKerelWorkGroupInfo\n");
@@ -1069,6 +974,13 @@ WebCLGetInfo WebCLComputeContext::getMemObjectInfo(WebCLMem* memobj,int param_na
 {
 	cl_mem cl_mem_id = NULL;
 	cl_int err =0;
+	cl_uint uint_units = 0;
+	size_t sizet_units = 0;
+	RefPtr<WebCLContext> contextObj = NULL;
+	cl_context cl_context_id = NULL;
+	cl_mem_object_type mem_type = 0;
+	void* mem_ptr = NULL; 
+
 	if (memobj != NULL) {
 		cl_mem_id = memobj->getCLMem();
 		if (cl_mem_id == NULL) {
@@ -1079,64 +991,47 @@ WebCLGetInfo WebCLComputeContext::getMemObjectInfo(WebCLMem* memobj,int param_na
 	}
 	switch(param_name)
 	{   	
-		{
-			cl_uint uint_units;
-			case MEM_MAP_COUNT:
+		case MEM_MAP_COUNT:
 			err=clGetMemObjectInfo(cl_mem_id, CL_MEM_MAP_COUNT , sizeof(cl_uint), &uint_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));	
 			break;
-
-			case MEM_REFERENCE_COUNT:
+		case MEM_REFERENCE_COUNT:
 			err=clGetMemObjectInfo(cl_mem_id, CL_MEM_REFERENCE_COUNT , sizeof(cl_uint), &uint_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));	
 			break;
-		}	
-
-		{
-
-			case MEM_SIZE:
-				size_t sizet_units;
-				err=clGetMemObjectInfo(cl_mem_id, CL_MEM_SIZE, sizeof(size_t), &sizet_units, NULL);
-				if (err == CL_SUCCESS)
-					return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
-				break;
-		}
-		{
-			case MEM_TYPE:			
-				cl_mem_object_type mem_type;
-				err=clGetMemObjectInfo(cl_mem_id, CL_MEM_TYPE, sizeof(cl_mem_object_type), &mem_type, NULL);
-				if (err == CL_SUCCESS)
-					return WebCLGetInfo(static_cast<unsigned int>(mem_type));
-				break;
-		}
-		{
-			case MEM_CONTEXT:			
-				cl_context cl_context_id;
-				err=clGetMemObjectInfo(cl_mem_id, CL_MEM_CONTEXT, sizeof(cl_context), &cl_context_id, NULL);
-				RefPtr<WebCLContext> obj = WebCLContext::create(this, cl_context_id);
-				if(obj == NULL)
-				{
-					m_error_state = FAILURE;
-					printf("FAILURE: CL Mem context not NULL\n");
-					return WebCLGetInfo();
-				}
-				if (err == CL_SUCCESS)
-					return WebCLGetInfo(PassRefPtr<WebCLContext>(obj));
-				break;
-		}
-		{
-			case MEM_HOST_PTR:			
-				void* mem_ptr;
-				err=clGetMemObjectInfo(cl_mem_id, CL_MEM_HOST_PTR, sizeof(mem_ptr), &mem_ptr, NULL);
-				if (err == CL_SUCCESS)
-					return WebCLGetInfo(mem_ptr);
-				break;
-		}
+		case MEM_SIZE:
+			err=clGetMemObjectInfo(cl_mem_id, CL_MEM_SIZE, sizeof(size_t), &sizet_units, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
+			break;
+		case MEM_TYPE:			
+			err=clGetMemObjectInfo(cl_mem_id, CL_MEM_TYPE, sizeof(cl_mem_object_type), &mem_type, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(static_cast<unsigned int>(mem_type));
+			break;
+		case MEM_CONTEXT:			
+			err=clGetMemObjectInfo(cl_mem_id, CL_MEM_CONTEXT, sizeof(cl_context), &cl_context_id, NULL);
+			contextObj = WebCLContext::create(this, cl_context_id);
+			if(contextObj == NULL)
+			{
+				m_error_state = FAILURE;
+				printf("FAILURE: CL Mem context not NULL\n");
+				return WebCLGetInfo();
+			}
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(PassRefPtr<WebCLContext>(contextObj));
+			break;
+		case MEM_HOST_PTR:			
+			err=clGetMemObjectInfo(cl_mem_id, CL_MEM_HOST_PTR, sizeof(mem_ptr), &mem_ptr, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(mem_ptr);
+			break;
 		default:
-		m_error_state = FAILURE;
-		return WebCLGetInfo();
+			m_error_state = FAILURE;
+			printf("Error: Unsupported Mem Info type\n");
+			return WebCLGetInfo();
 	}
 	switch (err) {
 		case CL_INVALID_VALUE:
@@ -1172,6 +1067,11 @@ WebCLGetInfo WebCLComputeContext::getEventInfo(WebCLEvent* event, int param_name
 {   
 	cl_event cl_Event_id = NULL;
 	cl_int err = 0;
+	cl_uint uint_units = 0;
+	cl_command_type command_type = 0;
+	cl_command_queue command_queue = 0;
+	RefPtr<WebCLCommandQueue> cqObj = NULL;
+
 	if (event != NULL) {
 		cl_Event_id = event->getCLEvent();
 		if (cl_Event_id == NULL) {
@@ -1182,49 +1082,37 @@ WebCLGetInfo WebCLComputeContext::getEventInfo(WebCLEvent* event, int param_name
 	}
 	switch(param_name)
 	{   
-		{
-			cl_uint uint_units;
-
-			case EVENT_COMMAND_EXECUTION_STATUS :
+		case EVENT_COMMAND_EXECUTION_STATUS :
 			err=clGetEventInfo(cl_Event_id, CL_EVENT_COMMAND_EXECUTION_STATUS  , sizeof(cl_uint), &uint_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));	
 			break;
-
-			case EVENT_REFERENCE_COUNT:
+		case EVENT_REFERENCE_COUNT:
 			err=clGetEventInfo(cl_Event_id, CL_EVENT_REFERENCE_COUNT , sizeof(cl_uint), &uint_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
 			break;
-		}
-		{
-			case EVENT_COMMAND_TYPE:			
-				cl_command_type command_type;
-				err=clGetEventInfo(cl_Event_id, CL_EVENT_COMMAND_TYPE , sizeof(cl_command_type), &command_type, NULL);;
-				if (err == CL_SUCCESS)
-					return WebCLGetInfo(static_cast<unsigned int>(command_type));
-				break;
-		}
-		{
-			case EVENT_COMMAND_QUEUE:			
-				cl_command_queue command_queue;
-				err=clGetEventInfo(cl_Event_id, CL_EVENT_COMMAND_QUEUE , sizeof(cl_command_queue), &command_queue, NULL);;
-				RefPtr<WebCLCommandQueue> obj = WebCLCommandQueue::create(this, command_queue);
-				if(obj == NULL)
-				{
-					m_error_state = FAILURE;
-					printf("SUCCESS: Cl Event Command Queue\n");
-					return WebCLGetInfo();
-				}
-				if (err == CL_SUCCESS)
-					return WebCLGetInfo(PassRefPtr<WebCLCommandQueue>(obj));
-				break;
-
-
-		}			
+		case EVENT_COMMAND_TYPE:			
+			err=clGetEventInfo(cl_Event_id, CL_EVENT_COMMAND_TYPE , sizeof(cl_command_type), &command_type, NULL);;
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(static_cast<unsigned int>(command_type));
+			break;
+		case EVENT_COMMAND_QUEUE:			
+			err = clGetEventInfo(cl_Event_id, CL_EVENT_COMMAND_QUEUE , sizeof(cl_command_queue), &command_queue, NULL);;
+			cqObj = WebCLCommandQueue::create(this, command_queue);
+			if(cqObj == NULL)
+			{
+				m_error_state = FAILURE;
+				printf("SUCCESS: Cl Event Command Queue\n");
+				return WebCLGetInfo();
+			}
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(PassRefPtr<WebCLCommandQueue>(cqObj));
+			break;
 		default:
-		m_error_state = FAILURE;
-		return WebCLGetInfo();
+			m_error_state = FAILURE;
+			printf("Error: Unsupported Event Info type\n");
+			return WebCLGetInfo();
 	}
 	switch (err) {
 		case CL_INVALID_VALUE:
@@ -1257,6 +1145,7 @@ WebCLGetInfo WebCLComputeContext::getEventProfilingInfo(WebCLEvent* event, int p
 
 	cl_event cl_event_id = NULL;
 	cl_int err=0;
+	cl_ulong  ulong_units = 0;
 
 	if (event != NULL) {
 		cl_event_id = event->getCLEvent();
@@ -1268,37 +1157,30 @@ WebCLGetInfo WebCLComputeContext::getEventProfilingInfo(WebCLEvent* event, int p
 	}
 	switch(param_name)
 	{   
-		{
-			cl_ulong  ulong_units;
-
-			case PROFILING_COMMAND_QUEUED:
+		case PROFILING_COMMAND_QUEUED:
 			err=clGetEventProfilingInfo(cl_event_id, CL_PROFILING_COMMAND_QUEUED, sizeof(cl_ulong), &ulong_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned long>(ulong_units));
 			break;
-
-			case PROFILING_COMMAND_SUBMIT:
+		case PROFILING_COMMAND_SUBMIT:
 			err=clGetEventProfilingInfo(cl_event_id, CL_PROFILING_COMMAND_SUBMIT, sizeof(cl_ulong), &ulong_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned long>(ulong_units));
 			break;
-
-			case PROFILING_COMMAND_START:
+		case PROFILING_COMMAND_START:
 			err=clGetEventProfilingInfo(cl_event_id, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &ulong_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned long>(ulong_units));
 			break;
-
-			case PROFILING_COMMAND_END:
+		case PROFILING_COMMAND_END:
 			err=clGetEventProfilingInfo(cl_event_id, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &ulong_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(ulong_units));
 			break;
-
-		}
 		default:
-		m_error_state = FAILURE;
-		return WebCLGetInfo();
+			m_error_state = FAILURE;
+			printf("Error: Unsupported Profiling Info type\n");
+			return WebCLGetInfo();
 
 	}
 
@@ -1337,6 +1219,10 @@ WebCLGetInfo WebCLComputeContext:: getSamplerInfo(WebCLSampler* sampler, cl_samp
 {
 	cl_sampler cl_sampler_id= NULL;
 	cl_int err = 0;
+	cl_uint uint_units = 0;
+	cl_bool bool_units = false;
+	cl_context cl_context_id = NULL;
+	RefPtr<WebCLContext> contextObj =  NULL;
 
 	if (sampler != NULL) {
 		cl_sampler_id = sampler->getCLSampler();
@@ -1349,35 +1235,36 @@ WebCLGetInfo WebCLComputeContext:: getSamplerInfo(WebCLSampler* sampler, cl_samp
 	}
 	switch(param_name)
 	{   
-		{
-			cl_uint uint_units;
-			case SAMPLER_REFERENCE_COUNT:
+		case SAMPLER_REFERENCE_COUNT:
 			err=clGetSamplerInfo (cl_sampler_id, CL_SAMPLER_REFERENCE_COUNT , sizeof(cl_uint), &uint_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
 			break;
-		}
-		{
-			cl_bool bool_units;
-			case SAMPLER_NORMALIZED_COORDS:
+		case SAMPLER_NORMALIZED_COORDS:
 			err=clGetSamplerInfo(cl_sampler_id, CL_SAMPLER_NORMALIZED_COORDS , sizeof(cl_bool), &bool_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<bool>(bool_units));
 			break;
-		}
-		{
-			cl_context cl_context_id;
-			case SAMPLER_CONTEXT:
+		case SAMPLER_CONTEXT:
 			err=clGetSamplerInfo(cl_sampler_id, CL_SAMPLER_CONTEXT, sizeof(cl_context), &cl_context_id, NULL);
-			RefPtr<WebCLContext> obj = WebCLContext::create(this, cl_context_id);
+			contextObj = WebCLContext::create(this, cl_context_id);
 			if (err == CL_SUCCESS)
-				return WebCLGetInfo(PassRefPtr<WebCLContext>(obj));
+				return WebCLGetInfo(PassRefPtr<WebCLContext>(contextObj));
 			break;
-		}
-		// TODO (siba samal) Handle cl_addressing_mode & cl_filter_mode types
+		case SAMPLER_ADDRESSING_MODE:
+			err=clGetSamplerInfo (cl_sampler_id, CL_SAMPLER_ADDRESSING_MODE , sizeof(cl_uint), &uint_units, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
+			break;
+		case SAMPLER_FILTER_MODE:
+			err=clGetSamplerInfo (cl_sampler_id, CL_SAMPLER_FILTER_MODE , sizeof(cl_uint), &uint_units, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
+			break;
 		default:
-		m_error_state = FAILURE;
-		return WebCLGetInfo();	
+			m_error_state = FAILURE;
+			printf("Error: Unsupported Sampler Info type\n");
+			return WebCLGetInfo();	
 	}
 	switch (err) {
 
@@ -1409,7 +1296,7 @@ WebCLGetInfo WebCLComputeContext::getImageInfo(WebCLImage* image, cl_image_info 
 {
 	cl_mem cl_Image_id = NULL;
 	cl_int err = 0;
-
+	size_t sizet_units = 0;
 	if (image != NULL) {
 		cl_Image_id = image->getCLImage();
 		if (cl_Image_id == NULL) {
@@ -1421,43 +1308,41 @@ WebCLGetInfo WebCLComputeContext::getImageInfo(WebCLImage* image, cl_image_info 
 
 	switch(param_name)
 	{   
-		{
-			size_t sizet_units;
-			case IMAGE_ELEMENT_SIZE:
+		case IMAGE_ELEMENT_SIZE:
 			err=clGetImageInfo(cl_Image_id, CL_IMAGE_ELEMENT_SIZE, sizeof(size_t), &sizet_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
 			break;
-			case IMAGE_ROW_PITCH:
+		case IMAGE_ROW_PITCH:
 			err=clGetImageInfo(cl_Image_id, CL_IMAGE_ROW_PITCH, sizeof(size_t), &sizet_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
 			break;
-			case IMAGE_SLICE_PITCH:
+		case IMAGE_SLICE_PITCH:
 			err=clGetImageInfo(cl_Image_id, CL_IMAGE_SLICE_PITCH, sizeof(size_t), &sizet_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
 			break;
-			case IMAGE_WIDTH:
+		case IMAGE_WIDTH:
 			err=clGetImageInfo(cl_Image_id, CL_IMAGE_WIDTH, sizeof(size_t), &sizet_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
 			break;
-			case IMAGE_HEIGHT:
+		case IMAGE_HEIGHT:
 			err=clGetImageInfo(cl_Image_id, CL_IMAGE_HEIGHT, sizeof(size_t), &sizet_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
 			break;
-			case IMAGE_DEPTH:
+		case IMAGE_DEPTH:
 			err=clGetImageInfo(cl_Image_id, CL_IMAGE_DEPTH, sizeof(size_t), &sizet_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
 			break;
-		}
-		// TODO (siba samal) Handle Image Format & CL_IMAGE_D3D10_SUBRESOURCE_KHR types
+			// TODO (siba samal) Handle Image Format & CL_IMAGE_D3D10_SUBRESOURCE_KHR types
 		default:
-		m_error_state = FAILURE;
-		return WebCLGetInfo();
+			m_error_state = FAILURE;
+			printf("Error: Unsupported Image Info type\n");
+			return WebCLGetInfo();
 	}
 	switch (err) {
 		case CL_INVALID_MEM_OBJECT:
@@ -1489,53 +1374,165 @@ long WebCLComputeContext::getError()
 	return m_error_state;
 }
 
-// TODO (siba samal) To be uncommented for  OpenCL 1.1	
+ PassRefPtr<WebCLEvent> WebCLComputeContext::createUserEvent(WebCLContext* context_id)
+{
+	cl_int err = -1;
+	cl_context cl_context_id = NULL;
+	cl_event event = NULL;
 
-//  PassRefPtr<WebCLEvent> WebCLComputeContext::createUserEvent(WebCLContext* context_id)
-// {
-//
-//  cl_int err = 0;
-// cl_context cl_context_id = NULL;
-//
-// if (context_id != NULL) {
-//	   cl_context_id = context_id->getCLContext();
-//	   if (cl_context_id == NULL) {
-//	   printf("Error: cl_context_id null\n");
-//	   return NULL;
-//	   }
-//	   }
-//
-//	   cl_event event = clCreateUserEvent(cl_context_id, &err);
-//
-//	   if (err != CL_SUCCESS) {
-//	   printf("Error: clCreateUserEvent\n");
-//	   switch (err) {
-//	   case CL_INVALID_CONTEXT :
-//	   printf("CL_INVALID_CONTEXT \n");
-//	   break;
-//	   case CL_OUT_OF_RESOURCES :
-//	   printf("CL_OUT_OF_RESOURCES \n");
-//	   break;
-//	   case CL_OUT_OF_HOST_MEMORY :
-//	   printf("CL_OUT_OF_HOST_MEMORY \n");
-//	   break;
-//	   default:
-//	   printf("Invaild Error Type\n");
-//	   break;
-//	   }
-//	   m_error_state = FAILURE;
-//	   return NULL;
-//	   } else {
-//	   printf("Success: clCreateUserEvent\n");
-//	   RefPtr<WebCLEvent> o = WebCLEvent::create(this, event);
-//	   m_event_list.append(o);
-//	   m_num_events++;
-//	   printf("m_num_events=%ld\n", m_num_events);
-//	   m_error_state = SUCCESS;
-//	   return o;
-//	   }
-//	   return NULL;
-//	   }
+	if (context_id != NULL) {
+		cl_context_id = context_id->getCLContext();
+		if (cl_context_id == NULL) {
+			m_error_state = FAILURE;
+			printf("Error: cl_context_id null\n");
+			return NULL;
+	   }
+	}
+
+	//(TODO) To be uncommented for OpenCL1.1
+	//event =  clCreateUserEvent(cl_context_id, &err);
+	if (err != CL_SUCCESS) {
+	   switch (err) {
+		case CL_INVALID_CONTEXT :
+			printf("Error: CL_INVALID_CONTEXT \n");
+			m_error_state = INVALID_CONTEXT;
+			break;
+		case CL_OUT_OF_RESOURCES :
+			printf("Error: CCL_OUT_OF_RESOURCES \n");
+			m_error_state = OUT_OF_RESOURCES;
+			break;
+		case CL_OUT_OF_HOST_MEMORY :
+			printf("Error: CCL_OUT_OF_HOST_MEMORY \n");
+			m_error_state = OUT_OF_HOST_MEMORY;
+			break;
+		default:
+			printf("Error: Invaild Error Type\n");
+			m_error_state = FAILURE;
+			break;
+	   }
+	     
+	} else {
+	   printf("Success: clCreateUserEvent\n");
+	   RefPtr<WebCLEvent> o = WebCLEvent::create(this, event);
+	   m_event_list.append(o);
+	   m_num_events++;
+	   printf("m_num_events=%ld\n", m_num_events);
+	   m_error_state = SUCCESS;
+	   return o;
+	}
+	return NULL;
+}
+
+void WebCLComputeContext::setUserEventStatus (WebCLEvent* event, int exec_status)
+{
+	cl_event cl_event_id = NULL;
+	cl_int err = -1;
+	if (event != NULL) {
+		cl_event_id = event->getCLEvent();
+		if (cl_event_id == NULL) {
+			printf("Error: cl_event_id null\n");
+			m_error_state = FAILURE;
+			return;
+		}
+	}
+
+	// TODO (siba samal) To be uncommented for  OpenCL 1.1	
+	// http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clSetUserEventStatus.html
+	if(exec_status == COMPLETE)	{   
+		//err = clSetUserEventStatus(cl_event_id , CL_COMPLETE)
+	}
+	else if (exec_status < 0) {
+		//err = clSetUserEventStatus(cl_event_id , exec_status)
+	}
+	else
+	{
+		printf("Error: Invaild Error Type\n");
+		return;
+	}
+	if (err != CL_SUCCESS) {
+	   switch (err) {
+		case CL_INVALID_EVENT :
+			printf("Error: CL_INVALID_EVENT \n");
+			m_error_state = INVALID_EVENT;
+			break;
+		case CL_INVALID_VALUE :
+			printf("Error: CL_INVALID_VALUE  \n");
+			m_error_state = INVALID_VALUE ;
+			break;
+		case CL_OUT_OF_RESOURCES:
+			printf("Error: CL_OUT_OF_RESOURCES  \n");
+			m_error_state = OUT_OF_RESOURCES ;
+			break;
+		case CL_INVALID_OPERATION:
+			printf("Error: CL_INVALID_OPERATION  \n");
+			m_error_state = INVALID_OPERATION ;
+			break;
+		case CL_OUT_OF_HOST_MEMORY :
+			printf("Error: CCL_OUT_OF_HOST_MEMORY \n");
+			m_error_state = OUT_OF_HOST_MEMORY;
+			break;
+		default:
+			printf("Error: Invaild Error Type\n");
+			m_error_state = FAILURE;
+			break;
+	   }
+	     
+	} 
+	return;
+}
+
+void WebCLComputeContext::waitForEvents(WebCLEventList* events)
+{
+	cl_int err = 0;
+	cl_event* cl_event_id = NULL;
+	
+	if (events != NULL) {
+		cl_event_id = events->getCLEvents();
+		if (cl_event_id == NULL) {
+			printf("Error: cl_event null\n");
+			m_error_state = FAILURE;
+			return;
+		}
+	}
+	err = clWaitForEvents(events->length(), cl_event_id);
+	if (err != CL_SUCCESS) {
+		switch (err) {
+			case CL_INVALID_CONTEXT:
+				printf("Error: CL_INVALID_CONTEXT \n");
+				m_error_state = INVALID_CONTEXT;
+				break;
+			case CL_INVALID_VALUE:
+				printf("Error: CL_INVALID_VALUE \n");
+				m_error_state = INVALID_VALUE;
+				break;
+			case CL_INVALID_EVENT :
+				printf("Error: CL_INVALID_EVENT  \n");
+				m_error_state = INVALID_EVENT ;
+				break;
+			//OpenCL 1.1
+			//case CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST:
+			//	printf("Error: CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST \n");
+			//	m_error_state = EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST;
+			//	break;
+			case CL_OUT_OF_RESOURCES:
+				printf("Error: CL_OUT_OF_RESOURCES \n");
+				m_error_state = OUT_OF_RESOURCES;
+				break;
+			case CL_OUT_OF_HOST_MEMORY:
+				printf("Error: CL_OUT_OF_HOST_MEMORY \n");
+				m_error_state = OUT_OF_HOST_MEMORY;
+				break;
+
+			default:
+				printf("Error: Invaild Error Type\n");
+				m_error_state = FAILURE;
+				break;
+
+		}
+	} 
+	return;
+}
+
 
 PassRefPtr<WebCLContext> WebCLComputeContext::createContext(int contextProperties, 
 		WebCLDeviceIDList* devices, int pfn_notify, int user_data)
@@ -1543,12 +1540,13 @@ PassRefPtr<WebCLContext> WebCLComputeContext::createContext(int contextPropertie
 
 	cl_int err = 0;
 	cl_context cl_context_id = 0;
-	cl_device_id cl_device;
+	cl_device_id cl_device = NULL;
 
 	if (devices != NULL) {
 		cl_device = devices->getCLDeviceIDs();
 		if (cl_device == NULL) {
 			printf("Error: devices null\n");
+			m_error_state = FAILURE;
 			return NULL;
 		}
 	} else {
@@ -1560,6 +1558,104 @@ PassRefPtr<WebCLContext> WebCLComputeContext::createContext(int contextPropertie
 	cl_context_id = clCreateContext(NULL, 1, &cl_device, NULL, NULL, &err);
 	printf("WebCLComputeContext::createContext prop=%d pfn_notify=%d user_data=%d\n", 
 			contextProperties, pfn_notify, user_data);
+
+	if (err != CL_SUCCESS) {
+		switch (err) {
+			case CL_INVALID_PLATFORM:
+				printf("Error: CL_INVALID_PLATFORM\n");
+				m_error_state = INVALID_PLATFORM;
+				break;
+				//case CL_INVALID_PROPERTY:
+				//	printf("CL_INVALID_PROPERTY  \n");
+				//	m_error_state = INVALID_PROPERTY;
+				//	break;
+			case CL_INVALID_DEVICE:
+				printf("Error: CL_INVALID_DEVICE\n");
+				m_error_state = INVALID_DEVICE;
+				break;
+			case CL_INVALID_OPERATION:
+				printf("Error: CL_INVALID_OPERATION\n");
+				m_error_state = INVALID_OPERATION;
+				break;
+			case CL_DEVICE_NOT_AVAILABLE:
+				printf("Error: CL_DEVICE_NOT_AVAILABLE\n");
+				m_error_state = DEVICE_NOT_AVAILABLE;
+				break;
+			case CL_OUT_OF_RESOURCES:
+				printf("Error: CL_OUT_OF_RESOURCES\n");
+				m_error_state = OUT_OF_RESOURCES;
+				break;
+			case CL_OUT_OF_HOST_MEMORY:
+				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
+				m_error_state = OUT_OF_HOST_MEMORY;
+				break;
+				// TODO (siba samal) Error handling following Error Types
+				//	case CL_INVALID_D3D10_DEVICE_KHR:
+				//		printf("Error: CL_INVALID_D3D10_DEVICE_KHR \n");
+				//		m_error_state = INVALID_D3D10_DEVICE_KHR;
+				//		break;
+				//		case CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR :
+				//			printf("Error: CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR\n");
+				//			m_error_state = INVALID_GL_SHAREGROUP_REFERENCE_KHR;
+				//			break;
+
+			default:
+				printf("Error: Invalid ERROR Type\n");
+				m_error_state = FAILURE;
+				break;
+
+		}
+	} else {
+		RefPtr<WebCLContext> o = WebCLContext::create(this, cl_context_id);
+		if (o != NULL) {
+			m_error_state = SUCCESS;
+			m_context = o;
+			return o;
+		} else {
+			m_error_state = FAILURE;
+			return NULL;
+		}
+	}
+	return NULL;
+}
+
+PassRefPtr<WebCLContext> WebCLComputeContext::createContextFromType(int contextProperties, 
+		int device_type, int pfn_notify, int user_data)
+{
+
+	printf("WebCLComputeContext::createContext prop=%d pfn_notify=%d user_data=%d\n", 
+			contextProperties, pfn_notify, user_data);
+	cl_int err = 0;
+	cl_context cl_context_id = 0;
+
+	//TODO (siba samal) Need to handle context properties	
+	if((CONTEXT_PLATFORM != contextProperties) &&  (0 != contextProperties))
+	{
+		printf("Error: INVALID CONTEXT PROPERTIES\n");
+		return NULL;
+	}
+	
+	switch(device_type) {
+		case DEVICE_TYPE_GPU:
+			cl_context_id = clCreateContextFromType(NULL, CL_DEVICE_TYPE_GPU, NULL, NULL, &err);
+			break;
+		case DEVICE_TYPE_CPU:
+			cl_context_id = clCreateContextFromType(NULL, CL_DEVICE_TYPE_CPU, NULL, NULL, &err);
+			break;  
+		case DEVICE_TYPE_ACCELERATOR:
+			cl_context_id = clCreateContextFromType(NULL, CL_DEVICE_TYPE_ACCELERATOR, NULL, NULL, &err);
+			break;  
+		case DEVICE_TYPE_DEFAULT:
+			cl_context_id = clCreateContextFromType(NULL, CL_DEVICE_TYPE_DEFAULT, NULL, NULL, &err);
+			break;
+		case DEVICE_TYPE_ALL:
+			cl_context_id = clCreateContextFromType(NULL, CL_DEVICE_TYPE_ALL, NULL, NULL, &err);
+			break;
+		default:
+			printf("Error:Invalid Device Type \n");
+			m_error_state = FAILURE;
+			break;
+	}
 
 	if (err != CL_SUCCESS) {
 		switch (err) {
@@ -1683,7 +1779,6 @@ PassRefPtr<WebCLContext> WebCLComputeContext::createSharedContext(int device_typ
 				printf("Error: Invalid ERROR type\n");
 				m_error_state = FAILURE;
 				break;
-
 		}
 
 	} else {
@@ -1706,8 +1801,8 @@ PassRefPtr<WebCLContext> WebCLComputeContext::createContext(int contextPropertie
 {
 
 	cl_int err = 0;
-	cl_context cl_context_id;
-	cl_device_id cl_device;
+	cl_context cl_context_id = NULL;
+	cl_device_id cl_device = NULL;
 
 	if (device != NULL) {
 		cl_device = device->getCLDeviceID();
@@ -1715,7 +1810,7 @@ PassRefPtr<WebCLContext> WebCLComputeContext::createContext(int contextPropertie
 			printf("Error: devices null\n");
 			return NULL;
 		}
-		m_device_id_ = device;
+		m_device_id_ = device = NULL;
 	} else {
 		printf("Error: webcl_devices null\n");
 		return NULL;
@@ -1768,10 +1863,8 @@ PassRefPtr<WebCLContext> WebCLComputeContext::createContext(int contextPropertie
 				printf("Error: Invaild Error Type\n");
 				m_error_state = FAILURE;
 				break;
-
 		}
-
-		return NULL;
+		
 	} else {
 		RefPtr<WebCLContext> o = WebCLContext::create(this, cl_context_id);
 		if (o != NULL) {
@@ -1787,12 +1880,12 @@ PassRefPtr<WebCLContext> WebCLComputeContext::createContext(int contextPropertie
 }
 
 PassRefPtr<WebCLCommandQueue> WebCLComputeContext::createCommandQueue(WebCLContext* context_id, 
-		WebCLDeviceIDList* devices, int prop)
+		WebCLDeviceIDList* devices, int command_queue_prop)
 {
 	cl_int err = 0;
 	cl_context cl_context_id = NULL;
 	cl_device_id cl_device = NULL;
-	cl_command_queue cl_command_queue_id;
+	cl_command_queue cl_command_queue_id = NULL;
 
 	if (context_id != NULL) {
 		cl_context_id = context_id->getCLContext();
@@ -1808,11 +1901,19 @@ PassRefPtr<WebCLCommandQueue> WebCLComputeContext::createCommandQueue(WebCLConte
 			return NULL;
 		}
 	}
-
-	// TODO(won.jeon) - prop needs to be addressed later
-	cl_command_queue_id = clCreateCommandQueue(cl_context_id, cl_device, 0, &err);
-	printf("WebCLComputeContext::createCommandQueue prop=%d\n", prop);
-
+	switch (command_queue_prop)
+	{
+		case QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE:
+			cl_command_queue_id = clCreateCommandQueue(cl_context_id, cl_device, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, &err);
+			break;
+		case QUEUE_PROFILING_ENABLE:
+			cl_command_queue_id = clCreateCommandQueue(cl_context_id, cl_device, QUEUE_PROFILING_ENABLE, &err);
+			break;
+		default:
+			printf("WebCLComputeContext::createCommandQueue prop (NULL/INVALID PROP)=%d\n", command_queue_prop);
+			cl_command_queue_id = clCreateCommandQueue(cl_context_id, cl_device, NULL, &err);
+			break;
+	}
 	if (err != CL_SUCCESS) {
 		switch (err) {
 			case CL_INVALID_CONTEXT:
@@ -1839,15 +1940,11 @@ PassRefPtr<WebCLCommandQueue> WebCLComputeContext::createCommandQueue(WebCLConte
 				printf("Error: CL_OUT_OF_HOST_MEMORY \n");
 				m_error_state = OUT_OF_HOST_MEMORY;
 				break;
-
 			default:
 				printf("Error: Invaild Error Type\n");
 				m_error_state = FAILURE;
 				break;
-
 		}
-
-		return NULL;
 	} else {
 		RefPtr<WebCLCommandQueue> o = WebCLCommandQueue::create(this, cl_command_queue_id);
 		if (o != NULL) {
@@ -1863,12 +1960,12 @@ PassRefPtr<WebCLCommandQueue> WebCLComputeContext::createCommandQueue(WebCLConte
 }
 
 PassRefPtr<WebCLCommandQueue> WebCLComputeContext::createCommandQueue(WebCLContext* context_id, 
-		WebCLDeviceID* device, int prop)
+		WebCLDeviceID* device, int command_queue_prop)
 {
 	cl_int err = 0;
 	cl_context cl_context_id = NULL;
 	cl_device_id cl_device = NULL;
-	cl_command_queue cl_command_queue_id;
+	cl_command_queue cl_command_queue_id = NULL;
 
 	if (context_id != NULL) {
 		cl_context_id = context_id->getCLContext();
@@ -1884,11 +1981,20 @@ PassRefPtr<WebCLCommandQueue> WebCLComputeContext::createCommandQueue(WebCLConte
 			return NULL;
 		}
 	}
-
-	// TODO(won.jeon) - prop needs to be addressed later
-	cl_command_queue_id = clCreateCommandQueue(cl_context_id, cl_device, 0, &err);
-	printf("WebCLComputeContext::createCommandQueue prop=%d\n", prop);
-
+	switch (command_queue_prop)
+	{
+		case QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE:
+			cl_command_queue_id = clCreateCommandQueue(cl_context_id, cl_device, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, &err);
+			break;
+		case QUEUE_PROFILING_ENABLE:
+			cl_command_queue_id = clCreateCommandQueue(cl_context_id, cl_device, QUEUE_PROFILING_ENABLE, &err);
+			break;
+		default:
+			printf("WebCLComputeContext::createCommandQueue prop (NULL/INVALID PROP)=%d\n", command_queue_prop);
+			cl_command_queue_id = clCreateCommandQueue(cl_context_id, cl_device, NULL, &err);
+			break;
+	}
+	
 	if (err != CL_SUCCESS) {
 		switch (err) {
 			case CL_INVALID_CONTEXT:
@@ -1922,7 +2028,6 @@ PassRefPtr<WebCLCommandQueue> WebCLComputeContext::createCommandQueue(WebCLConte
 				break;
 		}
 
-		return NULL;
 	} else {
 		RefPtr<WebCLCommandQueue> o = WebCLCommandQueue::create(this, cl_command_queue_id);
 		if (o != NULL) {
@@ -1943,7 +2048,7 @@ PassRefPtr<WebCLProgram> WebCLComputeContext::createProgramWithSource(WebCLConte
 
 	cl_int err = 0;
 	cl_context cl_context_id = NULL;
-	cl_program cl_program_id;
+	cl_program cl_program_id = NULL;
 
 	if (context_id != NULL) {
 		cl_context_id = context_id->getCLContext();
@@ -1977,12 +2082,85 @@ PassRefPtr<WebCLProgram> WebCLComputeContext::createProgramWithSource(WebCLConte
 				printf("Error: CL_OUT_OF_HOST_MEMORY \n");
 				m_error_state = OUT_OF_HOST_MEMORY;
 				break;
+			default:
+				printf("Error: Invaild Error Type\n");
+				m_error_state = FAILURE;
+				break;
+		}
+
+	} else {
+		RefPtr<WebCLProgram> o = WebCLProgram::create(this, cl_program_id);
+		if (o != NULL) {
+			m_program_list.append(o);
+			m_num_programs++;
+			m_error_state = SUCCESS;
+			return o;
+		} else {
+			m_error_state = FAILURE;
+			return NULL;
+		}
+	}
+	return NULL;
+}
+
+PassRefPtr<WebCLProgram> WebCLComputeContext::createProgramWithBinary(WebCLContext* context_id,
+		WebCLDeviceIDList* cl_devices,const String& kernelBinary)
+{
+	cl_int err = 0;
+	cl_context cl_context_id = NULL;
+	cl_program cl_program_id = NULL;
+	cl_device_id cl_device = NULL;
+
+	if (context_id != NULL) {
+		cl_context_id = context_id->getCLContext();
+		if (cl_context_id == NULL) {
+			printf("Error: cl_context_id null\n");
+			return NULL;
+		}
+	}
+	if (cl_devices != NULL) {
+		cl_device = cl_devices->getCLDeviceIDs();
+		if (cl_device == NULL) {
+			printf("Error: devices null\n");
+			return NULL;
+		}
+	} else {
+		printf("Error: webcl_devices null\n");
+		return NULL;
+	}
+
+	const char* binary = strdup(kernelBinary.utf8().data());
+	// TODO(siba samal) - length & binary_status arguments need to be addressed later
+	cl_program_id = clCreateProgramWithBinary(cl_context_id, cl_devices->length(),(const cl_device_id*)&cl_device,
+			NULL, (const unsigned char**)&binary, NULL, &err);
+
+	if (err != CL_SUCCESS) {
+		switch (err) {
+			case CL_INVALID_CONTEXT:
+				printf("Error: CL_INVALID_CONTEXT \n");
+				m_error_state = INVALID_CONTEXT;
+				break;
+			case CL_INVALID_VALUE:
+				printf("Error: CL_INVALID_VALUE \n");
+				m_error_state = INVALID_VALUE;
+				break;
+			case CL_INVALID_DEVICE:
+				printf("Error: CL_INVALID_DEVICE  \n");
+				m_error_state = INVALID_DEVICE ;
+				break;
+			case CL_INVALID_BINARY:	
+				printf("Error: CL_INVALID_BINARY   \n");
+				m_error_state = INVALID_BINARY;
+				break;
+			case CL_OUT_OF_HOST_MEMORY:
+				printf("Error: CL_OUT_OF_HOST_MEMORY \n");
+				m_error_state = OUT_OF_HOST_MEMORY;
+				break;
 
 			default:
 				printf("Error: Invaild Error Type\n");
 				m_error_state = FAILURE;
 				break;
-
 		}
 
 	} else {
@@ -2017,8 +2195,178 @@ void WebCLComputeContext::buildProgram(WebCLProgram* program, int options,
 
 	// TODO(won.jeon) - needs to be addressed later
 	err = clBuildProgram(program_id, 0, NULL, NULL, NULL, NULL);
-	printf("WebCLComputeContext::buildProgram options=%d pfn_notify=%d user_data=%d\n", 
+	printf("WebCLComputeContext::buildProgram normal options=%d pfn_notify=%d user_data=%d\n", 
 			options, pfn_notify, user_data);
+
+	if (err != CL_SUCCESS) {
+		switch (err) {
+			case CL_INVALID_PROGRAM:
+				printf("Error: CL_INVALID_PROGRAM\n");
+				m_error_state = INVALID_PROGRAM;
+				break;
+			case CL_INVALID_VALUE:
+				printf("Error: CL_INVALID_VALUE\n");
+				m_error_state = INVALID_VALUE;
+				break;
+			case CL_INVALID_DEVICE:
+				printf("Error: CL_INVALID_DEVICE\n");
+				m_error_state = INVALID_DEVICE;
+				break;
+			case CL_INVALID_BINARY:
+				printf("Error: CL_INVALID_BINARY\n");
+				m_error_state = INVALID_BINARY;
+				break;
+			case CL_INVALID_OPERATION:
+				printf("Error: CL_INVALID_OPERATION\n");
+				m_error_state = INVALID_OPERATION;
+				break;
+			case CL_INVALID_BUILD_OPTIONS :
+				printf("Error: CL_INVALID_BUILD_OPTIONS\n");
+				m_error_state = INVALID_BUILD_OPTIONS;
+				break;
+			case CL_COMPILER_NOT_AVAILABLE:
+				printf("Error: CL_COMPILER_NOT_AVAILABLE\n");
+				m_error_state = COMPILER_NOT_AVAILABLE;
+				break;
+			case CL_BUILD_PROGRAM_FAILURE:
+				printf("Error: CL_BUILD_PROGRAM_FAILURE\n");
+				m_error_state = BUILD_PROGRAM_FAILURE;
+				break;
+			case CL_OUT_OF_RESOURCES:
+				printf("Error: CL_OUT_OF_RESOURCES\n");
+				m_error_state = OUT_OF_RESOURCES;
+				break;
+			case CL_OUT_OF_HOST_MEMORY:
+				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
+				m_error_state = OUT_OF_HOST_MEMORY;
+				break;
+			default:
+				printf("Error: Invaild Error Type\n");
+				m_error_state = FAILURE;
+				break;
+
+		}
+
+	} else {
+		m_error_state = SUCCESS;
+		return;
+	}
+	return;
+}
+
+void WebCLComputeContext::buildProgram(WebCLProgram* program, WebCLDeviceID*   device_id,
+				int options, int pfn_notify, int user_data)
+{
+	cl_int err = 0;
+	cl_program program_id = NULL;
+	cl_device_id cl_device = NULL;
+
+	if (program != NULL) {
+		program_id = program->getCLProgram();
+		if (program_id == NULL) {
+			printf("Error: program_id null\n");
+			m_error_state = FAILURE;
+			return;
+		}
+	}
+	cl_device = device_id->getCLDeviceID();
+	if (cl_device == NULL) {
+		printf("Error: devices null\n");
+		m_error_state = FAILURE;
+		return;
+	}
+
+	// TODO(siba samal) - NULL parameters needs to be addressed later
+	printf("WebCLComputeContext::buildProgram WebCLDeviceID options=%d pfn_notify=%d user_data=%d\n", 
+			options, pfn_notify, user_data);
+	err = clBuildProgram(program_id, 1, (const cl_device_id*)&cl_device, NULL, NULL, NULL);
+
+	if (err != CL_SUCCESS) {
+		switch (err) {
+			case CL_INVALID_PROGRAM:
+				printf("Error: CL_INVALID_PROGRAM\n");
+				m_error_state = INVALID_PROGRAM;
+				break;
+			case CL_INVALID_VALUE:
+				printf("Error: CL_INVALID_VALUE\n");
+				m_error_state = INVALID_VALUE;
+				break;
+			case CL_INVALID_DEVICE:
+				printf("Error: CL_INVALID_DEVICE\n");
+				m_error_state = INVALID_DEVICE;
+				break;
+			case CL_INVALID_BINARY:
+				printf("Error: CL_INVALID_BINARY\n");
+				m_error_state = INVALID_BINARY;
+				break;
+			case CL_INVALID_OPERATION:
+				printf("Error: CL_INVALID_OPERATION\n");
+				m_error_state = INVALID_OPERATION;
+				break;
+			case CL_INVALID_BUILD_OPTIONS :
+				printf("Error: CL_INVALID_BUILD_OPTIONS\n");
+				m_error_state = INVALID_BUILD_OPTIONS;
+				break;
+			case CL_COMPILER_NOT_AVAILABLE:
+				printf("Error: CL_COMPILER_NOT_AVAILABLE\n");
+				m_error_state = COMPILER_NOT_AVAILABLE;
+				break;
+			case CL_BUILD_PROGRAM_FAILURE:
+				printf("Error: CL_BUILD_PROGRAM_FAILURE\n");
+				m_error_state = BUILD_PROGRAM_FAILURE;
+				break;
+			case CL_OUT_OF_RESOURCES:
+				printf("Error: CL_OUT_OF_RESOURCES\n");
+				m_error_state = OUT_OF_RESOURCES;
+				break;
+			case CL_OUT_OF_HOST_MEMORY:
+				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
+				m_error_state = OUT_OF_HOST_MEMORY;
+				break;
+			default:
+				printf("Error: Invaild Error Type\n");
+				m_error_state = FAILURE;
+				break;
+
+		}
+
+	} else {
+		m_error_state = SUCCESS;
+		return;
+	}
+	return;
+}
+
+void WebCLComputeContext::buildProgram(WebCLProgram* program, WebCLDeviceIDList* cl_devices,
+				int options, int pfn_notify, int user_data)
+{
+	cl_int err = 0;
+	cl_program program_id = NULL;
+	cl_device_id cl_device = NULL;
+
+	if (program != NULL) {
+		program_id = program->getCLProgram();
+		if (program_id == NULL) {
+			printf("Error: program_id null\n");
+			m_error_state = FAILURE;
+			return;
+		}
+	}
+	if (cl_devices != NULL) {
+		cl_device = cl_devices->getCLDeviceIDs();
+		if (cl_device == NULL) {
+			printf("Error: devices null\n");
+			return;
+		}
+	} else {
+		printf("Error: webcl_devices null\n");
+		return;
+	}
+
+	// TODO(siba samal) - NULL parameters needs to be addressed later
+	printf("WebCLComputeContext::buildProgram WebCLDeviceIDList  options=%d pfn_notify=%d user_data=%d\n", 
+			options, pfn_notify, user_data);
+	err = clBuildProgram(program_id, cl_devices->length(), (const cl_device_id*)&cl_device, NULL, NULL, NULL);
 
 	if (err != CL_SUCCESS) {
 		switch (err) {
@@ -2081,7 +2429,7 @@ PassRefPtr<WebCLKernel> WebCLComputeContext::createKernel(WebCLProgram* program,
 {
 	cl_int err = 0;
 	cl_program cl_program_id = NULL;
-	cl_kernel cl_kernel_id;
+	cl_kernel cl_kernel_id = NULL;
 
 	if (program != NULL) {
 		cl_program_id = program->getCLProgram();
@@ -2141,6 +2489,79 @@ PassRefPtr<WebCLKernel> WebCLComputeContext::createKernel(WebCLProgram* program,
 	return NULL;
 }
 
+PassRefPtr<WebCLKernelList> WebCLComputeContext::createKernelsInProgram(WebCLProgram* program)
+{
+	cl_int err = 0;
+	cl_program cl_program_id = NULL;
+	cl_kernel* kernelBuf = NULL;
+	cl_uint num = 0;
+
+	if (program != NULL) {
+		cl_program_id = program->getCLProgram();
+		if (cl_program_id == NULL) {
+			printf("Error: cl_program_id null\n");
+			return NULL;
+		}
+	}
+
+	err = clCreateKernelsInProgram (cl_program_id, NULL, NULL, &num);
+	if (err != CL_SUCCESS) {
+		printf("Error: clCreateKernelsInProgram \n");
+		m_error_state = FAILURE;
+		return NULL;
+	}
+	if(num == 0) {
+		printf("Warning: createKernelsInProgram - Number of Kernels is 0 \n");
+		m_error_state = FAILURE;
+		return NULL;
+	}
+	
+	kernelBuf = (cl_kernel*)malloc (sizeof(cl_kernel) * num);
+	if (!kernelBuf) {
+		m_error_state = OUT_OF_HOST_MEMORY;	
+		return NULL;
+	}
+
+	err = clCreateKernelsInProgram (cl_program_id, num, kernelBuf, NULL);
+	if (err != CL_SUCCESS) {
+		switch (err) {
+			case CL_INVALID_PROGRAM:
+				printf("Error: CL_INVALID_PROGRAM\n");
+				m_error_state = INVALID_PROGRAM;
+				break;
+			case CL_INVALID_PROGRAM_EXECUTABLE:
+				printf("Error: CL_INVALID_PROGRAM_EXECUTABLE\n");
+				m_error_state = INVALID_PROGRAM_EXECUTABLE;
+				break;
+			case CL_INVALID_VALUE:
+				printf("Error: CL_INVALID_VALUE\n");
+				m_error_state = INVALID_VALUE;
+				break;
+			case CL_OUT_OF_RESOURCES:
+				printf("Error: CL_OUT_OF_RESOURCES\n");
+				m_error_state = OUT_OF_RESOURCES;
+				break;
+			case CL_OUT_OF_HOST_MEMORY:
+				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
+				m_error_state = OUT_OF_HOST_MEMORY;
+				break;
+			default:
+				printf("Error: Invaild Error Type\n");
+				m_error_state = FAILURE;
+				break;
+		}
+
+	} else {
+		RefPtr<WebCLKernelList> o = WebCLKernelList::create(this, kernelBuf, num);
+		printf("WebCLKernelList Size = %d \n\n\n\n", num);
+		//m_kernel_list = o;
+		m_num_kernels = num;
+		m_error_state = SUCCESS;
+		return o;
+	}
+	return NULL;
+}
+
 PassRefPtr<WebCLMem> WebCLComputeContext::createBuffer(WebCLContext* context_id, 
 		int flags, int size, int host_ptr)
 {
@@ -2167,6 +2588,10 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createBuffer(WebCLContext* context_id,
 			break;
 		case MEM_READ_WRITE:
 			cl_mem_id = clCreateBuffer(cl_context_id, CL_MEM_READ_WRITE, size, NULL, &err);
+			break;
+		default:
+			printf("Error: Unsupported Mem Flsg\n");
+			m_error_state = INVALID_CONTEXT;
 			break;
 	}
 	if (err != CL_SUCCESS) {
@@ -2205,9 +2630,6 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createBuffer(WebCLContext* context_id,
 				m_error_state = FAILURE;
 				break;
 		}
-
-		return NULL;
-
 	} else {
 		RefPtr<WebCLMem> o = WebCLMem::create(this, cl_mem_id, false);
 		m_mem_list.append(o);
@@ -2305,7 +2727,6 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueWriteBuffer(WebCLCommandQueue
 
 		}
 
-		return NULL;
 	} else {
 		RefPtr<WebCLEvent> o = WebCLEvent::create(this, cl_event_id);
 		m_event_list.append(o);
@@ -2382,12 +2803,11 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueWriteBuffer(WebCLCommandQueue
 				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
 				break;
 			default:
+				m_error_state = FAILURE;
 				printf("Error: Invaild Error Type\n");
 				break;
 		}
-		m_error_state = FAILURE;
-
-		return NULL;
+		
 	} else {
 		printf("Success: clEnqueueWriteBuffer\n");
 		RefPtr<WebCLEvent> o = WebCLEvent::create(this, cl_event_id);
@@ -2489,7 +2909,6 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueWriteBuffer(WebCLCommandQueue
 				break;
 		}
 
-		return NULL;
 	} else {
 		printf("Success: clEnqueueWriteBuffer\n");
 		RefPtr<WebCLEvent> o = WebCLEvent::create(this, cl_event_id);
@@ -2591,8 +3010,6 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueWriteBuffer(WebCLCommandQueue
 				break;
 
 		}
-
-		return NULL;
 	} else {
 		RefPtr<WebCLEvent> o = WebCLEvent::create(this, cl_event_id);
 		m_event_list.append(o);
@@ -2692,7 +3109,6 @@ PassRefPtr<WebCLEvent>  WebCLComputeContext::enqueueReadBuffer(WebCLCommandQueue
 
 		}
 
-		return NULL;
 	} else {
 		RefPtr<WebCLEvent> o = WebCLEvent::create(this, cl_event_id);
 		m_event_list.append(o);
@@ -2732,10 +3148,7 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueReadBuffer(WebCLCommandQueue*
 			printf("Error: cl_mem_id null\n");
 			return NULL;
 		}
-
-
 	}
-
 	if (canvas_element != NULL) {
 		//graphics_context = canvas_element->drawingContext();
 		rendering_context = static_cast<CanvasRenderingContext2D*>(canvas_element->renderingContext());
@@ -2788,7 +3201,6 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueReadBuffer(WebCLCommandQueue*
 		}
 		m_error_state = FAILURE;
 
-		return NULL;
 	} else {
 		printf("Success: clEnqueueReadBuffer\n");
 
@@ -2800,8 +3212,6 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueReadBuffer(WebCLCommandQueue*
 			}
 		}
 		printf("\n");
-
-
 		//ExceptionCode ec = 0;
 		RefPtr<ByteArray> array = ByteArray::create(buffer_size);
 		for (int i = 0; i < buffer_size; i++) {
@@ -2910,8 +3320,6 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueReadBuffer(WebCLCommandQueue*
 				m_error_state = FAILURE;
 				break;
 		}
-
-		return NULL;
 	} else {
 		printf("ptr->data() [%d][%d][%d][%d][%d]\n", (ptr->data())[0], (ptr->data())[1], 
 				(ptr->data())[2], (ptr->data())[3], (ptr->data())[4]);
@@ -2983,6 +3391,77 @@ void WebCLComputeContext::setKernelArg(WebCLKernel* kernel, unsigned int arg_ind
 		m_error_state = SUCCESS;
 		return;
 	}
+}
+
+void WebCLComputeContext::setKernelArgGlobal(WebCLKernel* kernel, unsigned int arg_index, WebCLMem* arg_value)
+{
+	cl_int err = 0;
+	cl_kernel cl_kernel_id = NULL;
+	cl_mem cl_mem_id = NULL;
+
+	if (kernel != NULL) {
+		cl_kernel_id = kernel->getCLKernel();
+		if (cl_kernel_id == NULL) {
+			printf("Error: cl_kernel_id null\n");
+			m_error_state = FAILURE;
+			return;
+		}
+	}
+	if (arg_value != NULL) {
+		cl_mem_id = arg_value->getCLMem();
+		if (cl_mem_id == NULL) {
+			printf("Error: cl_mem_id null\n");
+			m_error_state = FAILURE;
+			return;
+		}
+	}
+	err = clSetKernelArg(cl_kernel_id, arg_index, sizeof(cl_mem), &cl_mem_id);
+	if (err != CL_SUCCESS) {
+		switch (err) {
+			case CL_INVALID_KERNEL:
+				printf("Error: CL_INVALID_KERNEL \n");
+				m_error_state = INVALID_KERNEL;
+				break;
+			case CL_INVALID_ARG_INDEX:
+				printf("Error: CL_INVALID_ARG_INDEX \n");
+				m_error_state = INVALID_ARG_INDEX;
+				break;
+			case CL_INVALID_ARG_VALUE:
+				printf("Error: CL_INVALID_ARG_VALUE \n");
+				m_error_state = INVALID_ARG_VALUE;
+				break;
+			case CL_INVALID_MEM_OBJECT:
+				printf("Error: CL_INVALID_MEM_OBJECT  \n");
+				m_error_state = INVALID_MEM_OBJECT;
+				break;
+			case CL_INVALID_SAMPLER:
+				printf("Error: CL_INVALID_SAMPLER  \n");
+				m_error_state = INVALID_SAMPLER;
+				break;
+			case CL_INVALID_ARG_SIZE:
+				printf("Error: CL_INVALID_ARG_SIZE  \n");
+				m_error_state = INVALID_ARG_SIZE;
+				break;
+			case CL_OUT_OF_RESOURCES:
+				printf("Error: CL_OUT_OF_RESOURCES\n");
+				m_error_state = OUT_OF_RESOURCES;
+				break;
+			case CL_OUT_OF_HOST_MEMORY:
+				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
+				m_error_state = OUT_OF_HOST_MEMORY;
+				break;
+			default:
+				printf("Error: Invaild Error Type\n");
+				m_error_state = FAILURE;
+				break;
+		}
+
+	} else {
+		printf("Success: clSetKernelArg - Mem\n");
+		m_error_state = SUCCESS;
+		return;
+	}
+	return;
 }
 
 void WebCLComputeContext::setKernelArgFloat(WebCLKernel* kernel, unsigned int arg_index, float arg_value)
@@ -3274,12 +3753,13 @@ unsigned long WebCLComputeContext::getKernelWorkGroupInfo(WebCLKernel* kernel, W
 	cl_int err = 0;
 	cl_kernel cl_kernel_id = NULL;
 	cl_device_id cl_device = NULL;
-	size_t ret;
+	size_t ret = 0;
 
 	if (kernel != NULL) {
 		cl_kernel_id = kernel->getCLKernel();
 		if (cl_kernel_id == NULL) {
 			printf("Error: cl_kernel_id null\n");
+			m_error_state = FAILURE;
 			return NULL;
 		}
 	}
@@ -3287,6 +3767,7 @@ unsigned long WebCLComputeContext::getKernelWorkGroupInfo(WebCLKernel* kernel, W
 		cl_device = devices->getCLDeviceIDs();
 		if (cl_device == NULL) {
 			printf("Error: cl_device null\n");
+			m_error_state = FAILURE;
 			return NULL;
 		}
 	}
@@ -3297,19 +3778,22 @@ unsigned long WebCLComputeContext::getKernelWorkGroupInfo(WebCLKernel* kernel, W
 				switch (err) {
 					case CL_INVALID_DEVICE:
 						printf("Error: CL_INVALID_DEVICE\n");
+						m_error_state = INVALID_DEVICE;
 						break;
 					case CL_INVALID_VALUE:
 						printf("Error: CL_INVALID_VALUE\n");
+						m_error_state = INVALID_VALUE;
 						break;
 					case CL_INVALID_KERNEL:
+						m_error_state = INVALID_KERNEL;
 						printf("Error: CL_INVALID_KERNEL\n");
 						break;
 					default:
 						printf("Error: Invaild Error Type\n");
+						m_error_state = FAILURE;
 						break;
 				}
-				m_error_state = FAILURE;
-				return NULL;
+			
 			} else {
 				m_error_state = SUCCESS;
 
@@ -3387,13 +3871,11 @@ PassRefPtr<WebCLEvent>  WebCLComputeContext::enqueueNDRangeKernel(WebCLCommandQu
 	cl_event cl_event_id = NULL;
 
 	size_t g_work_offset = global_work_offset;
-
 	size_t *g_work_size = NULL;
 	size_t *l_work_size = NULL;
 	//size_t g1_work_size;
 	//size_t l1_work_size;
 	m_error_state = SUCCESS;
-
 
 	if (command_queue != NULL) {
 		cl_command_queue_id = command_queue->getCLCommandQueue();
@@ -3473,7 +3955,6 @@ PassRefPtr<WebCLEvent>  WebCLComputeContext::enqueueNDRangeKernel(WebCLCommandQu
 				printf("Error: CL_INVALID_IMAGE_SIZE\n");
 				m_error_state = INVALID_IMAGE_SIZE;
 				break;
-
 			case CL_MEM_OBJECT_ALLOCATION_FAILURE:
 				printf("Error: CL_MEM_OBJECT_ALLOCATION_FAILURE\n");
 				m_error_state = MEM_OBJECT_ALLOCATION_FAILURE;
@@ -3542,8 +4023,7 @@ void WebCLComputeContext::finish(WebCLCommandQueue* command_queue, PassRefPtr<We
 				printf("Error: Invaild Error Type\n");
 				m_error_state=FAILURE;
 				break;
-		}
-		return;
+		}		
 	} else {
 		m_error_state = SUCCESS;
 		m_finishCallback = notify;
@@ -3552,6 +4032,46 @@ void WebCLComputeContext::finish(WebCLCommandQueue* command_queue, PassRefPtr<We
 		return;
 	}
 	m_error_state = FAILURE;
+	return;
+}
+
+void WebCLComputeContext::flush(WebCLCommandQueue* command_queue)
+{
+	cl_command_queue cl_command_queue_id = NULL;
+	cl_int err = 0;
+
+	if (command_queue != NULL) {
+		cl_command_queue_id = command_queue->getCLCommandQueue();
+		if (cl_command_queue_id == NULL) {
+			printf("Error: cl_command_queue_id null\n");
+			m_error_state = FAILURE;
+			return;
+		}
+	}
+	err = clFlush(cl_command_queue_id);
+	if (err != CL_SUCCESS) {
+		switch (err) {
+			case CL_INVALID_COMMAND_QUEUE:
+				printf("Error: CL_INVALID_COMAND_QUEUE\n");
+				m_error_state=INVALID_COMMAND_QUEUE;
+				break;
+			case CL_OUT_OF_HOST_MEMORY:
+				printf("Error: CL_OUT_OF_HOST_MEMORY \n");
+				m_error_state=OUT_OF_HOST_MEMORY;
+				break;
+			case CL_OUT_OF_RESOURCES:
+				printf("Error: CL_OUT_OF_RESOURCES \n");
+				m_error_state=OUT_OF_RESOURCES;
+				break;
+			default:
+				printf("Error: Invaild Error Type\n");
+				m_error_state=FAILURE;
+				break;
+		}
+	} else {
+		m_error_state = SUCCESS;
+		return;
+	}
 	return;
 }
 
@@ -3583,13 +4103,11 @@ void WebCLComputeContext::releaseMemObject(WebCLMem* memobj)
 				printf("Error: CL_OUT_OF_HOST_MEMORY  \n");
 				m_error_state=OUT_OF_HOST_MEMORY ;
 				break;
-
 			default:
 				printf("Error: Invaild Error Type\n");
 				m_error_state = FAILURE;
 				break;
 		}
-		return;
 	} else {
 		unsigned int i;
 		for (i = 0; i < m_mem_list.size(); i++) {
@@ -3639,7 +4157,6 @@ void WebCLComputeContext::releaseProgram(WebCLProgram* program)
 				m_error_state = FAILURE;
 				break;
 		}
-		return;
 	} else {
 		for (int i = 0; i < m_num_programs; i++) {
 			if ((m_program_list[i].get())->getCLProgram() == cl_program_id) {
@@ -3682,13 +4199,11 @@ void WebCLComputeContext::releaseKernel(WebCLKernel* kernel)
 				printf("Error: CL_OUT_OF_HOST_MEMORY  \n");
 				m_error_state=OUT_OF_HOST_MEMORY ;
 				break;
-
 			default:
 				printf("Error: Invaild Error Type\n");
 				m_error_state = FAILURE;
 				break;
 		}
-		return;
 	} else {
 		for (int i = 0; i < m_num_kernels; i++) {
 			if ((m_kernel_list[i].get())->getCLKernel() == cl_kernel_id) {
@@ -3731,13 +4246,11 @@ void WebCLComputeContext::retainKernel(WebCLKernel* kernel)
 				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
 				m_error_state=OUT_OF_HOST_MEMORY ;
 				break;
-
 			default:
 				printf("Error: Invaild Error Type\n");
 				m_error_state = FAILURE;
 				break;
 		}
-		return;
 	} else {
 		printf("Success: clRetainKernel\n");
 		// TODO - Check if has to be really added
@@ -3779,14 +4292,12 @@ void WebCLComputeContext::retainProgram(WebCLProgram* program)
 				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
 				m_error_state=OUT_OF_HOST_MEMORY ;
 				break;
-
 			default:
 				printf("Error: Invaild Error Type\n");
 				m_error_state = FAILURE;
 				break;
 		}
 	} else {
-
 		printf("Success: clRetainProgram\n");
 		// TODO - Check if has to be really added
 		RefPtr<WebCLProgram> o = WebCLProgram::create(this, cl_program_id);
@@ -3827,13 +4338,11 @@ void WebCLComputeContext::retainEvent(WebCLEvent* event)
 				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
 				m_error_state=OUT_OF_HOST_MEMORY ;
 				break;
-
 			default:
 				printf("Error: Invaild Error Type\n");
 				m_error_state = FAILURE;
 				break;
 		}
-		return;
 	} else {
 		printf("Success: clRetainEvent\n");
 		// TODO - Check if has to be really added
@@ -3874,13 +4383,11 @@ void WebCLComputeContext::retainContext(WebCLContext* context_id)
 				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
 				m_error_state=OUT_OF_HOST_MEMORY ;
 				break;
-
 			default:
 				printf("Error: Invaild Error Type\n");
 				m_error_state = FAILURE;
 				break;
 		}
-		return;
 	} else {
 		printf("Success: clRetainContext\n");
 		// TODO - Check if has to be really added
@@ -3966,16 +4473,14 @@ void WebCLComputeContext::retainSampler(WebCLSampler* sampler)
 				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
 				m_error_state=OUT_OF_HOST_MEMORY ;
 				break;
-
 			default:
 				printf("Error: Invaild Error Type\n");
 				m_error_state = FAILURE;
 				break;
 		}
-		return;
 	} else {
 		// TODO - Check if has to be really added
-		RefPtr<WebCLSampler> o = WebCLSampler::create(this, cl_sampler_id,false);
+		RefPtr<WebCLSampler> o = WebCLSampler::create(this, cl_sampler_id);
 		m_sampler_list.append(o);
 		m_num_samplers++;
 		m_error_state = SUCCESS;
@@ -4012,7 +4517,6 @@ void WebCLComputeContext::retainMemObject(WebCLMem* memobj)
 				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
 				m_error_state=OUT_OF_HOST_MEMORY ;
 				break;
-
 			default:
 				printf("Error: Invaild Error Type\n");
 				m_error_state = FAILURE;
@@ -4079,7 +4583,7 @@ void WebCLComputeContext::releaseEvent(WebCLEvent* event)
 
 void WebCLComputeContext::releaseSampler(WebCLSampler* sampler)
 {
-	cl_sampler cl_sampler_id= NULL;
+	cl_sampler cl_sampler_id = NULL;
 	cl_int err = 0;
 
 	if (sampler != NULL) {
@@ -4088,8 +4592,6 @@ void WebCLComputeContext::releaseSampler(WebCLSampler* sampler)
 			printf("Error: cl_sampler_id null\n");
 			m_error_state = FAILURE;
 			return;
-
-
 		}
 	}
 	err = clReleaseSampler(cl_sampler_id);
@@ -4221,7 +4723,7 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createImage2D(WebCLContext* context,
 	cl_uint height = 0;
 
 	ImageBuffer* imageBuffer = NULL;
-	PassRefPtr<ByteArray> bytearray = NULL;
+	RefPtr<ByteArray> bytearray = NULL;
 	if (context != NULL) {
 		cl_context_id = context->getCLContext();
 		if (cl_context_id == NULL) {
@@ -4267,8 +4769,9 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createImage2D(WebCLContext* context,
 			break;
 		case MEM_WRITE_ONLY:
 			cl_mem_image = clCreateImage2D(cl_context_id, (CL_MEM_READ_ONLY || CL_MEM_USE_HOST_PTR ||CL_MEM_COPY_HOST_PTR), 
-					&image_format, width, height, 0, bytearray->data(), &err);
+					&image_format, width, height, 0, image, &err);
 			break;
+			// TODO (siba samal) Support other mem_flags & testing 
 	}
 	if (cl_mem_image == NULL) {
 		switch (err) {
@@ -4332,13 +4835,13 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createImage2D(WebCLContext* context, i
 {
 	cl_context cl_context_id = NULL;
 	cl_int err = 0;
-	cl_mem cl_mem_image = NULL;
+	cl_mem cl_mem_image = 0;
 	cl_image_format image_format;
-	cl_uint width;
-	cl_uint height;
+	cl_uint width = 0;
+	cl_uint height = 0;
 
-	Image* imagebuf;
-	CachedImage* cachedImage; 
+	Image* imagebuf = NULL;
+	CachedImage* cachedImage = NULL; 
 	if (context != NULL) {
 		cl_context_id = context->getCLContext();
 		if (cl_context_id == NULL) {
@@ -4389,6 +4892,7 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createImage2D(WebCLContext* context, i
 			cl_mem_image = clCreateImage2D(cl_context_id, CL_MEM_WRITE_ONLY, 
 					&image_format, width, height, 0, (void*)image1, &err);
 			break;
+		// TODO (siba samal) Support other flags & testing
 	}
 	if (cl_mem_image == NULL) {
 		switch (err) {
@@ -4453,10 +4957,10 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createImage2D(WebCLContext* context, i
 	cl_int err = 0;
 	cl_mem cl_mem_image = NULL;
 	cl_image_format image_format;
-	cl_uint width;
-	cl_uint height;
+	cl_uint width = 0;
+	cl_uint height = 0;
 
-	PassRefPtr<Image> image;
+	RefPtr<Image> image = NULL;
 	SharedBuffer* sharedBuffer = NULL;
 	const char* image_data = NULL;
 	if (context != NULL) {
@@ -4501,8 +5005,9 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createImage2D(WebCLContext* context, i
 			break;
 		case MEM_WRITE_ONLY:
 			cl_mem_image = clCreateImage2D(cl_context_id, CL_MEM_WRITE_ONLY, 
-					&image_format, width, height, 0, NULL/*(void *)image_data*/, &err);
+					&image_format, width, height, 0, (void *)image_data, &err);
 			break;
+		// TODO (siba samal) Support other flags & testing
 	}
 	if (cl_mem_image == NULL) {
 		switch (err) {
@@ -4569,8 +5074,8 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createImage2D(WebCLContext* context, i
 	cl_int err = 0;
 	cl_mem cl_mem_image = NULL;
 	cl_image_format image_format;
-	cl_uint width;
-	cl_uint height;
+	cl_uint width = 0;
+	cl_uint height = 0;
 
 	CanvasPixelArray* pixelarray = NULL;
 	ByteArray* bytearray = NULL;
@@ -4607,8 +5112,9 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createImage2D(WebCLContext* context, i
 			break;
 		case MEM_WRITE_ONLY:
 			cl_mem_image = clCreateImage2D(cl_context_id, CL_MEM_WRITE_ONLY, 
-					&image_format, width, height, 0, NULL/*(void*)bytearray*/, &err);
+					&image_format, width, height, 0, (void*)bytearray, &err);
 			break;
+		// TODO (siba samal) Support other flags & testing
 	}
 	if (cl_mem_image == NULL) {
 		switch (err) {
@@ -4657,7 +5163,6 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createImage2D(WebCLContext* context, i
 				m_error_state = FAILURE;
 				break;
 		}
-		return NULL;
 	} else {
 		RefPtr<WebCLMem> o = WebCLMem::create(this, cl_mem_image,false);
 		m_mem_list.append(o);
@@ -4665,6 +5170,7 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createImage2D(WebCLContext* context, i
 		m_error_state = SUCCESS;
 		return o;
 	}
+	return NULL;
 }
 
 PassRefPtr<WebCLMem> WebCLComputeContext::createImage2D(WebCLContext* context,int flags,unsigned int width, unsigned int height,ArrayBuffer* data)
@@ -4673,8 +5179,9 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createImage2D(WebCLContext* context,in
 	cl_int err = 0;
 	cl_mem cl_mem_image = NULL;
 	cl_image_format image_format;
-	cl_uint cl_width;
-	cl_uint cl_height;
+	cl_uint cl_width = 0;
+	cl_uint cl_height = 0;
+
 	if (context != NULL) {
 		cl_context_id = context->getCLContext();
 		if (cl_context_id == NULL) {
@@ -4701,8 +5208,111 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createImage2D(WebCLContext* context,in
 			break;
 		case MEM_WRITE_ONLY:
 			cl_mem_image = clCreateImage2D(cl_context_id, CL_MEM_WRITE_ONLY, 
-					&image_format, cl_width, cl_height, 0, NULL/*data->data()*/, &err);
+					&image_format, cl_width, cl_height, 0, data->data(), &err);
 			break;
+		// TODO (siba samal) Support other flags & testing
+	}
+	if (cl_mem_image == NULL) {
+		switch (err) {
+			case CL_INVALID_CONTEXT:
+				printf("Error: CL_INVALID_CONTEXT\n");
+				m_error_state=INVALID_CONTEXT;
+				break;
+			case CL_INVALID_VALUE:
+				printf("Error: CL_INVALID_VALUE\n");
+				m_error_state=INVALID_VALUE;
+				break;
+			case CL_INVALID_IMAGE_FORMAT_DESCRIPTOR:
+				printf("Error: CL_INVALID_IMAGE_FORMAT_DESCRIPTOR\n");
+				m_error_state=INVALID_IMAGE_FORMAT_DESCRIPTOR;
+				break;
+			case CL_INVALID_IMAGE_SIZE:
+				printf("Error: CL_INVALID_IMAGE_SIZE\n");
+				m_error_state=INVALID_IMAGE_SIZE;
+				break;
+			case CL_INVALID_HOST_PTR:
+				printf("Error: CL_INVALID_HOST_PTR\n");
+				m_error_state=INVALID_HOST_PTR;
+				break;
+			case CL_IMAGE_FORMAT_NOT_SUPPORTED:
+				printf("Error: CL_INVALID_FORMAT_NOT_SUPPORTED\n");
+				m_error_state=IMAGE_FORMAT_NOT_SUPPORTED;
+				break;
+			case CL_MEM_OBJECT_ALLOCATION_FAILURE:
+				printf("Error: CL_MEM_OBJECT_ALLOCATION_FAILURE\n");
+				m_error_state=MEM_OBJECT_ALLOCATION_FAILURE;
+				break;
+			case CL_INVALID_OPERATION:
+				printf("Error: CL_INVALID_OPERATION\n");
+				m_error_state=INVALID_OPERATION;
+				break;
+			case CL_OUT_OF_RESOURCES:
+				printf("Error: CL_OUT_OF_RESOURCES\n");
+				m_error_state=OUT_OF_RESOURCES;
+				break;
+			case CL_OUT_OF_HOST_MEMORY:
+				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
+				m_error_state=OUT_OF_HOST_MEMORY;
+				break;
+			default:
+				printf("Error: Invaild Error Type\n");
+				m_error_state = FAILURE;
+				break;
+		}
+	} else {
+		RefPtr<WebCLMem> o = WebCLMem::create(this, cl_mem_image,false);
+		m_mem_list.append(o);
+		m_num_mems++;
+		m_error_state = SUCCESS;
+		return o;
+	}
+	return NULL;
+}
+
+PassRefPtr<WebCLMem> WebCLComputeContext::createImage3D(WebCLContext* context,
+							int flags,unsigned int width, 
+							unsigned int height,
+							unsigned int depth,
+							ArrayBuffer* data)
+{
+	cl_context cl_context_id = NULL;
+	cl_int err = 0;
+	cl_mem cl_mem_image = NULL;
+	cl_image_format image_format;
+	cl_uint cl_width = 0;
+	cl_uint cl_height = 0;
+	cl_uint cl_depth = 0;
+
+	if (context != NULL) {
+		cl_context_id = context->getCLContext();
+		if (cl_context_id == NULL) {
+			printf("Error: cl_context_id null\n");
+			m_error_state = FAILURE;
+			return NULL;
+		}
+	}
+	if (data != NULL) {
+		image_format.image_channel_data_type = CL_UNSIGNED_INT8;
+		image_format.image_channel_order = CL_RGBA;
+		cl_width = width;
+		cl_height = height;
+		cl_depth = depth;
+	} else {
+		printf("Error: canvasElement null\n");
+		m_error_state = FAILURE;
+		return NULL;
+	}
+
+	switch (flags) {
+		case MEM_READ_ONLY:
+			cl_mem_image = clCreateImage3D(cl_context_id, CL_MEM_READ_ONLY|CL_MEM_USE_HOST_PTR, 
+					&image_format, cl_width, cl_height, cl_depth,0, 0, data->data(), &err);
+			break;
+		case MEM_WRITE_ONLY:
+			cl_mem_image = clCreateImage3D(cl_context_id, CL_MEM_WRITE_ONLY, 
+					&image_format, cl_width, cl_height, cl_depth, 0, 0,data->data(), &err);
+			break;
+		// TODO (siba samal) Support other flags & testing
 	}
 	if (cl_mem_image == NULL) {
 		switch (err) {
@@ -4782,9 +5392,9 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueWriteImage(WebCLCommandQueue*
 	size_t *region_array = NULL;
 
 
-	SharedBuffer* sharedBuffer;
+	SharedBuffer* sharedBuffer = NULL;
 
-	Image* image;
+	Image* image = NULL;
 	const char* image_data = NULL;
 
 	if (command_queue != NULL) {
@@ -4936,7 +5546,6 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createFromGLBuffer(WebCLContext* conte
 			return NULL;
 		}
 	}
-
 	switch (flags) {
 		case MEM_READ_ONLY:
 			cl_mem_id = clCreateFromGLBuffer(cl_context_id, CL_MEM_READ_ONLY, buf_id, &err);
@@ -4946,6 +5555,15 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createFromGLBuffer(WebCLContext* conte
 			break;
 		case MEM_READ_WRITE:
 			cl_mem_id = clCreateFromGLBuffer(cl_context_id, CL_MEM_READ_WRITE, buf_id, &err);
+			break;
+		case MEM_USE_HOST_PTR:
+			cl_mem_id = clCreateFromGLBuffer(cl_context_id, CL_MEM_USE_HOST_PTR, buf_id, &err);
+			break;
+		case MEM_ALLOC_HOST_PTR:
+			cl_mem_id = clCreateFromGLBuffer(cl_context_id, CL_MEM_ALLOC_HOST_PTR, buf_id, &err);
+			break;
+		case MEM_COPY_HOST_PTR:
+			cl_mem_id = clCreateFromGLBuffer(cl_context_id, CL_MEM_COPY_HOST_PTR, buf_id, &err);
 			break;
 
 	}
@@ -4984,6 +5602,100 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createFromGLBuffer(WebCLContext* conte
 		m_error_state = SUCCESS;
 		return o;
 
+	}
+	return NULL;
+}
+
+PassRefPtr<WebCLSampler> WebCLComputeContext::createSampler(WebCLContext* context_id, 
+	bool norm_cords, int addr_mode, int fltr_mode)
+{
+	cl_int err = 0;
+	cl_context cl_context_id = NULL;
+	cl_bool normalized_coords = CL_FALSE;
+	cl_addressing_mode addressing_mode = CL_ADDRESS_NONE;
+	cl_filter_mode filter_mode = CL_FILTER_NEAREST;
+	cl_sampler cl_sampler_id = NULL;
+
+	if (context_id != NULL) {
+		cl_context_id = context_id->getCLContext();
+		if (cl_context_id == NULL) {
+			printf("Error: cl_context_id null\n");
+			return NULL;
+		}
+	}
+	if(norm_cords)
+		normalized_coords = CL_TRUE;
+	switch(addr_mode)
+	{
+		case ADDRESS_NONE:
+			addressing_mode = CL_ADDRESS_NONE;
+			break;
+		case ADDRESS_CLAMP_TO_EDGE:
+			addressing_mode = CL_ADDRESS_CLAMP_TO_EDGE;
+			break;
+		case ADDRESS_CLAMP:
+			addressing_mode = CL_ADDRESS_CLAMP;
+			break;
+		case ADDRESS_REPEAT: 
+			addressing_mode = CL_ADDRESS_REPEAT;
+			break;
+		default:
+			printf("Error: Invaild Addressing Mode\n");
+			m_error_state = FAILURE;
+			return NULL;
+	}
+	switch(fltr_mode)
+	{
+		case FILTER_LINEAR:
+			filter_mode = CL_FILTER_LINEAR;
+			break;
+		case FILTER_NEAREST :
+			filter_mode = CL_FILTER_NEAREST ;
+			break;
+		default:
+			printf("Error: Invaild Filtering Mode\n");
+			m_error_state = FAILURE;
+			return NULL;
+	}
+	cl_sampler_id = clCreateSampler(cl_context_id, normalized_coords, addressing_mode, 
+						filter_mode, &err);
+	
+	if (err != CL_SUCCESS) {
+		switch (err) {
+			case CL_INVALID_CONTEXT:
+				printf("Error: CL_INVALID_CONTEXT \n");
+				m_error_state = INVALID_CONTEXT;
+				break;
+			case CL_INVALID_VALUE:
+				printf("Error: CL_INVALID_VALUE \n");
+				m_error_state = INVALID_VALUE;
+				break;
+			case CL_INVALID_OPERATION :
+				printf("Error: CL_INVALID_OPERATION   \n");
+				m_error_state = INVALID_OPERATION  ;
+				break;
+			case CL_OUT_OF_HOST_MEMORY:
+				printf("Error: CL_OUT_OF_HOST_MEMORY \n");
+				m_error_state = OUT_OF_HOST_MEMORY;
+				break;
+
+			default:
+				printf("Error: Invaild Error Type\n");
+				m_error_state = FAILURE;
+				break;
+		}
+
+	} else {
+		RefPtr<WebCLSampler> o = WebCLSampler::create(this, cl_sampler_id);
+		if (o != NULL) {
+			m_sampler_list.append(o);
+			m_num_samplers++;
+			m_error_state = SUCCESS;
+			return o;
+		} else {
+			m_error_state = FAILURE;
+			return NULL;
+		}
 	}
 	return NULL;
 }
@@ -5057,8 +5769,6 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createFromGLTexture2D(WebCLContext* co
 				m_error_state = FAILURE;
 				break;
 		}
-
-		return NULL;
 	} else {
 		RefPtr<WebCLMem> o = WebCLMem::create(this, cl_mem_id, true);
 		m_mem_list.append(o);
@@ -5209,7 +5919,6 @@ void WebCLComputeContext::enqueueReleaseGLObjects(WebCLCommandQueue* command_que
 				m_error_state = FAILURE;
 				break;
 		}
-		return;
 	} else {
 		printf("Success: clEnqueueReleaseGLObjects\n");
 		unsigned int i;
@@ -5349,9 +6058,8 @@ void WebCLComputeContext::enqueueBarrier(WebCLCommandQueue* command_queue)
 			default:
 				m_error_state = FAILURE;
 				printf("Error: Invaild Error Type\n");
-				break;
+			break;
 		}
-		return;
 	} else {
 		m_error_state = SUCCESS;
 		return;
@@ -5359,7 +6067,230 @@ void WebCLComputeContext::enqueueBarrier(WebCLCommandQueue* command_queue)
 	return;
 }
 
-	WebCLComputeContext::LRUImageBufferCache::LRUImageBufferCache(int capacity)
+
+void WebCLComputeContext::unloadCompiler()
+{
+	cl_int err =  clUnloadCompiler();
+	if (err != CL_SUCCESS) {
+		m_error_state = FAILURE;
+		printf("Error: Invaild Error Type\n");
+	}
+	else {
+		m_error_state = SUCCESS;
+	}
+	return;
+}
+
+void WebCLComputeContext::enqueueMarker(WebCLCommandQueue* commandqueue, WebCLEvent* event)
+{
+	cl_int err = 0;
+	cl_command_queue cl_command_queue_id = 0;
+	cl_event cl_event_id = 0;
+
+	if (commandqueue != NULL) {
+		cl_command_queue_id = commandqueue->getCLCommandQueue();
+		if (cl_command_queue_id == NULL) {
+			printf("cl_command_queue_id null\n");
+			m_error_state = FAILURE;
+			return ;
+		}
+	}
+	if (event != NULL) {
+		cl_event_id = event->getCLEvent();
+		if (cl_event_id == NULL) {
+			printf("cl_event_id null\n");
+			m_error_state = FAILURE;
+			return ;
+		}
+	}
+
+	err = clEnqueueMarker(cl_command_queue_id, &cl_event_id);
+	if (err != CL_SUCCESS) {
+		switch (err) {
+			case CL_INVALID_COMMAND_QUEUE:
+				printf("Error: CL_INVALID_COMMAND_QUEUE\n");
+				m_error_state = INVALID_COMMAND_QUEUE;
+				break;
+			case CL_INVALID_VALUE:
+				printf("Error: CL_INVALID_VALUE\n");
+				m_error_state = INVALID_VALUE;
+				break;
+			case CL_OUT_OF_RESOURCES:
+				printf("Error: CL_OUT_OF_RESOURCES\n");
+				m_error_state = OUT_OF_RESOURCES;
+				break;
+			case CL_OUT_OF_HOST_MEMORY:
+				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
+				m_error_state = OUT_OF_HOST_MEMORY;
+				break;
+			default:
+				m_error_state = FAILURE;
+				printf("Error: Invaild Error Type\n");
+			break;
+		}
+	} else {
+		m_error_state = SUCCESS;
+		return;
+	}
+	return;
+}
+
+void WebCLComputeContext::enqueueWaitForEvents(WebCLCommandQueue* commandqueue, WebCLEventList* events)
+{
+	cl_int err = 0;
+	cl_command_queue cl_command_queue_id = 0;
+	cl_event* cl_event_id = NULL;
+
+	printf("InsideWebCLComputeContext::enqueueWaitForEvents(WebCLCommandQueue* commandqueue, WebCLEventList* events)  \n");
+	
+	if (commandqueue != NULL) {
+		cl_command_queue_id = commandqueue->getCLCommandQueue();
+		if (cl_command_queue_id == NULL) {
+			printf("cl_command_queue_id null\n");
+			m_error_state = FAILURE;
+			return ;
+		}
+	}
+	if (events != NULL) {
+		cl_event_id = events->getCLEvents();
+		if (cl_event_id == NULL) {
+			printf("Error: cl_event null\n");
+			m_error_state = FAILURE;
+			return;
+		}
+	}
+	err = clEnqueueWaitForEvents(cl_command_queue_id, events->length(), cl_event_id);
+	if (err != CL_SUCCESS) {
+		switch (err) {
+			case CL_INVALID_COMMAND_QUEUE:
+				printf("Error: CL_INVALID_COMMAND_QUEUE\n");
+				m_error_state = INVALID_COMMAND_QUEUE;
+				break;
+			case CL_INVALID_CONTEXT:
+				printf("Error: CL_INVALID_CONTEXT\n");
+				m_error_state = INVALID_CONTEXT;
+				break;
+			case CL_INVALID_EVENT:
+				printf("Error: CL_INVALID_EVENT\n");
+				m_error_state = INVALID_EVENT;
+				break;
+			case CL_INVALID_VALUE:
+				printf("Error: CL_INVALID_VALUE\n");
+				m_error_state = INVALID_VALUE;
+				break;
+			case CL_OUT_OF_RESOURCES:
+				printf("Error: CL_OUT_OF_RESOURCES\n");
+				m_error_state = OUT_OF_RESOURCES;
+				break;
+			case CL_OUT_OF_HOST_MEMORY:
+				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
+				m_error_state = OUT_OF_HOST_MEMORY;
+				break;
+			default:
+				m_error_state = FAILURE;
+				printf("Error: Invaild Error Type\n");
+			break;
+		}
+	} else {
+		m_error_state = SUCCESS;
+		return;
+	}
+	return;
+}
+
+PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueTask(WebCLCommandQueue* command_queue,
+		WebCLKernel* kernel, int event_wait_list)
+{
+	//TODO (siba samal) Handle enqueueTask  API
+	printf("WebCLComputeContext::enqueueTask event_wait_list=%d\n",
+													event_wait_list);
+
+	cl_command_queue cl_command_queue_id = NULL;
+	cl_kernel cl_kernel_id = NULL;
+	cl_int err = 0;
+	cl_event cl_event_id = NULL;
+
+	if (command_queue != NULL) {
+		cl_command_queue_id = command_queue->getCLCommandQueue();
+		if (cl_command_queue_id == NULL) {
+			printf("Error: cl_command_queue_id null\n");
+			m_error_state = FAILURE;
+			return NULL;
+		}
+	}
+	if (kernel != NULL) {
+		cl_kernel_id = kernel->getCLKernel();
+		if (cl_kernel_id == NULL) {
+			printf("Error: cl_kernel_id null\n");
+			m_error_state = FAILURE;
+			return NULL;
+		}
+	}
+
+	err = clEnqueueTask(cl_command_queue_id, cl_kernel_id, 0, NULL,&cl_event_id); 
+	
+	if (err != CL_SUCCESS) {
+		printf("Error: clEnqueueWriteBuffer\n");
+		switch (err) {
+			case CL_INVALID_COMMAND_QUEUE:
+				printf("Error: CL_INVALID_COMMAND_QUEUE\n");
+				m_error_state = INVALID_COMMAND_QUEUE;
+				break;
+			case CL_INVALID_CONTEXT:
+				printf("Error: CL_INVALID_CONTEXT\n");
+				m_error_state = INVALID_CONTEXT;
+				break;
+			case CL_INVALID_PROGRAM_EXECUTABLE :
+				printf("Error: CL_INVALID_PROGRAM_EXECUTABLE \n");
+				m_error_state = INVALID_PROGRAM_EXECUTABLE;
+				break;				
+			case CL_INVALID_KERNEL :
+				printf("Error: CL_INVALID_KERNEL \n");
+				m_error_state = INVALID_KERNEL;
+				break;
+			case CL_INVALID_EVENT_WAIT_LIST:
+				printf("Error: CL_INVALID_EVENT_WAIT_LIST\n");
+				m_error_state = INVALID_EVENT_WAIT_LIST;
+				break;
+			case CL_INVALID_KERNEL_ARGS :
+				printf("Error: CL_INVALID_KERNEL_ARGS \n");
+				m_error_state = INVALID_KERNEL_ARGS;
+				break;
+			case CL_OUT_OF_HOST_MEMORY:
+				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
+				m_error_state = OUT_OF_HOST_MEMORY;
+				break;
+			case CL_INVALID_WORK_GROUP_SIZE :
+				printf("Error: CL_INVALID_WORK_GROUP_SIZE \n");
+				m_error_state = FAILURE;
+				break;		
+			case CL_OUT_OF_RESOURCES:
+				printf("Error: CL_OUT_OF_RESOURCES  \n");
+				m_error_state = OUT_OF_RESOURCES;
+				break;			
+			case CL_MEM_OBJECT_ALLOCATION_FAILURE:
+				printf("Error: CL_MEM_OBJECT_ALLOCATION_FAILURE  \n");
+				m_error_state = MEM_OBJECT_ALLOCATION_FAILURE;
+				break;	
+			default:
+				printf("Error: Invaild Error Type\n");
+				m_error_state = FAILURE;
+				break;
+		}
+		
+	} else {
+		printf("Success: clEnqueueWriteBuffer\n");
+		RefPtr<WebCLEvent> o = WebCLEvent::create(this, cl_event_id);
+		m_event_list.append(o);
+		m_num_events++;
+		printf("m_num_events=%ld\n", m_num_events);
+		m_error_state = SUCCESS;
+		return o;
+	}
+	return NULL;
+}
+
+WebCLComputeContext::LRUImageBufferCache::LRUImageBufferCache(int capacity)
 	: m_buffers(adoptArrayPtr(new OwnPtr<ImageBuffer>[capacity]))
 	  , m_capacity(capacity)
 {

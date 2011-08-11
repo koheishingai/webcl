@@ -214,4 +214,4 @@ PassRefPtr<WebCLCommandQueue> WebCLGetInfo::getWebCLCommandQueue() const
 
 } // namespace WebCore
 
-#endif // ENABLE(WEBGL)
+#endif // ENABLE(WEBCL)

@@ -26,6 +26,9 @@
 */
 
 #include "config.h"
+
+#if ENABLE(WEBCL)
+
 #include "WebCLPlatformID.h"
 
 namespace WebCore {
@@ -50,3 +53,5 @@ cl_platform_id WebCLPlatformID::getCLPlatformID()
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(WEBCL)

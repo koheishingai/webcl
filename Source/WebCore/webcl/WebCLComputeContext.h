@@ -39,8 +39,10 @@
 #include "WebCLCommandQueue.h"
 #include "WebCLProgram.h"
 #include "WebCLKernel.h"
+#include "WebCLKernelList.h"
 #include "WebCLMem.h"
 #include "WebCLEvent.h"
+#include "WebCLEventList.h"
 #include "WebCLSampler.h"
 #include "Float32Array.h"
 #include "Int32Array.h"
@@ -452,10 +454,14 @@ class LRUImageBufferCache {
 LRUImageBufferCache m_videoCache;
 
 // Present in OpenCL 1.1
-//PassRefPtr<WebCLEvent> createUserEvent(WebCLContext*);
+PassRefPtr<WebCLEvent> createUserEvent(WebCLContext*);
+void setUserEventStatus (WebCLEvent*,int);
+
+void waitForEvents(WebCLEventList*);
 
 PassRefPtr<WebCLContext> createContext(int, WebCLDeviceIDList*, int, int);
 PassRefPtr<WebCLContext> createContext(int, WebCLDeviceID*, int, int);
+PassRefPtr<WebCLContext> createContextFromType(int, int, int, int);
 PassRefPtr<WebCLContext> createSharedContext(int, int, int);
 
 PassRefPtr<WebCLCommandQueue> createCommandQueue(WebCLContext*, 
@@ -466,9 +472,17 @@ PassRefPtr<WebCLCommandQueue> createCommandQueue(WebCLContext*,
 
 PassRefPtr<WebCLProgram> createProgramWithSource(WebCLContext*, 
 		const String&);
+PassRefPtr<WebCLProgram> createProgramWithBinary(WebCLContext*,
+		WebCLDeviceIDList* ,const String&);
+		
 void buildProgram(WebCLProgram*, int, int, int);
+void buildProgram(WebCLProgram*, WebCLDeviceID*,
+				int, int, int);
+void buildProgram(WebCLProgram*, WebCLDeviceIDList*,
+				int, int, int);
 
 PassRefPtr<WebCLKernel> createKernel(WebCLProgram*, const String&);
+PassRefPtr<WebCLKernelList> createKernelsInProgram(WebCLProgram*); 
 PassRefPtr<WebCLMem> createBuffer(WebCLContext*, int, int, int);
 
 PassRefPtr<WebCLEvent> enqueueWriteBuffer(WebCLCommandQueue*, WebCLMem*, bool, int, int, 
@@ -488,7 +502,7 @@ PassRefPtr<WebCLEvent>  enqueueReadBuffer(WebCLCommandQueue*, WebCLMem*, bool, i
 		Uint8Array*, int);	
 
 void setKernelArg(WebCLKernel*, unsigned int, WebCLMem*);
-//long setKernelArgGlobal(WebCLKernel*, unsigned int, WebCLMem*);
+void setKernelArgGlobal(WebCLKernel*, unsigned int, WebCLMem*);
 void setKernelArg(WebCLKernel*, unsigned int, int);
 void setKernelArgFloat(WebCLKernel*, unsigned int, float);
 void setKernelArgConstant(WebCLKernel*, unsigned int, WebCLMem*);
@@ -501,6 +515,7 @@ PassRefPtr<WebCLEvent>  enqueueNDRangeKernel(WebCLCommandQueue*, WebCLKernel*, u
 		unsigned int, Int32Array*, Int32Array*, int);
 
 void finish(WebCLCommandQueue*, PassRefPtr<WebCLFinishCallback>, int /*object userData*/);
+void flush(WebCLCommandQueue*);
 
 void releaseMemObject(WebCLMem*);
 void releaseProgram(WebCLProgram*);
@@ -523,6 +538,7 @@ PassRefPtr<WebCLMem> createImage2D(WebCLContext*, int, HTMLImageElement*);
 PassRefPtr<WebCLMem> createImage2D(WebCLContext*, int, HTMLVideoElement*);
 PassRefPtr<WebCLMem> createImage2D(WebCLContext*, int, ImageData*);
 PassRefPtr<WebCLMem> createImage2D(WebCLContext* ,int,unsigned int,unsigned int, ArrayBuffer*);
+PassRefPtr<WebCLMem> createImage3D(WebCLContext*, int, unsigned int, unsigned int, unsigned int,ArrayBuffer*);
 //PassRefPtr<WebCLMem> createImage2DADD(WebCLContext* , int , size_t, size_t , ArrayBuffer*);
 PassRefPtr<Image> videoFrameToImage(HTMLVideoElement*);
 PassRefPtr<WebCLEvent> enqueueWriteImage(WebCLCommandQueue*, WebCLMem*, bool, Int32Array*, 
@@ -531,6 +547,7 @@ PassRefPtr<WebCLEvent> enqueueWriteImage(WebCLCommandQueue*, WebCLMem*, bool, In
 //long enqueueReadImage(WebCLCommandQueue*, WebCLMem*, bool, Int32Array*, 
 //		Int32Array*, HTMLCanvasElement*, int);
 
+PassRefPtr<WebCLSampler> createSampler(WebCLContext* ,bool, int, int);
 PassRefPtr<WebCLMem> createFromGLBuffer(WebCLContext*, int, WebGLBuffer*);
 
 // TODO(won.jeon) - needs testing
@@ -543,7 +560,11 @@ void enqueueReleaseGLObjects(WebCLCommandQueue*, WebCLMem*, int);
 void enqueueCopyBuffer(WebCLCommandQueue*, WebCLMem*, WebCLMem*, int);
 
 void enqueueBarrier(WebCLCommandQueue*);
+void enqueueMarker(WebCLCommandQueue*, WebCLEvent*);
+void enqueueWaitForEvents(WebCLCommandQueue*, WebCLEventList*);
+PassRefPtr<WebCLEvent> enqueueTask(WebCLCommandQueue*, WebCLKernel* ,int);
 
+void unloadCompiler();
 
 private:
 WebCLComputeContext(ScriptExecutionContext*);

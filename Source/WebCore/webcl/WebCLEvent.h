@@ -28,7 +28,7 @@
 #ifndef WebCLEvent_h
 #define WebCLEvent_h
 
-#include <Opencl/opencl.h>
+#include <OpenCL/opencl.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 

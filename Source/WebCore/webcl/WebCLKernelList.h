@@ -25,33 +25,41 @@
 * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "config.h"
+#ifndef WebCLKernelList_h
+#define WebCLKernelList_h
 
-#if ENABLE(WEBCL)
+#include "WebCLKernel.h"
 
-#include "WebCLDeviceID.h"
+#include <Opencl/opencl.h>
+#include <wtf/PassRefPtr.h>
+#include <wtf/RefCounted.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 
-WebCLDeviceID::~WebCLDeviceID()
-{
-}
+class WebCLComputeContext;
 
-PassRefPtr<WebCLDeviceID> WebCLDeviceID::create(WebCLComputeContext* context, cl_device_id device_id)
-{
-	return adoptRef(new WebCLDeviceID(context, device_id));
-}
+class WebCLKernelList : public RefCounted<WebCLKernelList> {
 
-WebCLDeviceID::WebCLDeviceID(WebCLComputeContext* context, cl_device_id device_id)
-	: m_context(context), m_cl_device_id(device_id)
-{
-}
+public:
+	virtual ~WebCLKernelList();
+	static PassRefPtr<WebCLKernelList> create(WebCLComputeContext* ,cl_kernel*, cl_uint);
+	WebCLKernelList();
+	cl_kernel getCLKernels();
+	
+	unsigned length() const;
+	WebCLKernel* item(unsigned index);
+private:
+	WebCLKernelList(WebCLComputeContext*, cl_kernel*, cl_uint);
 
-cl_device_id WebCLDeviceID::getCLDeviceID()
-{
-	return m_cl_device_id;
-}
+	WebCLComputeContext* m_context;
+
+	Vector<RefPtr<WebCLKernel> > m_kernel_id_list;
+	cl_kernel* m_cl_kernels;
+	cl_uint m_num_kernels;
+	
+};
 
 } // namespace WebCore
 
-#endif // ENABLE(WEBCL)
+#endif // WebCLKernelList_h

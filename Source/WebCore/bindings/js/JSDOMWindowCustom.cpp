@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
- * Copyright (C) 2011 Samsung Electronics Corporation. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -32,6 +31,7 @@
 #include "JSEventListener.h"
 #include "JSEventSource.h"
 #include "JSFloat32Array.h"
+#include "JSFloat64Array.h"
 #include "JSHTMLCollection.h"
 #include "JSHistory.h"
 #include "JSImageConstructor.h"
@@ -56,7 +56,6 @@
 #include "Settings.h"
 #include "SharedWorkerRepository.h"
 #include <runtime/JSFunction.h>
-#include <runtime/PrototypeFunction.h>
 
 #if ENABLE(SHARED_WORKERS)
 #include "JSSharedWorker.h"
@@ -70,7 +69,7 @@
 #include "JSWebSocket.h"
 #endif
 
-// WJ
+// SP
 #if ENABLE(WEBCL)
 #include "JSWebCLComputeContext.h"
 #endif
@@ -79,40 +78,22 @@ using namespace JSC;
 
 namespace WebCore {
 
-void JSDOMWindow::markChildren(MarkStack& markStack)
+void JSDOMWindow::visitChildren(SlotVisitor& visitor)
 {
-    Base::markChildren(markStack);
+    ASSERT_GC_OBJECT_INHERITS(this, &s_info);
+    COMPILE_ASSERT(StructureFlags & OverridesVisitChildren, OverridesVisitChildrenWithoutSettingFlag);
+    ASSERT(structure()->typeInfo().overridesVisitChildren());
+    Base::visitChildren(visitor);
 
-    impl()->markJSEventListeners(markStack);
-
-    JSGlobalData& globalData = *Heap::heap(this)->globalData();
-
-    markDOMObjectWrapper(markStack, globalData, impl()->optionalConsole());
-    markDOMObjectWrapper(markStack, globalData, impl()->optionalHistory());
-    markDOMObjectWrapper(markStack, globalData, impl()->optionalLocationbar());
-    markDOMObjectWrapper(markStack, globalData, impl()->optionalMenubar());
-    markDOMObjectWrapper(markStack, globalData, impl()->optionalNavigator());
-    markDOMObjectWrapper(markStack, globalData, impl()->optionalPersonalbar());
-    markDOMObjectWrapper(markStack, globalData, impl()->optionalScreen());
-    markDOMObjectWrapper(markStack, globalData, impl()->optionalScrollbars());
-    markDOMObjectWrapper(markStack, globalData, impl()->optionalSelection());
-    markDOMObjectWrapper(markStack, globalData, impl()->optionalStatusbar());
-    markDOMObjectWrapper(markStack, globalData, impl()->optionalToolbar());
-    markDOMObjectWrapper(markStack, globalData, impl()->optionalLocation());
-    markDOMObjectWrapper(markStack, globalData, impl()->optionalMedia());
-#if ENABLE(DOM_STORAGE)
-    markDOMObjectWrapper(markStack, globalData, impl()->optionalSessionStorage());
-    markDOMObjectWrapper(markStack, globalData, impl()->optionalLocalStorage());
-#endif
-#if ENABLE(OFFLINE_WEB_APPLICATIONS)
-    markDOMObjectWrapper(markStack, globalData, impl()->optionalApplicationCache());
-#endif
+    impl()->visitJSEventListeners(visitor);
+    if (Frame* frame = impl()->frame())
+        visitor.addOpaqueRoot(frame);
 }
 
 template<NativeFunction nativeFunction, int length>
 JSValue nonCachingStaticFunctionGetter(ExecState* exec, JSValue, const Identifier& propertyName)
 {
-    return new (exec) NativeFunctionWrapper(exec, exec->lexicalGlobalObject(), exec->lexicalGlobalObject()->prototypeFunctionStructure(), length, propertyName, nativeFunction);
+    return JSFunction::create(exec, exec->lexicalGlobalObject(), exec->lexicalGlobalObject()->functionStructure(), length, propertyName, nativeFunction);
 }
 
 static JSValue childFrameGetter(ExecState* exec, JSValue slotBase, const Identifier& propertyName)
@@ -136,8 +117,8 @@ static JSValue namedItemGetter(ExecState* exec, JSValue slotBase, const Identifi
 
     RefPtr<HTMLCollection> collection = document->windowNamedItems(identifierToString(propertyName));
     if (collection->length() == 1)
-        return toJS(exec, collection->firstItem());
-    return toJS(exec, collection.get());
+        return toJS(exec, thisObj, collection->firstItem());
+    return toJS(exec, thisObj, collection.get());
 }
 
 bool JSDOMWindow::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -448,24 +429,24 @@ JSValue JSDOMWindow::lookupSetter(ExecState* exec, const Identifier& propertyNam
 JSValue JSDOMWindow::history(ExecState* exec) const
 {
     History* history = impl()->history();
-    if (DOMObject* wrapper = getCachedDOMObjectWrapper(exec, history))
+    if (JSDOMWrapper* wrapper = getCachedWrapper(currentWorld(exec), history))
         return wrapper;
 
     JSDOMWindow* window = const_cast<JSDOMWindow*>(this);
-    JSHistory* jsHistory = new (exec) JSHistory(getDOMStructure<JSHistory>(exec, window), window, history);
-    cacheDOMObjectWrapper(exec, history, jsHistory);
+    JSHistory* jsHistory = JSHistory::create(getDOMStructure<JSHistory>(exec, window), window, history);
+    cacheWrapper(currentWorld(exec), history, jsHistory);
     return jsHistory;
 }
 
 JSValue JSDOMWindow::location(ExecState* exec) const
 {
     Location* location = impl()->location();
-    if (DOMObject* wrapper = getCachedDOMObjectWrapper(exec, location))
+    if (JSDOMWrapper* wrapper = getCachedWrapper(currentWorld(exec), location))
         return wrapper;
 
     JSDOMWindow* window = const_cast<JSDOMWindow*>(this);
-    JSLocation* jsLocation = new (exec) JSLocation(getDOMStructure<JSLocation>(exec, window), window, location);
-    cacheDOMObjectWrapper(exec, location, jsLocation);
+    JSLocation* jsLocation = JSLocation::create(getDOMStructure<JSLocation>(exec, window), window, location);
+    cacheWrapper(currentWorld(exec), location, jsLocation);
     return jsLocation;
 }
 
@@ -497,7 +478,7 @@ JSValue JSDOMWindow::event(ExecState* exec) const
     Event* event = currentEvent();
     if (!event)
         return jsUndefined();
-    return toJS(exec, event);
+    return toJS(exec, const_cast<JSDOMWindow*>(this), event);
 }
 
 #if ENABLE(EVENTSOURCE)
@@ -576,6 +557,11 @@ JSValue JSDOMWindow::float32Array(ExecState* exec) const
     return getDOMConstructor<JSFloat32ArrayConstructor>(exec, this);
 }
 
+JSValue JSDOMWindow::float64Array(ExecState* exec) const
+{
+    return getDOMConstructor<JSFloat64ArrayConstructor>(exec, this);
+}
+
 JSValue JSDOMWindow::dataView(ExecState* exec) const
 {
     return getDOMConstructor<JSDataViewConstructor>(exec, this);
@@ -616,7 +602,7 @@ JSValue JSDOMWindow::sharedWorker(ExecState* exec) const
 }
 #endif
 
-// WJ
+// SP
 #if ENABLE(WEBCL)
 JSValue JSDOMWindow::webCLComputeContext(ExecState* exec) const
 
@@ -748,9 +734,14 @@ JSValue JSDOMWindow::postMessage(ExecState* exec)
 
 JSValue JSDOMWindow::setTimeout(ExecState* exec)
 {
-    OwnPtr<ScheduledAction> action = ScheduledAction::create(exec, currentWorld(exec));
+    ContentSecurityPolicy* contentSecurityPolicy = impl()->document() ? impl()->document()->contentSecurityPolicy() : 0;
+    OwnPtr<ScheduledAction> action = ScheduledAction::create(exec, currentWorld(exec), contentSecurityPolicy);
     if (exec->hadException())
         return jsUndefined();
+
+    if (!action)
+        return jsNumber(0);
+
     int delay = exec->argument(1).toInt32(exec);
 
     ExceptionCode ec = 0;
@@ -762,10 +753,14 @@ JSValue JSDOMWindow::setTimeout(ExecState* exec)
 
 JSValue JSDOMWindow::setInterval(ExecState* exec)
 {
-    OwnPtr<ScheduledAction> action = ScheduledAction::create(exec, currentWorld(exec));
+    ContentSecurityPolicy* contentSecurityPolicy = impl()->document() ? impl()->document()->contentSecurityPolicy() : 0;
+    OwnPtr<ScheduledAction> action = ScheduledAction::create(exec, currentWorld(exec), contentSecurityPolicy);
     if (exec->hadException())
         return jsUndefined();
     int delay = exec->argument(1).toInt32(exec);
+
+    if (!action)
+        return jsNumber(0);
 
     ExceptionCode ec = 0;
     int result = impl()->setInterval(action.release(), delay, ec);

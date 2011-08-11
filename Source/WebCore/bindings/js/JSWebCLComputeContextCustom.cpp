@@ -214,10 +214,10 @@ using namespace std;
 			WebCLProgram* program  = toWebCLProgram(exec->argument(0));
 			if (exec->hadException())
 				return jsUndefined();
-			unsigned program_info  = exec->argument(1).toInt32(exec);
+			unsigned programInfo  = exec->argument(1).toInt32(exec);
 			if (exec->hadException())
 				return jsUndefined();
-			WebCLGetInfo info = context->getProgramInfo(program,program_info);
+			WebCLGetInfo info = context->getProgramInfo(program,programInfo);
 			if (ec) {
 				setDOMException(exec, ec);
 				return jsUndefined();
@@ -422,11 +422,11 @@ using namespace std;
 				return jsUndefined();
 			ASSERT(finishCallback);
 
-			unsigned user_param  = exec->argument(2).toInt32(exec);
+			unsigned userParam  = exec->argument(2).toInt32(exec);
 			if (exec->hadException())
 				return jsUndefined();
 
-			m_impl->finish(queue ,finishCallback.release(), user_param);
+			m_impl->finish(queue ,finishCallback.release(), userParam);
 			return jsUndefined();
 
 		}
@@ -441,7 +441,7 @@ using namespace std;
 			//RefPtr<WebCLComputeContext> webCLComputeContext = WebCLComputeContext::create(window->document());
 
 			//return JSValue::encode(asObject(toJS(exec, jsConstructor->globalObject())));
-			return JSValue::encode(CREATE_DOM_OBJECT_WRAPPER(exec, jsConstructor->globalObject(), WebCLComputeContext, webCLComputeContext.get()));
+			return JSValue::encode(CREATE_DOM_WRAPPER(exec, jsConstructor->globalObject(), WebCLComputeContext, webCLComputeContext.get()));
 		}
 
 	} // namespace WebCore

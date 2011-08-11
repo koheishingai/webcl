@@ -29,6 +29,34 @@
 
 #include <wtf/Platform.h>
 
+#if OS(WINDOWS) && !PLATFORM(QT) && !PLATFORM(CHROMIUM)
+#include <WebCore/WebCoreHeaderDetection.h>
+#endif
+
+/* See note in wtf/Platform.h for more info on EXPORT_MACROS. */
+#if USE(EXPORT_MACROS)
+
+#include <wtf/ExportMacros.h>
+
+#if defined(BUILDING_JavaScriptCore) || defined(BUILDING_WTF)
+#define WTF_EXPORT_PRIVATE WTF_EXPORT
+#define JS_EXPORT_PRIVATE WTF_EXPORT
+#else
+#define WTF_EXPORT_PRIVATE WTF_IMPORT
+#define JS_EXPORT_PRIVATE WTF_IMPORT
+#endif
+
+#define JS_EXPORTDATA JS_EXPORT_PRIVATE
+#define JS_EXPORTCLASS JS_EXPORT_PRIVATE
+
+#if defined(BUILDING_WebCore) || defined(BUILDING_WebKit)
+#define WEBKIT_EXPORTDATA WTF_EXPORT
+#else
+#define WEBKIT_EXPORTDATA WTF_IMPORT
+#endif
+
+#else /* !USE(EXPORT_MACROS) */
+
 #if !PLATFORM(CHROMIUM) && OS(WINDOWS) && !defined(BUILDING_WX__) && !COMPILER(GCC)
 #if defined(BUILDING_JavaScriptCore) || defined(BUILDING_WTF)
 #define JS_EXPORTDATA __declspec(dllexport)
@@ -40,12 +68,18 @@
 #else
 #define WEBKIT_EXPORTDATA __declspec(dllimport)
 #endif
+#define WTF_EXPORT_PRIVATE
+#define JS_EXPORT_PRIVATE
 #define JS_EXPORTCLASS JS_EXPORTDATA
 #else
 #define JS_EXPORTDATA
 #define JS_EXPORTCLASS
 #define WEBKIT_EXPORTDATA
+#define WTF_EXPORT_PRIVATE
+#define JS_EXPORT_PRIVATE
 #endif
+
+#endif /* USE(EXPORT_MACROS) */
 
 #ifdef __APPLE__
 #define HAVE_FUNC_USLEEP 1
@@ -79,41 +113,6 @@
 
 #endif /* OS(WINDOWS) */
 
-#if PLATFORM(ANDROID)
-// Android uses a single set of include directories when building WebKit and
-// JavaScriptCore. Since WebCore/ is included before JavaScriptCore/, Android
-// includes JavaScriptCore/config.h explicitly here to make sure it gets picked
-// up.
-#include <JavaScriptCore/config.h>
-
-#define WEBCORE_NAVIGATOR_VENDOR "Google Inc."
-// This must be defined before we include FastMalloc.h, below.
-#define USE_SYSTEM_MALLOC 1
-#define LOG_DISABLED 1
-#include <wtf/Assertions.h>
-// Central place to set which optional features Android uses.
-#define ENABLE_CHANNEL_MESSAGING 1
-#define ENABLE_DOM_STORAGE 1
-#undef ENABLE_FTPDIR  // Enabled by default in Platform.h
-#define ENABLE_FTPDIR 0
-#ifndef ENABLE_SVG
-#define ENABLE_SVG 0
-#endif
-#define ENABLE_VIDEO 1
-#define ENABLE_WORKERS 1
-#define ENABLE_XBL 0
-#define ENABLE_XHTMLMP 0
-#define ENABLE_XPATH 0
-#define ENABLE_XSLT 0
-#define ENABLE_ARCHIVE 0
-#define ENABLE_OFFLINE_WEB_APPLICATIONS 1
-#undef ENABLE_GEOLOCATION  // Disabled by default in Platform.h
-#define ENABLE_GEOLOCATION 1
-#undef ENABLE_INSPECTOR  // Enabled by default in Platform.h
-#define ENABLE_INSPECTOR 0
-#define ENABLE_EVENT_SOURCE 0
-#endif /* PLATFORM(ANDROID) */
-
 #ifdef __cplusplus
 
 // These undefs match up with defines in WebCorePrefix.h for Mac OS X.
@@ -146,18 +145,16 @@
 #endif
 
 #if PLATFORM(WIN)
-#if defined(WIN_CAIRO)
-#undef WTF_PLATFORM_CG
-#define WTF_PLATFORM_CAIRO 1
-#undef WTF_USE_CFNETWORK
+#if PLATFORM(WIN_CAIRO)
+#undef WTF_USE_CG
+#define WTF_USE_CAIRO 1
 #define WTF_USE_CURL 1
 #ifndef _WINSOCKAPI_
 #define _WINSOCKAPI_ // Prevent inclusion of winsock.h in windows.h
 #endif
 #elif !OS(WINCE)
-#define WTF_PLATFORM_CG 1
-#undef WTF_PLATFORM_CAIRO
-#define WTF_USE_CFNETWORK 1
+#define WTF_USE_CG 1
+#undef WTF_USE_CAIRO
 #undef WTF_USE_CURL
 #endif
 #endif
@@ -171,16 +168,11 @@
 #define USE_SYSTEM_MALLOC 1
 #endif
 
-#if OS(DARWIN) || OS(UNIX) || OS(WINDOWS)
+#if OS(UNIX) || OS(WINDOWS)
 #define WTF_USE_OS_RANDOMNESS 1
 #endif
 
 #if PLATFORM(CHROMIUM)
-
-#if !OS(DARWIN)
-// Define SKIA on non-Mac.
-#define WTF_PLATFORM_SKIA 1
-#endif /* !OS(DARWIN) */
 
 // Chromium uses this file instead of JavaScriptCore/config.h to compile
 // JavaScriptCore/wtf (chromium doesn't compile the rest of JSC). Therefore,
@@ -193,8 +185,6 @@
 #define WTF_USE_V8 1
 #endif
 
-#undef WTF_USE_CFNETWORK
-
 #endif /* PLATFORM(CHROMIUM) */
 
 #if !defined(WTF_USE_V8)
@@ -206,7 +196,7 @@
 #define WTF_USE_JSC !WTF_USE_V8
 #endif
 
-#if PLATFORM(CG)
+#if USE(CG)
 #ifndef CGFLOAT_DEFINED
 #ifdef __LP64__
 typedef double CGFloat;
@@ -215,20 +205,15 @@ typedef float CGFloat;
 #endif
 #define CGFLOAT_DEFINED 1
 #endif
-#endif /* PLATFORM(CG) */
+#endif /* USE(CG) */
 
-#ifdef BUILDING_ON_TIGER
-#undef ENABLE_FTPDIR
-#define ENABLE_FTPDIR 0
-#endif
-
-#if PLATFORM(WIN) && PLATFORM(CG)
+#if PLATFORM(WIN) && USE(CG)
 #define WTF_USE_SAFARI_THEME 1
 #endif
 
 // CoreAnimation is available to IOS, Mac and Windows if using CG
-#if PLATFORM(MAC) || PLATFORM(IOS) || (PLATFORM(WIN) && PLATFORM(CG))
-#define WTF_PLATFORM_CA 1
+#if PLATFORM(MAC) || PLATFORM(IOS) || (PLATFORM(WIN) && USE(CG))
+#define WTF_USE_CA 1
 #endif
 
 #if PLATFORM(QT) && USE(V8) && defined(Q_WS_X11)
@@ -236,6 +221,14 @@ typedef float CGFloat;
 #include <bridge/npruntime_internal.h>
 #endif
 
-// WJ
-#define ENABLE_WEBCL 1
+#if PLATFORM(MAC) && !defined(BUILDING_ON_LEOPARD) && !defined(BUILDING_ON_SNOW_LEOPARD)
+#define WTF_USE_AVFOUNDATION 1
+#endif
 
+#if PLATFORM(WIN) && HAVE(AVCF)
+/// FIXME: Adopt AVCF media back end on Windows http://webkit.org/b/65400
+#define WTF_USE_AVFOUNDATION 0
+#endif
+
+// SP
+#define ENABLE_WEBCL 1 

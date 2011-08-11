@@ -25,33 +25,39 @@
 * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "config.h"
+#ifndef WebCLEventList_h
+#define WebCLEventList_h
 
-#if ENABLE(WEBCL)
+#include "WebCLEvent.h"
 
-#include "WebCLDeviceID.h"
+#include <Opencl/opencl.h>
+#include <wtf/PassRefPtr.h>
+#include <wtf/RefCounted.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 
-WebCLDeviceID::~WebCLDeviceID()
-{
-}
+class WebCLComputeContext;
 
-PassRefPtr<WebCLDeviceID> WebCLDeviceID::create(WebCLComputeContext* context, cl_device_id device_id)
-{
-	return adoptRef(new WebCLDeviceID(context, device_id));
-}
+class WebCLEventList : public RefCounted<WebCLEventList> {
 
-WebCLDeviceID::WebCLDeviceID(WebCLComputeContext* context, cl_device_id device_id)
-	: m_context(context), m_cl_device_id(device_id)
-{
-}
-
-cl_device_id WebCLDeviceID::getCLDeviceID()
-{
-	return m_cl_device_id;
-}
+public:
+	virtual ~WebCLEventList();
+	static PassRefPtr<WebCLEventList> create(WebCLComputeContext* ,cl_event*, cl_uint);
+	WebCLEventList();
+	cl_event* getCLEvents();
+	
+	unsigned length() const;
+	WebCLEvent* item(unsigned index);
+private:
+	WebCLEventList(WebCLComputeContext*, cl_event*, cl_uint);
+	WebCLComputeContext* m_context;
+	Vector<RefPtr<WebCLEvent> > m_event_id_list;
+	cl_event* m_cl_events;
+	cl_uint m_num_events;
+	
+};
 
 } // namespace WebCore
 
-#endif // ENABLE(WEBCL)
+#endif // WebCLEventList_h

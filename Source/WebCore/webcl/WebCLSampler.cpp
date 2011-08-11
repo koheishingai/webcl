@@ -38,13 +38,13 @@ WebCLSampler::~WebCLSampler()
 }
 
 PassRefPtr<WebCLSampler> WebCLSampler::create(WebCLComputeContext* compute_context, 
-	cl_sampler sampler, bool is_shared = false)
+	cl_sampler sampler)
 {
-	return adoptRef(new WebCLSampler(compute_context, sampler, is_shared));
+	return adoptRef(new WebCLSampler(compute_context, sampler));
 }
 
-WebCLSampler::WebCLSampler(WebCLComputeContext* compute_context, cl_sampler sampler, bool is_shared) 
-		: m_context(compute_context), m_cl_sampler(sampler), m_shared(is_shared)
+WebCLSampler::WebCLSampler(WebCLComputeContext* compute_context, cl_sampler sampler) 
+		: m_context(compute_context), m_cl_sampler(sampler)
 {
 }
 

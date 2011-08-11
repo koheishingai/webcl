@@ -237,11 +237,10 @@ function InitCL()
 
 	// Wait for the command queue to get serviced before reading back results
 	//
-	cl.finish(queue, GetResults, 0);
-	//GetResults(null);
+	cl.finish(queue, GetResults, cl);
 }
 
-function  GetResults(userData)
+function  GetResults(cl)
 {
 	// Read back the results from the device to verify the output
 	//
