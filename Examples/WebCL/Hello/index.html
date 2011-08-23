@@ -204,9 +204,9 @@ function InitCL()
 
 	// Set the arguments to our compute kernel
 	//
-	cl.setKernelArg(kernel, 0, input);
-	cl.setKernelArg(kernel, 1, output);
-	cl.setKernelArg(kernel, 2, count);
+	cl.setKernelArgGlobal(kernel, 0, input);
+	cl.setKernelArgGlobal(kernel, 1, output);
+	cl.setKernelArg(kernel, 2, count, cl.KERNEL_ARG_INT);
 	if (cl.getError()!== cl.SUCCESS)
 	{
 		console.error("Failed to set kernel arguments");

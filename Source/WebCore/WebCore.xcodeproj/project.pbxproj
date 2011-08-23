@@ -1630,6 +1630,8 @@
 		6106FEC913EBB16C000A2162 /* JSWebCLProgram.h in Headers */ = {isa = PBXBuildFile; fileRef = 6106FEA913EBB16C000A2162 /* JSWebCLProgram.h */; };
 		6106FECA13EBB16C000A2162 /* JSWebCLSampler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6106FEAA13EBB16C000A2162 /* JSWebCLSampler.cpp */; };
 		6106FECB13EBB16C000A2162 /* JSWebCLSampler.h in Headers */ = {isa = PBXBuildFile; fileRef = 6106FEAB13EBB16C000A2162 /* JSWebCLSampler.h */; };
+		6180568A13EFB526006C873B /* WebCLKernelTypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6180568813EFB526006C873B /* WebCLKernelTypes.cpp */; };
+		6180568B13EFB526006C873B /* WebCLKernelTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 6180568913EFB526006C873B /* WebCLKernelTypes.h */; };
 		626CDE0E1140424C001E5A68 /* SpatialNavigation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 626CDE0C1140424C001E5A68 /* SpatialNavigation.cpp */; };
 		626CDE0F1140424C001E5A68 /* SpatialNavigation.h in Headers */ = {isa = PBXBuildFile; fileRef = 626CDE0D1140424C001E5A68 /* SpatialNavigation.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		628D214C12131ED10055DCFC /* NetworkingContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 628D214B12131ED10055DCFC /* NetworkingContext.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -8324,6 +8326,8 @@
 		6106FEA913EBB16C000A2162 /* JSWebCLProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JSWebCLProgram.h; path = ../../WebKitBuild/Release/DerivedSources/WebCore/JSWebCLProgram.h; sourceTree = SOURCE_ROOT; };
 		6106FEAA13EBB16C000A2162 /* JSWebCLSampler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JSWebCLSampler.cpp; path = ../../WebKitBuild/Release/DerivedSources/WebCore/JSWebCLSampler.cpp; sourceTree = SOURCE_ROOT; };
 		6106FEAB13EBB16C000A2162 /* JSWebCLSampler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JSWebCLSampler.h; path = ../../WebKitBuild/Release/DerivedSources/WebCore/JSWebCLSampler.h; sourceTree = SOURCE_ROOT; };
+		6180568813EFB526006C873B /* WebCLKernelTypes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WebCLKernelTypes.cpp; sourceTree = "<group>"; };
+		6180568913EFB526006C873B /* WebCLKernelTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebCLKernelTypes.h; sourceTree = "<group>"; };
 		626CDE0C1140424C001E5A68 /* SpatialNavigation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpatialNavigation.cpp; sourceTree = "<group>"; };
 		626CDE0D1140424C001E5A68 /* SpatialNavigation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpatialNavigation.h; sourceTree = "<group>"; };
 		628D214B12131ED10055DCFC /* NetworkingContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetworkingContext.h; sourceTree = "<group>"; };
@@ -14506,6 +14510,8 @@
 		6106EE1C13EACBA9000A2162 /* webcl */ = {
 			isa = PBXGroup;
 			children = (
+				6180568813EFB526006C873B /* WebCLKernelTypes.cpp */,
+				6180568913EFB526006C873B /* WebCLKernelTypes.h */,
 				6106EE1D13EACBA9000A2162 /* WebCLBuffer.cpp */,
 				6106EE1E13EACBA9000A2162 /* WebCLBuffer.h */,
 				6106EE1F13EACBA9000A2162 /* WebCLBuffer.idl */,
@@ -23614,6 +23620,7 @@
 				6106FEC713EBB16C000A2162 /* JSWebCLPlatformIDList.h in Headers */,
 				6106FEC913EBB16C000A2162 /* JSWebCLProgram.h in Headers */,
 				6106FECB13EBB16C000A2162 /* JSWebCLSampler.h in Headers */,
+				6180568B13EFB526006C873B /* WebCLKernelTypes.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -26442,6 +26449,7 @@
 				6106FEC613EBB16C000A2162 /* JSWebCLPlatformIDList.cpp in Sources */,
 				6106FEC813EBB16C000A2162 /* JSWebCLProgram.cpp in Sources */,
 				6106FECA13EBB16C000A2162 /* JSWebCLSampler.cpp in Sources */,
+				6180568A13EFB526006C873B /* WebCLKernelTypes.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -29,6 +29,8 @@
 #define WebCLComputeContext_h
 
 #if ENABLE(WEBCL)
+#include "ScriptObject.h"
+#include "ScriptState.h"
 
 #include "ActiveDOMObject.h"
 #include "WebCLPlatformIDList.h"
@@ -55,14 +57,23 @@
 #include "WebGLRenderingContext.h"
 #include "WebCLGetInfo.h"
 #include "WebCLFinishCallback.h"
+#include "WebCLKernelTypes.h"
+
 #include <wtf/OwnPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
+#include <wtf/PassRefPtr.h>
+#include <wtf/Forward.h>
+#include <wtf/Noncopyable.h>
+
 #include <PlatformString.h>
 #include "WebCLImage.h"
 #include <OpenCL/opencl.h>
 #include <stdlib.h>
 #include "ArrayBuffer.h"
+
+using namespace std ;
+
 
 namespace WebCore { 
 
@@ -70,6 +81,9 @@ class ScriptExecutionContext;
 class ImageData;
 class ImageBuffer;
 class IntSize;
+class WebCLKernelTypeObject;
+class WebCLKernelTypeValue;
+
 class WebCLComputeContext : public RefCounted<WebCLComputeContext>, 
 	public ActiveDOMObject {
 public: 
@@ -413,11 +427,78 @@ public:
 
 	/* cl_buffer_create_type  */
 	BUFFER_CREATE_TYPE_REGION                = 0x1220,
+
 	/* cl_profiling_info  */
 	PROFILING_COMMAND_QUEUED                 = 0x1280,
 	PROFILING_COMMAND_SUBMIT                 = 0x1281,
 	PROFILING_COMMAND_START                  = 0x1282,
-	PROFILING_COMMAND_END                    = 0x1283
+	PROFILING_COMMAND_END                    = 0x1283,
+	
+	/* cl_kernel_arg_type */
+	KERNEL_ARG_CHAR                          = 0x2000,
+	KERNEL_ARG_UCHAR                         = 0x2001,
+	KERNEL_ARG_SHORT                         = 0x2002,
+	KERNEL_ARG_USHORT                        = 0x2003,
+	KERNEL_ARG_INT                           = 0x2004,
+	KERNEL_ARG_UINT                          = 0x2005,
+	KERNEL_ARG_LONG                          = 0x2006,
+	KERNEL_ARG_ULONG                         = 0x2007,
+	KERNEL_ARG_FLOAT                         = 0x2008,
+
+	KERNEL_ARG_CHAR2                         = 0x2020,
+	KERNEL_ARG_UCHAR2                        = 0x2021,
+	KERNEL_ARG_SHORT2                        = 0x2022,
+	KERNEL_ARG_USHORT2                       = 0x2023,
+	KERNEL_ARG_INT2                          = 0x2024,
+	KERNEL_ARG_UINT2                         = 0x2025,
+	KERNEL_ARG_LONG2                         = 0x2026,
+	KERNEL_ARG_ULONG2                        = 0x2027,
+	KERNEL_ARG_FLOAT2                        = 0x2028,
+
+	KERNEL_ARG_CHAR3                         = 0x2030,
+	KERNEL_ARG_UCHAR3                        = 0x2031,
+	KERNEL_ARG_SHORT3                        = 0x2032,
+	KERNEL_ARG_USHORT3                       = 0x2033,
+	KERNEL_ARG_INT3                          = 0x2034,
+	KERNEL_ARG_UINT3                         = 0x2035,
+	KERNEL_ARG_LONG3                         = 0x2036,
+	KERNEL_ARG_ULONG3                        = 0x2037,
+	KERNEL_ARG_FLOAT3                        = 0x2038,
+
+	KERNEL_ARG_CHAR4                         = 0x2040,
+	KERNEL_ARG_UCHAR4                        = 0x2041,
+	KERNEL_ARG_SHORT4                        = 0x2042,
+	KERNEL_ARG_USHORT4                       = 0x2043,
+	KERNEL_ARG_INT4                          = 0x2044,
+	KERNEL_ARG_UINT4                         = 0x2045,
+	KERNEL_ARG_LONG4                         = 0x2046,
+	KERNEL_ARG_ULONG4                        = 0x2047,
+	KERNEL_ARG_FLOAT4                        = 0x2048,
+
+	KERNEL_ARG_CHAR8                         = 0x2080,
+	KERNEL_ARG_UCHAR8                        = 0x2081,
+	KERNEL_ARG_SHORT8                        = 0x2082,
+	KERNEL_ARG_USHORT8                       = 0x2083,
+	KERNEL_ARG_INT8                          = 0x2084,
+	KERNEL_ARG_UINT8                         = 0x2085,
+	KERNEL_ARG_LONG8                         = 0x2086,
+	KERNEL_ARG_ULONG8                        = 0x2087,
+	KERNEL_ARG_FLOAT8                        = 0x2088,
+	
+	KERNEL_ARG_CHAR16                        = 0x2100,
+    KERNEL_ARG_UCHAR16                       = 0x2101,
+	KERNEL_ARG_SHORT16                       = 0x2102,
+	KERNEL_ARG_USHORT16                      = 0x2103,
+	KERNEL_ARG_INT16                         = 0x2104,
+	KERNEL_ARG_UINT16                        = 0x2105,
+	KERNEL_ARG_LONG16                        = 0x2106,
+	KERNEL_ARG_ULONG16                       = 0x2107,
+	KERNEL_ARG_FLOAT16                       = 0x2108,
+	
+	KERNEL_ARG_IMAGE2D                       = 0x2200,
+	KERNEL_ARG_IMAGE3D                       = 0x2201,
+	KERNEL_ARG_SAMPLER                       = 0x2202,
+	KERNEL_ARG_MEM                           = 0x2203
 };
 virtual WebCLComputeContext* toWebCLComputeContext() { return this; }
 
@@ -501,10 +582,9 @@ PassRefPtr<WebCLEvent>  enqueueReadBuffer(WebCLCommandQueue*, WebCLMem*, bool, i
 PassRefPtr<WebCLEvent>  enqueueReadBuffer(WebCLCommandQueue*, WebCLMem*, bool, int, int, 
 		Uint8Array*, int);	
 
-void setKernelArg(WebCLKernel*, unsigned int, WebCLMem*);
+		
+void setKernelArg(WebCLKernel*, unsigned int, PassRefPtr<WebCLKernelTypeValue>, int);
 void setKernelArgGlobal(WebCLKernel*, unsigned int, WebCLMem*);
-void setKernelArg(WebCLKernel*, unsigned int, int);
-void setKernelArgFloat(WebCLKernel*, unsigned int, float);
 void setKernelArgConstant(WebCLKernel*, unsigned int, WebCLMem*);
 void setKernelArgLocal(WebCLKernel*, unsigned int,unsigned int);
 
@@ -566,6 +646,8 @@ PassRefPtr<WebCLEvent> enqueueTask(WebCLCommandQueue*, WebCLKernel* ,int);
 
 void unloadCompiler();
 
+
+
 private:
 WebCLComputeContext(ScriptExecutionContext*);
 void check_mem_object(cl_mem cl_mem_ids);
@@ -594,6 +676,14 @@ long m_num_contexts;
 long m_num_commandqueues;
 long m_error_state;
 RefPtr<WebCLMem> m_shared_mem;
+
+template<class T> unsigned int clSetKernelArgPrimitiveType(cl_kernel cl_kernel_id, 
+							PassRefPtr<WebCLKernelTypeValue> kernelObject, 
+							T nodeId, unsigned int argIndex, int size);
+unsigned int clSetKernelArgVectorType(cl_kernel cl_kernel_id, 
+							PassRefPtr<WebCLKernelTypeValue> kernelObject,
+							RefPtr<WebCLKernelTypeVector> array , 
+							unsigned int argIndex, int size,  unsigned int length);
 };
 
 } // namespace WebCore

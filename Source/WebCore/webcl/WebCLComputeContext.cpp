@@ -42,6 +42,7 @@
 #include "CanvasPixelArray.h"
 #include "HTMLCanvasElement.h"
 
+
 #include <stdio.h>
 #include <wtf/ByteArray.h>
 #include <CanvasRenderingContext.h>
@@ -50,10 +51,10 @@ class CanvasRenderingContext;
 
 using namespace JSC;
 
-namespace WebCore {  
+namespace WebCore {   
 
 WebCLComputeContext::WebCLComputeContext(ScriptExecutionContext* context) : ActiveDOMObject(context, this)
-										    , m_videoCache(4)
+																				, m_videoCache(4)
 {
 	m_error_state = SUCCESS;
 	m_num_mems = 0;
@@ -225,7 +226,7 @@ WebCLGetInfo  WebCLComputeContext::getDeviceInfo(WebCLDeviceID*   webcl_device_i
 
 	switch(device_type)
 	{
-		
+
 		case DEVICE_EXTENSIONS:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_EXTENSIONS, sizeof(device_string), &device_string, NULL);
 			if (err == CL_SUCCESS)
@@ -768,7 +769,6 @@ WebCLGetInfo WebCLComputeContext::getProgramBuildInfo(WebCLProgram* program, Web
 
 WebCLGetInfo WebCLComputeContext:: getCommandQueueInfo(WebCLCommandQueue* command_queue, int param_name)
 {
-	printf("WebCLComputeContext::getCommandQueueInfo param name %d\n", param_name);
 	cl_command_queue cl_command_queue_id = NULL;
 	cl_int err = 0;
 	cl_uint uint_units = 0;
@@ -797,7 +797,6 @@ WebCLGetInfo WebCLComputeContext:: getCommandQueueInfo(WebCLCommandQueue* comman
 			if(contextObj != NULL)
 			{
 				m_error_state = FAILURE;
-				printf("SUCCESS: CL program context not NULL\n");
 			}
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(PassRefPtr<WebCLContext>(contextObj));
@@ -1017,7 +1016,7 @@ WebCLGetInfo WebCLComputeContext::getMemObjectInfo(WebCLMem* memobj,int param_na
 			if(contextObj == NULL)
 			{
 				m_error_state = FAILURE;
-				printf("FAILURE: CL Mem context not NULL\n");
+				printf("Error: CL Mem context not NULL\n");
 				return WebCLGetInfo();
 			}
 			if (err == CL_SUCCESS)
@@ -1374,7 +1373,7 @@ long WebCLComputeContext::getError()
 	return m_error_state;
 }
 
- PassRefPtr<WebCLEvent> WebCLComputeContext::createUserEvent(WebCLContext* context_id)
+PassRefPtr<WebCLEvent> WebCLComputeContext::createUserEvent(WebCLContext* context_id)
 {
 	cl_int err = -1;
 	cl_context cl_context_id = NULL;
@@ -1386,39 +1385,37 @@ long WebCLComputeContext::getError()
 			m_error_state = FAILURE;
 			printf("Error: cl_context_id null\n");
 			return NULL;
-	   }
+		}
 	}
 
 	//(TODO) To be uncommented for OpenCL1.1
 	//event =  clCreateUserEvent(cl_context_id, &err);
 	if (err != CL_SUCCESS) {
-	   switch (err) {
-		case CL_INVALID_CONTEXT :
-			printf("Error: CL_INVALID_CONTEXT \n");
-			m_error_state = INVALID_CONTEXT;
-			break;
-		case CL_OUT_OF_RESOURCES :
-			printf("Error: CCL_OUT_OF_RESOURCES \n");
-			m_error_state = OUT_OF_RESOURCES;
-			break;
-		case CL_OUT_OF_HOST_MEMORY :
-			printf("Error: CCL_OUT_OF_HOST_MEMORY \n");
-			m_error_state = OUT_OF_HOST_MEMORY;
-			break;
-		default:
-			printf("Error: Invaild Error Type\n");
-			m_error_state = FAILURE;
-			break;
-	   }
-	     
+		switch (err) {
+			case CL_INVALID_CONTEXT :
+				printf("Error: CL_INVALID_CONTEXT \n");
+				m_error_state = INVALID_CONTEXT;
+				break;
+			case CL_OUT_OF_RESOURCES :
+				printf("Error: CCL_OUT_OF_RESOURCES \n");
+				m_error_state = OUT_OF_RESOURCES;
+				break;
+			case CL_OUT_OF_HOST_MEMORY :
+				printf("Error: CCL_OUT_OF_HOST_MEMORY \n");
+				m_error_state = OUT_OF_HOST_MEMORY;
+				break;
+			default:
+				printf("Error: Invaild Error Type\n");
+				m_error_state = FAILURE;
+				break;
+		}
+
 	} else {
-	   printf("Success: clCreateUserEvent\n");
-	   RefPtr<WebCLEvent> o = WebCLEvent::create(this, event);
-	   m_event_list.append(o);
-	   m_num_events++;
-	   printf("m_num_events=%ld\n", m_num_events);
-	   m_error_state = SUCCESS;
-	   return o;
+		RefPtr<WebCLEvent> o = WebCLEvent::create(this, event);
+		m_event_list.append(o);
+		m_num_events++;
+		m_error_state = SUCCESS;
+		return o;
 	}
 	return NULL;
 }
@@ -1450,33 +1447,33 @@ void WebCLComputeContext::setUserEventStatus (WebCLEvent* event, int exec_status
 		return;
 	}
 	if (err != CL_SUCCESS) {
-	   switch (err) {
-		case CL_INVALID_EVENT :
-			printf("Error: CL_INVALID_EVENT \n");
-			m_error_state = INVALID_EVENT;
-			break;
-		case CL_INVALID_VALUE :
-			printf("Error: CL_INVALID_VALUE  \n");
-			m_error_state = INVALID_VALUE ;
-			break;
-		case CL_OUT_OF_RESOURCES:
-			printf("Error: CL_OUT_OF_RESOURCES  \n");
-			m_error_state = OUT_OF_RESOURCES ;
-			break;
-		case CL_INVALID_OPERATION:
-			printf("Error: CL_INVALID_OPERATION  \n");
-			m_error_state = INVALID_OPERATION ;
-			break;
-		case CL_OUT_OF_HOST_MEMORY :
-			printf("Error: CCL_OUT_OF_HOST_MEMORY \n");
-			m_error_state = OUT_OF_HOST_MEMORY;
-			break;
-		default:
-			printf("Error: Invaild Error Type\n");
-			m_error_state = FAILURE;
-			break;
-	   }
-	     
+		switch (err) {
+			case CL_INVALID_EVENT :
+				printf("Error: CL_INVALID_EVENT \n");
+				m_error_state = INVALID_EVENT;
+				break;
+			case CL_INVALID_VALUE :
+				printf("Error: CL_INVALID_VALUE  \n");
+				m_error_state = INVALID_VALUE ;
+				break;
+			case CL_OUT_OF_RESOURCES:
+				printf("Error: CL_OUT_OF_RESOURCES  \n");
+				m_error_state = OUT_OF_RESOURCES ;
+				break;
+			case CL_INVALID_OPERATION:
+				printf("Error: CL_INVALID_OPERATION  \n");
+				m_error_state = INVALID_OPERATION ;
+				break;
+			case CL_OUT_OF_HOST_MEMORY :
+				printf("Error: CCL_OUT_OF_HOST_MEMORY \n");
+				m_error_state = OUT_OF_HOST_MEMORY;
+				break;
+			default:
+				printf("Error: Invaild Error Type\n");
+				m_error_state = FAILURE;
+				break;
+		}
+
 	} 
 	return;
 }
@@ -1485,7 +1482,7 @@ void WebCLComputeContext::waitForEvents(WebCLEventList* events)
 {
 	cl_int err = 0;
 	cl_event* cl_event_id = NULL;
-	
+
 	if (events != NULL) {
 		cl_event_id = events->getCLEvents();
 		if (cl_event_id == NULL) {
@@ -1509,11 +1506,11 @@ void WebCLComputeContext::waitForEvents(WebCLEventList* events)
 				printf("Error: CL_INVALID_EVENT  \n");
 				m_error_state = INVALID_EVENT ;
 				break;
-			//OpenCL 1.1
-			//case CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST:
-			//	printf("Error: CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST \n");
-			//	m_error_state = EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST;
-			//	break;
+				//OpenCL 1.1
+				//case CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST:
+				//	printf("Error: CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST \n");
+				//	m_error_state = EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST;
+				//	break;
 			case CL_OUT_OF_RESOURCES:
 				printf("Error: CL_OUT_OF_RESOURCES \n");
 				m_error_state = OUT_OF_RESOURCES;
@@ -1551,14 +1548,14 @@ PassRefPtr<WebCLContext> WebCLComputeContext::createContext(int contextPropertie
 		}
 	} else {
 		printf("Error: webcl_devices null\n");
+		printf("Unused in createContext prop=%d pfn_notify=%d user_data=%d\n", 
+				contextProperties, pfn_notify, user_data);
+
 		return NULL;
 	}
 
 	// TODO(won.jeon) - prop, pfn_notify, and user_data need to be addressed later
 	cl_context_id = clCreateContext(NULL, 1, &cl_device, NULL, NULL, &err);
-	printf("WebCLComputeContext::createContext prop=%d pfn_notify=%d user_data=%d\n", 
-			contextProperties, pfn_notify, user_data);
-
 	if (err != CL_SUCCESS) {
 		switch (err) {
 			case CL_INVALID_PLATFORM:
@@ -1623,7 +1620,7 @@ PassRefPtr<WebCLContext> WebCLComputeContext::createContextFromType(int contextP
 		int device_type, int pfn_notify, int user_data)
 {
 
-	printf("WebCLComputeContext::createContext prop=%d pfn_notify=%d user_data=%d\n", 
+	printf("CreateContext prop=%d pfn_notify=%d user_data=%d\n", 
 			contextProperties, pfn_notify, user_data);
 	cl_int err = 0;
 	cl_context cl_context_id = 0;
@@ -1634,7 +1631,7 @@ PassRefPtr<WebCLContext> WebCLComputeContext::createContextFromType(int contextP
 		printf("Error: INVALID CONTEXT PROPERTIES\n");
 		return NULL;
 	}
-	
+
 	switch(device_type) {
 		case DEVICE_TYPE_GPU:
 			cl_context_id = clCreateContextFromType(NULL, CL_DEVICE_TYPE_GPU, NULL, NULL, &err);
@@ -1733,8 +1730,6 @@ PassRefPtr<WebCLContext> WebCLComputeContext::createSharedContext(int device_typ
 	};
 	// TODO (siba samal) Handle NULL parameters
 	cl_context_id = clCreateContext(properties, 0, 0, 0, 0, &err);
-	printf("WebCLComputeContext::createSharedContext device_type=%d pfn_notify=%d user_data=%d\n",
-			device_type, pfn_notify, user_data);
 
 	if (err != CL_SUCCESS) {
 		switch (err) {
@@ -1782,7 +1777,6 @@ PassRefPtr<WebCLContext> WebCLComputeContext::createSharedContext(int device_typ
 		}
 
 	} else {
-		printf("Success: clCreateContext\n");
 		RefPtr<WebCLContext> o = WebCLContext::create(this, cl_context_id);
 		if (o != NULL) {
 			m_error_state = SUCCESS;
@@ -1790,6 +1784,8 @@ PassRefPtr<WebCLContext> WebCLComputeContext::createSharedContext(int device_typ
 			return o;
 		} else {
 			m_error_state = FAILURE;
+			printf("WebCLComputeContext::createSharedContext device_type=%d pfn_notify=%d user_data=%d\n",
+					device_type, pfn_notify, user_data);
 			return NULL;
 		}
 	}
@@ -1818,8 +1814,6 @@ PassRefPtr<WebCLContext> WebCLComputeContext::createContext(int contextPropertie
 
 	// TODO(won.jeon) - prop, pfn_notify, and user_data need to be addressed later
 	cl_context_id = clCreateContext(NULL, 1, &cl_device, NULL, NULL, &err);
-	printf("WebCLComputeContext::createContext prop=%d pfn_notify=%d user_data=%d\n", 
-			contextProperties, pfn_notify, user_data);
 	if (err != CL_SUCCESS) {
 		switch (err) {
 			case CL_INVALID_PLATFORM:
@@ -1864,7 +1858,7 @@ PassRefPtr<WebCLContext> WebCLComputeContext::createContext(int contextPropertie
 				m_error_state = FAILURE;
 				break;
 		}
-		
+
 	} else {
 		RefPtr<WebCLContext> o = WebCLContext::create(this, cl_context_id);
 		if (o != NULL) {
@@ -1873,6 +1867,8 @@ PassRefPtr<WebCLContext> WebCLComputeContext::createContext(int contextPropertie
 			return o;
 		} else {
 			m_error_state = FAILURE;
+			printf("WebCLComputeContext::createContext prop=%d pfn_notify=%d user_data=%d\n", 
+					contextProperties, pfn_notify, user_data);
 			return NULL;
 		}
 	}
@@ -1994,7 +1990,7 @@ PassRefPtr<WebCLCommandQueue> WebCLComputeContext::createCommandQueue(WebCLConte
 			cl_command_queue_id = clCreateCommandQueue(cl_context_id, cl_device, NULL, &err);
 			break;
 	}
-	
+
 	if (err != CL_SUCCESS) {
 		switch (err) {
 			case CL_INVALID_CONTEXT:
@@ -2195,8 +2191,6 @@ void WebCLComputeContext::buildProgram(WebCLProgram* program, int options,
 
 	// TODO(won.jeon) - needs to be addressed later
 	err = clBuildProgram(program_id, 0, NULL, NULL, NULL, NULL);
-	printf("WebCLComputeContext::buildProgram normal options=%d pfn_notify=%d user_data=%d\n", 
-			options, pfn_notify, user_data);
 
 	if (err != CL_SUCCESS) {
 		switch (err) {
@@ -2242,6 +2236,8 @@ void WebCLComputeContext::buildProgram(WebCLProgram* program, int options,
 				break;
 			default:
 				printf("Error: Invaild Error Type\n");
+				printf("WebCLComputeContext::buildProgram normal options=%d pfn_notify=%d user_data=%d\n", 
+						options, pfn_notify, user_data);
 				m_error_state = FAILURE;
 				break;
 
@@ -2255,7 +2251,7 @@ void WebCLComputeContext::buildProgram(WebCLProgram* program, int options,
 }
 
 void WebCLComputeContext::buildProgram(WebCLProgram* program, WebCLDeviceID*   device_id,
-				int options, int pfn_notify, int user_data)
+		int options, int pfn_notify, int user_data)
 {
 	cl_int err = 0;
 	cl_program program_id = NULL;
@@ -2277,8 +2273,6 @@ void WebCLComputeContext::buildProgram(WebCLProgram* program, WebCLDeviceID*   d
 	}
 
 	// TODO(siba samal) - NULL parameters needs to be addressed later
-	printf("WebCLComputeContext::buildProgram WebCLDeviceID options=%d pfn_notify=%d user_data=%d\n", 
-			options, pfn_notify, user_data);
 	err = clBuildProgram(program_id, 1, (const cl_device_id*)&cl_device, NULL, NULL, NULL);
 
 	if (err != CL_SUCCESS) {
@@ -2325,6 +2319,8 @@ void WebCLComputeContext::buildProgram(WebCLProgram* program, WebCLDeviceID*   d
 				break;
 			default:
 				printf("Error: Invaild Error Type\n");
+				printf("WebCLComputeContext::buildProgram WebCLDeviceID options=%d pfn_notify=%d user_data=%d\n", 
+						options, pfn_notify, user_data);
 				m_error_state = FAILURE;
 				break;
 
@@ -2338,7 +2334,7 @@ void WebCLComputeContext::buildProgram(WebCLProgram* program, WebCLDeviceID*   d
 }
 
 void WebCLComputeContext::buildProgram(WebCLProgram* program, WebCLDeviceIDList* cl_devices,
-				int options, int pfn_notify, int user_data)
+		int options, int pfn_notify, int user_data)
 {
 	cl_int err = 0;
 	cl_program program_id = NULL;
@@ -2364,8 +2360,6 @@ void WebCLComputeContext::buildProgram(WebCLProgram* program, WebCLDeviceIDList*
 	}
 
 	// TODO(siba samal) - NULL parameters needs to be addressed later
-	printf("WebCLComputeContext::buildProgram WebCLDeviceIDList  options=%d pfn_notify=%d user_data=%d\n", 
-			options, pfn_notify, user_data);
 	err = clBuildProgram(program_id, cl_devices->length(), (const cl_device_id*)&cl_device, NULL, NULL, NULL);
 
 	if (err != CL_SUCCESS) {
@@ -2412,6 +2406,8 @@ void WebCLComputeContext::buildProgram(WebCLProgram* program, WebCLDeviceIDList*
 				break;
 			default:
 				printf("Error: Invaild Error Type\n");
+				printf("WebCLComputeContext::buildProgram WebCLDeviceIDList  options=%d pfn_notify=%d user_data=%d\n", 
+						options, pfn_notify, user_data);
 				m_error_state = FAILURE;
 				break;
 
@@ -2515,7 +2511,7 @@ PassRefPtr<WebCLKernelList> WebCLComputeContext::createKernelsInProgram(WebCLPro
 		m_error_state = FAILURE;
 		return NULL;
 	}
-	
+
 	kernelBuf = (cl_kernel*)malloc (sizeof(cl_kernel) * num);
 	if (!kernelBuf) {
 		m_error_state = OUT_OF_HOST_MEMORY;	
@@ -2577,7 +2573,6 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createBuffer(WebCLContext* context_id,
 		}
 	}
 	// TODO(won.jeon) - NULL parameter needs to be addressed later
-	printf("WebCLComputeContext::createBuffer host_ptr = %d\n", host_ptr);
 	switch (flags)
 	{
 		case MEM_READ_ONLY:
@@ -2591,6 +2586,7 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createBuffer(WebCLContext* context_id,
 			break;
 		default:
 			printf("Error: Unsupported Mem Flsg\n");
+			printf("WebCLComputeContext::createBuffer host_ptr = %d\n", host_ptr);
 			m_error_state = INVALID_CONTEXT;
 			break;
 	}
@@ -2665,8 +2661,6 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueWriteBuffer(WebCLCommandQueue
 		}
 	}
 	// TODO(won.jeon) - NULL parameters need to be addressed later
-	printf("WebCLComputeContext::enqueueWriteBuffer offset=%d buffer_size=%d event_wait_list=%d\n", 
-			offset, buffer_size, event_wait_list);
 	switch(blocking_write) {
 		case true:
 			err = clEnqueueWriteBuffer(cl_command_queue_id, cl_mem_id, CL_TRUE, offset, 
@@ -2722,6 +2716,8 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueWriteBuffer(WebCLCommandQueue
 				break;
 			default:
 				printf("Error: Invaild Error Type\n");
+				printf("WebCLComputeContext::enqueueWriteBuffer offset=%d buffer_size=%d event_wait_list=%d\n", 
+						offset, buffer_size, event_wait_list);
 				m_error_state = FAILURE;
 				break;
 
@@ -2731,7 +2727,6 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueWriteBuffer(WebCLCommandQueue
 		RefPtr<WebCLEvent> o = WebCLEvent::create(this, cl_event_id);
 		m_event_list.append(o);
 		m_num_events++;
-		printf("m_num_events=%ld\n", m_num_events);
 		m_error_state = SUCCESS;
 		return o;
 	}
@@ -2807,7 +2802,7 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueWriteBuffer(WebCLCommandQueue
 				printf("Error: Invaild Error Type\n");
 				break;
 		}
-		
+
 	} else {
 		printf("Success: clEnqueueWriteBuffer\n");
 		RefPtr<WebCLEvent> o = WebCLEvent::create(this, cl_event_id);
@@ -2848,8 +2843,6 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueWriteBuffer(WebCLCommandQueue
 	}
 
 	// TODO(won.jeon) - NULL parameters need to be addressed later
-	printf("WebCLComputeContext::enqueueWriteBuffer offset=%d buffer_size=%d event_wait_list=%d\n", 
-			offset, buffer_size, event_wait_list);
 	switch(blocking_write) {
 		case true:
 			err = clEnqueueWriteBuffer(cl_command_queue_id, cl_mem_id, CL_TRUE, 
@@ -2905,6 +2898,8 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueWriteBuffer(WebCLCommandQueue
 				break;
 			default:
 				printf("Error: Invaild Error Type\n");
+				printf("WebCLComputeContext::enqueueWriteBuffer offset=%d buffer_size=%d event_wait_list=%d\n", 
+						offset, buffer_size, event_wait_list);
 				m_error_state = FAILURE;
 				break;
 		}
@@ -2914,7 +2909,6 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueWriteBuffer(WebCLCommandQueue
 		RefPtr<WebCLEvent> o = WebCLEvent::create(this, cl_event_id);
 		m_event_list.append(o);
 		m_num_events++;
-		printf("m_num_events=%ld\n", m_num_events);
 		m_error_state = SUCCESS;
 		return o;
 	}
@@ -2949,8 +2943,6 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueWriteBuffer(WebCLCommandQueue
 	}
 
 	// TODO(won.jeon) - NULL parameters need to be addressed later
-	printf("WebCLComputeContext::enqueueWriteBuffer offset=%d buffer_size=%d event_wait_list=%d\n", 
-			offset, buffer_size, event_wait_list);
 	switch(blocking_write) {
 		case true:
 			err = clEnqueueWriteBuffer(cl_command_queue_id, cl_mem_id, CL_TRUE, 
@@ -3006,6 +2998,8 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueWriteBuffer(WebCLCommandQueue
 				break;
 			default:
 				printf("Error: Invaild Error Type\n");
+				printf("WebCLComputeContext::enqueueWriteBuffer offset=%d buffer_size=%d event_wait_list=%d\n", 
+						offset, buffer_size, event_wait_list);
 				m_error_state = FAILURE;
 				break;
 
@@ -3047,8 +3041,6 @@ PassRefPtr<WebCLEvent>  WebCLComputeContext::enqueueReadBuffer(WebCLCommandQueue
 
 	}
 	// TODO(won.jeon) - NULL parameters need to be addressed later
-	printf("WebCLComputeContext::enqueueReadBuffer(Float32Array) offset=%d buffer_size=%d event_wait_list=%d\n", 
-			offset, buffer_size, event_wait_list);
 	switch(blocking_read) {
 		case true:
 			err = clEnqueueReadBuffer(cl_command_queue_id, cl_mem_id, CL_TRUE, 
@@ -3104,6 +3096,7 @@ PassRefPtr<WebCLEvent>  WebCLComputeContext::enqueueReadBuffer(WebCLCommandQueue
 				break;
 			default:
 				printf("Error: Invaild Error Type\n");
+				printf("WebCLComputeContext::enqueueReadBuffer(Float32Array) offset=%d buffer_size=%d event_wait_list=%d\n", offset, buffer_size, event_wait_list);
 				m_error_state = FAILURE;
 				break;
 
@@ -3224,11 +3217,9 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueReadBuffer(WebCLCommandQueue*
 		//rendering_context->drawImage(image_data.get(), 0.0, 0.0, ec);
 		//rendering_context->paintRenderingResultsToCanvas();
 		//GraphicsContext* graphics_context = canvas_element->drawingContext();
-		printf("Success: clEnqueueReadBuffer\n");
 		RefPtr<WebCLEvent> o = WebCLEvent::create(this, cl_event_id);
 		m_event_list.append(o);
 		m_num_events++;
-		printf("m_num_events=%ld\n", m_num_events);
 		m_error_state = SUCCESS;
 		return o;
 	}
@@ -3260,8 +3251,6 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueReadBuffer(WebCLCommandQueue*
 		}
 	}
 	// TODO(won.jeon) - NULL parameters need to be addressed later
-	printf("WebCLComputeContext::enqueueReadBuffer offset=%d buffer_size=%d event_wait_list=%d\n", 
-			offset, buffer_size, event_wait_list);
 	switch(blocking_read) {
 		case true:
 			err = clEnqueueReadBuffer(cl_command_queue_id, cl_mem_id, CL_TRUE, 
@@ -3317,6 +3306,8 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueReadBuffer(WebCLCommandQueue*
 				break;
 			default:
 				printf("Error: Invaild Error Type\n");
+				printf("WebCLComputeContext::enqueueReadBuffer offset=%d buffer_size=%d event_wait_list=%d\n", 
+						offset, buffer_size, event_wait_list);
 				m_error_state = FAILURE;
 				break;
 		}
@@ -3331,10 +3322,21 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueReadBuffer(WebCLCommandQueue*
 	}
 	return NULL;
 }
-void WebCLComputeContext::setKernelArg(WebCLKernel* kernel, unsigned int arg_index, int arg_value)
+void WebCLComputeContext::setKernelArg(WebCLKernel* kernel, unsigned int argIndex, 
+		PassRefPtr<WebCLKernelTypeValue> kernelObject, int argType)
 {
 	cl_int err = 0;
 	cl_kernel cl_kernel_id = NULL;
+	RefPtr<WebCLKernelTypeVector> array = NULL;
+	char nodeIdCh = NULL;
+	unsigned char nodeIduCh = NULL;
+	short nodeIdSh = 0;
+	unsigned short nodeIduSh = 0;
+	int nodeIdInt = 0;
+	unsigned int nodeIduInt = 0;
+	long nodeIdLong = 0;
+	long nodeIduLong = 0;
+	float nodeIdFloat = 0;
 
 	if (kernel != NULL) {
 		cl_kernel_id = kernel->getCLKernel();
@@ -3344,7 +3346,294 @@ void WebCLComputeContext::setKernelArg(WebCLKernel* kernel, unsigned int arg_ind
 			return ;
 		}
 	}
-	err = clSetKernelArg(cl_kernel_id, arg_index, sizeof(cl_int), &arg_value);
+	// TODO (siba samal) argType & argIndex Validation
+	if(kernelObject == NULL)
+	{
+		printf("Error: kernelObject null\n");
+		m_error_state = FAILURE;
+		return ;
+	}
+	switch (argType) {
+		case KERNEL_ARG_CHAR:
+			printf("CL_KERNEL_ARG_CHAR\n");
+			err = clSetKernelArgPrimitiveType(cl_kernel_id, kernelObject, nodeIdCh,
+					argIndex, sizeof(cl_char));		
+			break;
+		case KERNEL_ARG_UCHAR:
+			printf("CL_KERNEL_ARG_UCHAR\n");
+			err = clSetKernelArgPrimitiveType(cl_kernel_id, kernelObject, nodeIduCh,
+					argIndex, sizeof(cl_uchar));								
+			break;
+		case KERNEL_ARG_SHORT:
+			printf("CL_KERNEL_ARG_SHORT\n");
+			err = clSetKernelArgPrimitiveType(cl_kernel_id, kernelObject, nodeIdSh,
+					argIndex, sizeof(cl_short));				
+			break;
+		case KERNEL_ARG_USHORT:
+			printf("CL_KERNEL_ARG_USHORT\n");
+			err = clSetKernelArgPrimitiveType(cl_kernel_id, kernelObject, nodeIduSh,
+					argIndex, sizeof(cl_ushort));				
+			break;
+		case KERNEL_ARG_INT:
+			printf("CL_KERNEL_ARG_INT\n");
+			err = clSetKernelArgPrimitiveType(cl_kernel_id, kernelObject, nodeIdInt,
+					argIndex, sizeof(cl_int));							
+			break;
+		case KERNEL_ARG_UINT:
+			printf("CL_KERNEL_ARG_UINT\n");
+
+			err = clSetKernelArgPrimitiveType(cl_kernel_id, kernelObject, nodeIduInt,
+					argIndex, sizeof(cl_uint));				
+			break;
+		case KERNEL_ARG_LONG:
+			printf("CL_KERNEL_ARG_LONG\n");
+			err = clSetKernelArgPrimitiveType(cl_kernel_id, kernelObject, nodeIdLong,
+					argIndex, sizeof(cl_long));
+			break;
+		case KERNEL_ARG_ULONG:
+			printf("CL_KERNEL_ARG_ULONG\n");
+			err = clSetKernelArgPrimitiveType(cl_kernel_id, kernelObject, nodeIduLong,
+					argIndex, sizeof(cl_ulong));
+			break;
+		case KERNEL_ARG_FLOAT:
+			printf("CL_KERNEL_ARG_FLOAT\n");
+			err = clSetKernelArgPrimitiveType(cl_kernel_id, kernelObject, nodeIdFloat,
+					argIndex, sizeof(cl_float));									
+			break;
+		case KERNEL_ARG_CHAR2:				
+			printf("CL_KERNEL_ARG_CHAR2\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_char2), 2);									
+			break;
+		case KERNEL_ARG_UCHAR2:				
+			printf("CL_KERNEL_ARG_UCHAR2\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_uchar2), 2);									
+			break;
+		case KERNEL_ARG_SHORT2:
+			printf("CL_KERNEL_ARG_SHORT2\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_short2), 2);		
+			break;
+		case KERNEL_ARG_USHORT2:
+			printf("CL_KERNEL_ARG_USHORT2\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_ushort2), 2);							
+			break;
+		case KERNEL_ARG_INT2:
+			printf("CL_KERNEL_ARG_INT2\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_int2), 2);	
+			break;
+		case KERNEL_ARG_UINT2:
+			printf("CL_KERNEL_ARG_INT2\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_uint2), 2);					
+			break;
+		case KERNEL_ARG_LONG2:
+			printf("CL_KERNEL_ARG_LONG2\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_long2), 2);					
+			break;
+		case KERNEL_ARG_ULONG2:
+			printf("CL_KERNEL_ARG_ULONG2\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_ulong2), 2);	
+			break;
+		case KERNEL_ARG_FLOAT2:
+			printf("CL_KERNEL_ARG_FLOAT2\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_float2), 2);
+			break;
+		case KERNEL_ARG_CHAR3:
+			printf("CL_KERNEL_ARG_CHAR3\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_char4), 3);
+			break;
+		case KERNEL_ARG_UCHAR3:
+			printf("CL_KERNEL_ARG_UCHAR3\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_uchar4), 3);					
+			break;
+		case KERNEL_ARG_SHORT3:
+			printf("CL_KERNEL_ARG_SHORT3\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_short4), 3);		
+			break;
+		case KERNEL_ARG_USHORT3:
+			printf("CL_KERNEL_ARG_USHORT3\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_ushort4), 3);							
+			break;
+		case KERNEL_ARG_INT3:
+			printf("CL_KERNEL_ARG_INT3\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_int4), 3);	
+			break;
+		case KERNEL_ARG_UINT3:
+			printf("CL_KERNEL_ARG_INT3\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_uint4), 3);									
+			break;
+		case KERNEL_ARG_LONG3:
+			printf("CL_KERNEL_ARG_LONG3\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_long4), 3);					
+			break;
+		case KERNEL_ARG_ULONG3:
+			printf("CL_KERNEL_ARG_ULONG3\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_ulong4), 3);					
+			break;
+		case KERNEL_ARG_FLOAT3:
+			printf("CL_KERNEL_ARG_FLOAT3\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_float4), 3);
+			break;	
+		case KERNEL_ARG_CHAR4:
+			printf("CL_KERNEL_ARG_CHAR4\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_char4), 4);
+			break;
+		case KERNEL_ARG_UCHAR4:
+			printf("CL_KERNEL_ARG_UCHAR4\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_uchar4), 4);					
+			break;
+		case KERNEL_ARG_SHORT4:
+			printf("CL_KERNEL_ARG_SHORT4\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_short4), 4);		
+			break;
+		case KERNEL_ARG_USHORT4:
+			printf("CL_KERNEL_ARG_USHORT4\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_ushort4), 4);							
+			break;
+		case KERNEL_ARG_INT4:
+			printf("CL_KERNEL_ARG_INT4\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_int4), 4);	
+			break;
+		case KERNEL_ARG_UINT4:
+			printf("CL_KERNEL_ARG_INT4\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_uint4), 4);									
+			break;
+		case KERNEL_ARG_LONG4:
+			printf("CL_KERNEL_ARG_LONG4\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_long4), 4);					
+			break;
+		case KERNEL_ARG_ULONG4:
+			printf("CL_KERNEL_ARG_ULONG4\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_ulong4), 4);					
+			break;
+		case KERNEL_ARG_FLOAT4:
+			printf("CL_KERNEL_ARG_FLOAT4\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_float4), 4);
+			break;		
+		case KERNEL_ARG_CHAR8:
+			printf("CL_KERNEL_ARG_CHAR8\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_char8), 8);
+			break;
+		case KERNEL_ARG_UCHAR8:
+			printf("CL_KERNEL_ARG_UCHAR8\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_uchar8), 8);					
+			break;
+		case KERNEL_ARG_SHORT8:
+			printf("CL_KERNEL_ARG_SHORT8\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_short8), 8);		
+			break;
+		case KERNEL_ARG_USHORT8:
+			printf("CL_KERNEL_ARG_USHORT8\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_ushort8), 8);							
+			break;
+		case KERNEL_ARG_INT8:
+			printf("CL_KERNEL_ARG_INT8\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_int8), 8);	
+			break;
+		case KERNEL_ARG_UINT8:
+			printf("CL_KERNEL_ARG_INT8\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_uint8), 8);									
+			break;
+		case KERNEL_ARG_LONG8:
+			printf("CL_KERNEL_ARG_LONG8\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_long8), 8);					
+			break;
+		case KERNEL_ARG_ULONG8:
+			printf("CL_KERNEL_ARG_ULONG8\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_ulong8), 8);					
+			break;
+		case KERNEL_ARG_FLOAT8:
+			printf("CL_KERNEL_ARG_FLOAT8\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_float8), 8);
+			break;	
+		case KERNEL_ARG_CHAR16:
+			printf("CL_KERNEL_ARG_CHAR16\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_char16), 16);
+			break;
+		case KERNEL_ARG_UCHAR16:
+			printf("CL_KERNEL_ARG_UCHAR16\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_uchar16), 16);					
+			break;
+		case KERNEL_ARG_SHORT16:
+			printf("CL_KERNEL_ARG_SHORT16\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_short16), 16);		
+			break;
+		case KERNEL_ARG_USHORT16:
+			printf("CL_KERNEL_ARG_USHORT16\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_ushort16), 16);							
+			break;
+		case KERNEL_ARG_INT16:
+			printf("CL_KERNEL_ARG_INT16\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_int16), 16);	
+			break;
+		case KERNEL_ARG_UINT16:
+			printf("CL_KERNEL_ARG_INT16\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_uint16), 16);									
+			break;
+		case KERNEL_ARG_LONG16:
+			printf("CL_KERNEL_ARG_LONG16\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_long16), 16);					
+			break;
+		case KERNEL_ARG_ULONG16:
+			printf("CL_KERNEL_ARG_ULONG16\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_ulong16), 16);					
+			break;
+		case KERNEL_ARG_FLOAT16:
+			printf("CL_KERNEL_ARG_FLOAT16\n");
+			err = clSetKernelArgVectorType(cl_kernel_id, kernelObject, array,
+					argIndex, sizeof(cl_float16), 16);
+			break;	
+		case KERNEL_ARG_SAMPLER:
+			printf("CL_KERNEL_ARG_SAMPLER - Not Handled\n");
+			m_error_state = FAILURE;
+			break;			
+		default:
+			printf("Error: Invaild Kernel Argument Type\n");
+			m_error_state = FAILURE;
+			return;
+	}
 	if (err != CL_SUCCESS) {
 		switch (err) {
 			case CL_INVALID_KERNEL:
@@ -3384,12 +3673,10 @@ void WebCLComputeContext::setKernelArg(WebCLKernel* kernel, unsigned int arg_ind
 				m_error_state = FAILURE;
 				break;
 		}
-
-		return;
-	} else {
-		printf("Success: clSetKernelArg - Int\n");
-		m_error_state = SUCCESS;
-		return;
+	}
+	else
+	{
+		m_error_state = SUCCESS;			
 	}
 }
 
@@ -3457,142 +3744,7 @@ void WebCLComputeContext::setKernelArgGlobal(WebCLKernel* kernel, unsigned int a
 		}
 
 	} else {
-		printf("Success: clSetKernelArg - Mem\n");
-		m_error_state = SUCCESS;
-		return;
-	}
-	return;
-}
-
-void WebCLComputeContext::setKernelArgFloat(WebCLKernel* kernel, unsigned int arg_index, float arg_value)
-{
-	cl_int err = 0;
-	cl_kernel cl_kernel_id = NULL;
-
-	if (kernel != NULL) {
-		cl_kernel_id = kernel->getCLKernel();
-		if (cl_kernel_id == NULL) {
-			printf("Error: cl_kernel_id null\n");
-			m_error_state = FAILURE;
-			return;
-		}
-	}
-	err = clSetKernelArg(cl_kernel_id, arg_index, sizeof(cl_float), &arg_value);
-	if (err != CL_SUCCESS) {
-		switch (err) {
-			case CL_INVALID_KERNEL:
-				printf("Error: CL_INVALID_KERNEL \n");
-				m_error_state = INVALID_KERNEL;
-				break;
-			case CL_INVALID_ARG_INDEX:
-				printf("Error: CL_INVALID_ARG_INDEX \n");
-				m_error_state = INVALID_ARG_INDEX;
-				break;
-			case CL_INVALID_ARG_VALUE:
-				printf("Error: CL_INVALID_ARG_VALUE \n");
-				m_error_state = INVALID_ARG_VALUE;
-				break;
-			case CL_INVALID_MEM_OBJECT:
-				printf("Error: CL_INVALID_MEM_OBJECT  \n");
-				m_error_state = INVALID_MEM_OBJECT;
-				break;
-			case CL_INVALID_SAMPLER:
-				printf("Error: CL_INVALID_SAMPLER  \n");
-				m_error_state = INVALID_SAMPLER;
-				break;
-			case CL_INVALID_ARG_SIZE:
-				printf("Error: CL_INVALID_ARG_SIZE  \n");
-				m_error_state = INVALID_ARG_SIZE;
-				break;
-			case CL_OUT_OF_RESOURCES:
-				printf("Error: CL_OUT_OF_RESOURCES\n");
-				m_error_state = OUT_OF_RESOURCES;
-				break;
-			case CL_OUT_OF_HOST_MEMORY:
-				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
-				m_error_state = OUT_OF_HOST_MEMORY;
-				break;
-			default:
-				printf("Error: Invaild Error Type\n");
-				m_error_state = FAILURE;
-				break;
-		}
-
-		return;
-	} else {
-		printf("Success: clSetKernelArg - Float\n");
-		m_error_state = SUCCESS;
-		return;
-	}
-}
-
-//TODO (siba samal) Change back after Object support	
-//long WddbCLComputeContext::setKernelArgGlobal(WebCLKernel* kernel, unsigned int arg_index, WebCLMem* arg_value)
-void WebCLComputeContext::setKernelArg(WebCLKernel* kernel, unsigned int arg_index, WebCLMem* arg_value)
-{
-	cl_int err = 0;
-	cl_kernel cl_kernel_id = NULL;
-	cl_mem cl_mem_id = NULL;
-
-	if (kernel != NULL) {
-		cl_kernel_id = kernel->getCLKernel();
-		if (cl_kernel_id == NULL) {
-			printf("Error: cl_kernel_id null\n");
-			m_error_state = FAILURE;
-			return;
-		}
-	}
-	if (arg_value != NULL) {
-		cl_mem_id = arg_value->getCLMem();
-		if (cl_mem_id == NULL) {
-			printf("Error: cl_mem_id null\n");
-			m_error_state = FAILURE;
-			return;
-		}
-	}
-	err = clSetKernelArg(cl_kernel_id, arg_index, sizeof(cl_mem), &cl_mem_id);
-	if (err != CL_SUCCESS) {
-		switch (err) {
-			case CL_INVALID_KERNEL:
-				printf("Error: CL_INVALID_KERNEL \n");
-				m_error_state = INVALID_KERNEL;
-				break;
-			case CL_INVALID_ARG_INDEX:
-				printf("Error: CL_INVALID_ARG_INDEX \n");
-				m_error_state = INVALID_ARG_INDEX;
-				break;
-			case CL_INVALID_ARG_VALUE:
-				printf("Error: CL_INVALID_ARG_VALUE \n");
-				m_error_state = INVALID_ARG_VALUE;
-				break;
-			case CL_INVALID_MEM_OBJECT:
-				printf("Error: CL_INVALID_MEM_OBJECT  \n");
-				m_error_state = INVALID_MEM_OBJECT;
-				break;
-			case CL_INVALID_SAMPLER:
-				printf("Error: CL_INVALID_SAMPLER  \n");
-				m_error_state = INVALID_SAMPLER;
-				break;
-			case CL_INVALID_ARG_SIZE:
-				printf("Error: CL_INVALID_ARG_SIZE  \n");
-				m_error_state = INVALID_ARG_SIZE;
-				break;
-			case CL_OUT_OF_RESOURCES:
-				printf("Error: CL_OUT_OF_RESOURCES\n");
-				m_error_state = OUT_OF_RESOURCES;
-				break;
-			case CL_OUT_OF_HOST_MEMORY:
-				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
-				m_error_state = OUT_OF_HOST_MEMORY;
-				break;
-			default:
-				printf("Error: Invaild Error Type\n");
-				m_error_state = FAILURE;
-				break;
-		}
-
-	} else {
-		printf("Success: clSetKernelArg - Mem\n");
+		printf("Success: clSetKernelArg Global -\n");
 		m_error_state = SUCCESS;
 		return;
 	}
@@ -3793,7 +3945,7 @@ unsigned long WebCLComputeContext::getKernelWorkGroupInfo(WebCLKernel* kernel, W
 						m_error_state = FAILURE;
 						break;
 				}
-			
+
 			} else {
 				m_error_state = SUCCESS;
 
@@ -3863,7 +4015,6 @@ PassRefPtr<WebCLEvent>  WebCLComputeContext::enqueueNDRangeKernel(WebCLCommandQu
 		WebCLKernel* kernel, unsigned int work_dim, unsigned int global_work_offset, 
 		Int32Array* global_work_size, Int32Array* local_work_size, int event_wait_list)
 {
-	printf("WebCLComputeContext::enqueueNDRangeKernel(Int32Array) event_wait_list=%d\n", event_wait_list);
 
 	cl_int err = 0;
 	cl_command_queue cl_command_queue_id = NULL;
@@ -3888,6 +4039,7 @@ PassRefPtr<WebCLEvent>  WebCLComputeContext::enqueueNDRangeKernel(WebCLCommandQu
 		cl_kernel_id = kernel->getCLKernel();
 		if (cl_kernel_id == NULL) {
 			printf("Error: cl_kernel_id null\n");
+			printf("WebCLComputeContext::enqueueNDRangeKernel(Int32Array) event_wait_list=%d\n", event_wait_list);
 			return NULL;
 		}
 	}
@@ -3980,7 +4132,6 @@ PassRefPtr<WebCLEvent>  WebCLComputeContext::enqueueNDRangeKernel(WebCLCommandQu
 		RefPtr<WebCLEvent> o = WebCLEvent::create(this, cl_event_id);
 		m_event_list.append(o);
 		m_num_events++;
-		printf("m_num_events=%ld\n", m_num_events);
 		m_error_state = SUCCESS;
 		return o;
 
@@ -3992,7 +4143,6 @@ PassRefPtr<WebCLEvent>  WebCLComputeContext::enqueueNDRangeKernel(WebCLCommandQu
 // TODO(siba.samal) Need to change user_data to Object type
 void WebCLComputeContext::finish(WebCLCommandQueue* command_queue, PassRefPtr<WebCLFinishCallback> notify, int user_data/*object userData*/)
 {
-	printf("WebCLComputeContext::finish user_data=%d\n", user_data);
 	cl_command_queue cl_command_queue_id = NULL;
 	cl_int err = 0;
 
@@ -4021,6 +4171,7 @@ void WebCLComputeContext::finish(WebCLCommandQueue* command_queue, PassRefPtr<We
 				break;
 			default:
 				printf("Error: Invaild Error Type\n");
+				printf("Unused Argument %d\n",user_data);
 				m_error_state=FAILURE;
 				break;
 		}		
@@ -4111,8 +4262,7 @@ void WebCLComputeContext::releaseMemObject(WebCLMem* memobj)
 	} else {
 		unsigned int i;
 		for (i = 0; i < m_mem_list.size(); i++) {
-			if ((m_mem_list[i].get())->getCLMem() == cl_mem_id) {
-				printf("found cl_mem_id\n");
+			if ((m_mem_list[i].get())->getCLMem() == cl_mem_id) {				
 				m_mem_list.remove(i);
 				m_num_mems = m_mem_list.size();
 				break;
@@ -4265,7 +4415,6 @@ void WebCLComputeContext::retainKernel(WebCLKernel* kernel)
 
 void WebCLComputeContext::retainProgram(WebCLProgram* program)
 {
-	printf("WebCLComputeContext::retainProgram\n");
 	cl_program cl_program_id = NULL;
 	cl_int err = 0;
 
@@ -4311,7 +4460,6 @@ void WebCLComputeContext::retainProgram(WebCLProgram* program)
 
 void WebCLComputeContext::retainEvent(WebCLEvent* event)
 {
-	printf("WebCLComputeContext::retainEvent\n");
 	cl_event cl_event_id = NULL;
 	cl_int err = 0;
 
@@ -4402,7 +4550,6 @@ void WebCLComputeContext::retainContext(WebCLContext* context_id)
 
 void WebCLComputeContext::retainCommandQueue(WebCLCommandQueue* command_queue)
 {
-	printf("WebCLComputeContext::retainCommandQueue\n");
 	cl_command_queue cl_command_queue_id = NULL;
 	cl_int err = 0;
 
@@ -4446,7 +4593,6 @@ void WebCLComputeContext::retainCommandQueue(WebCLCommandQueue* command_queue)
 }
 void WebCLComputeContext::retainSampler(WebCLSampler* sampler)
 {
-	printf("WebCLComputeContext::retainSampler\n");
 	cl_sampler cl_sampler_id= NULL;
 	cl_int err = 0;
 
@@ -4824,7 +4970,6 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createImage2D(WebCLContext* context,
 		RefPtr<WebCLMem> o = WebCLMem::create(this, cl_mem_image,false);
 		m_mem_list.append(o);
 		m_num_mems++;
-		printf("m_num_mems=%ld\n", m_num_mems);
 		m_error_state = SUCCESS;
 		return o;
 	}
@@ -4892,7 +5037,7 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createImage2D(WebCLContext* context, i
 			cl_mem_image = clCreateImage2D(cl_context_id, CL_MEM_WRITE_ONLY, 
 					&image_format, width, height, 0, (void*)image1, &err);
 			break;
-		// TODO (siba samal) Support other flags & testing
+			// TODO (siba samal) Support other flags & testing
 	}
 	if (cl_mem_image == NULL) {
 		switch (err) {
@@ -5007,7 +5152,7 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createImage2D(WebCLContext* context, i
 			cl_mem_image = clCreateImage2D(cl_context_id, CL_MEM_WRITE_ONLY, 
 					&image_format, width, height, 0, (void *)image_data, &err);
 			break;
-		// TODO (siba samal) Support other flags & testing
+			// TODO (siba samal) Support other flags & testing
 	}
 	if (cl_mem_image == NULL) {
 		switch (err) {
@@ -5057,11 +5202,9 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createImage2D(WebCLContext* context, i
 				break;
 		}
 	} else {
-		printf("Success: clCreateImage2D\n");
 		RefPtr<WebCLMem> o = WebCLMem::create(this, cl_mem_image,false);
 		m_mem_list.append(o);
 		m_num_mems++;
-		printf("m_num_mems=%ld\n", m_num_mems);
 		m_error_state = SUCCESS;
 		return o;
 	}
@@ -5114,7 +5257,7 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createImage2D(WebCLContext* context, i
 			cl_mem_image = clCreateImage2D(cl_context_id, CL_MEM_WRITE_ONLY, 
 					&image_format, width, height, 0, (void*)bytearray, &err);
 			break;
-		// TODO (siba samal) Support other flags & testing
+			// TODO (siba samal) Support other flags & testing
 	}
 	if (cl_mem_image == NULL) {
 		switch (err) {
@@ -5210,7 +5353,7 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createImage2D(WebCLContext* context,in
 			cl_mem_image = clCreateImage2D(cl_context_id, CL_MEM_WRITE_ONLY, 
 					&image_format, cl_width, cl_height, 0, data->data(), &err);
 			break;
-		// TODO (siba samal) Support other flags & testing
+			// TODO (siba samal) Support other flags & testing
 	}
 	if (cl_mem_image == NULL) {
 		switch (err) {
@@ -5270,10 +5413,10 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createImage2D(WebCLContext* context,in
 }
 
 PassRefPtr<WebCLMem> WebCLComputeContext::createImage3D(WebCLContext* context,
-							int flags,unsigned int width, 
-							unsigned int height,
-							unsigned int depth,
-							ArrayBuffer* data)
+		int flags,unsigned int width, 
+		unsigned int height,
+		unsigned int depth,
+		ArrayBuffer* data)
 {
 	cl_context cl_context_id = NULL;
 	cl_int err = 0;
@@ -5312,7 +5455,7 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createImage3D(WebCLContext* context,
 			cl_mem_image = clCreateImage3D(cl_context_id, CL_MEM_WRITE_ONLY, 
 					&image_format, cl_width, cl_height, cl_depth, 0, 0,data->data(), &err);
 			break;
-		// TODO (siba samal) Support other flags & testing
+			// TODO (siba samal) Support other flags & testing
 	}
 	if (cl_mem_image == NULL) {
 		switch (err) {
@@ -5379,8 +5522,6 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueWriteImage(WebCLCommandQueue*
 		HTMLCanvasElement* canvasElement, 
 		int event_wait_list)
 {
-	printf("WebCLComputeContext::enqueueWriteImage width=%d height=%d event_wait_list=%d\n", 
-			canvasElement->width(), canvasElement->height(), event_wait_list);
 
 	cl_int err = 0;
 	cl_command_queue cl_command_queue_id = NULL;
@@ -5507,15 +5648,15 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueWriteImage(WebCLCommandQueue*
 				break;
 			default:
 				printf("Error: Invaild Error Type\n");
+				printf("WebCLComputeContext::enqueueWriteImage width=%d height=%d event_wait_list=%d\n", 
+						canvasElement->width(), canvasElement->height(), event_wait_list);
 				m_error_state = FAILURE;
 				break;
 		}
 	} else {
-		printf("Success: clEnqueueWriteImage\n");
 		RefPtr<WebCLEvent> o = WebCLEvent::create(this, cl_event_id);
 		m_event_list.append(o);
 		m_num_events++;
-		printf("m_num_events=%ld\n", m_num_events);
 		m_error_state = SUCCESS;
 		return o;
 	}
@@ -5598,7 +5739,6 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createFromGLBuffer(WebCLContext* conte
 		RefPtr<WebCLMem> o = WebCLMem::create(this, cl_mem_id, true);
 		m_mem_list.append(o);
 		m_num_mems++;
-		printf("m_num_mems=%ld\n", m_num_mems);
 		m_error_state = SUCCESS;
 		return o;
 
@@ -5607,7 +5747,7 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createFromGLBuffer(WebCLContext* conte
 }
 
 PassRefPtr<WebCLSampler> WebCLComputeContext::createSampler(WebCLContext* context_id, 
-	bool norm_cords, int addr_mode, int fltr_mode)
+		bool norm_cords, int addr_mode, int fltr_mode)
 {
 	cl_int err = 0;
 	cl_context cl_context_id = NULL;
@@ -5658,8 +5798,8 @@ PassRefPtr<WebCLSampler> WebCLComputeContext::createSampler(WebCLContext* contex
 			return NULL;
 	}
 	cl_sampler_id = clCreateSampler(cl_context_id, normalized_coords, addressing_mode, 
-						filter_mode, &err);
-	
+			filter_mode, &err);
+
 	if (err != CL_SUCCESS) {
 		switch (err) {
 			case CL_INVALID_CONTEXT:
@@ -5782,9 +5922,6 @@ PassRefPtr<WebCLMem> WebCLComputeContext::createFromGLTexture2D(WebCLContext* co
 void WebCLComputeContext::enqueueAcquireGLObjects(WebCLCommandQueue* command_queue, 
 		WebCLMem* mem_objects, int event_wait_list)
 {
-	//TODO (siba samal) Handle Event 
-	printf("WebCLComputeContext::enqueueAcquireGLObjects event_wait_list=%d\n",
-			event_wait_list);
 	cl_int err = 0;
 	cl_command_queue cl_command_queue_id = NULL;
 	cl_mem cl_mem_ids = NULL;
@@ -5841,6 +5978,9 @@ void WebCLComputeContext::enqueueAcquireGLObjects(WebCLCommandQueue* command_que
 				break;
 			default:
 				printf("Error: Invaild Error Type\n");
+				//TODO (siba samal) Handle Event 
+				printf("WebCLComputeContext::enqueueAcquireGLObjects event_wait_list=%d\n",
+						event_wait_list);
 				m_error_state = FAILURE;
 				break;
 		}
@@ -5874,9 +6014,6 @@ void WebCLComputeContext::enqueueReleaseGLObjects(WebCLCommandQueue* command_que
 			return;
 		}
 	}
-	// TODO (siba samal) Handle Event related args
-	printf("WebCLComputeContext::enqueueReleaseGLObjects event_wait_list=%d\n",
-			event_wait_list);
 
 	err = clEnqueueReleaseGLObjects(cl_command_queue_id, 1, &cl_mem_ids, 
 			0, 0, 0);
@@ -5916,16 +6053,17 @@ void WebCLComputeContext::enqueueReleaseGLObjects(WebCLCommandQueue* command_que
 				break;
 			default:
 				printf("Error: Invaild Error Type\n");
+				// TODO (siba samal) Handle Event related args
+				printf("WebCLComputeContext::enqueueReleaseGLObjects event_wait_list=%d\n",
+						event_wait_list);
 				m_error_state = FAILURE;
 				break;
 		}
 	} else {
-		printf("Success: clEnqueueReleaseGLObjects\n");
 		unsigned int i;
 
 		for (i = 0; i < m_mem_list.size(); i++) {
 			if ((m_mem_list[i].get())->getCLMem() == cl_mem_ids) {
-				printf("found cl_mem_id\n");
 				m_mem_list.remove(i);
 				m_num_mems = m_mem_list.size();
 				break;
@@ -6058,7 +6196,7 @@ void WebCLComputeContext::enqueueBarrier(WebCLCommandQueue* command_queue)
 			default:
 				m_error_state = FAILURE;
 				printf("Error: Invaild Error Type\n");
-			break;
+				break;
 		}
 	} else {
 		m_error_state = SUCCESS;
@@ -6126,7 +6264,7 @@ void WebCLComputeContext::enqueueMarker(WebCLCommandQueue* commandqueue, WebCLEv
 			default:
 				m_error_state = FAILURE;
 				printf("Error: Invaild Error Type\n");
-			break;
+				break;
 		}
 	} else {
 		m_error_state = SUCCESS;
@@ -6141,8 +6279,6 @@ void WebCLComputeContext::enqueueWaitForEvents(WebCLCommandQueue* commandqueue, 
 	cl_command_queue cl_command_queue_id = 0;
 	cl_event* cl_event_id = NULL;
 
-	printf("InsideWebCLComputeContext::enqueueWaitForEvents(WebCLCommandQueue* commandqueue, WebCLEventList* events)  \n");
-	
 	if (commandqueue != NULL) {
 		cl_command_queue_id = commandqueue->getCLCommandQueue();
 		if (cl_command_queue_id == NULL) {
@@ -6189,7 +6325,7 @@ void WebCLComputeContext::enqueueWaitForEvents(WebCLCommandQueue* commandqueue, 
 			default:
 				m_error_state = FAILURE;
 				printf("Error: Invaild Error Type\n");
-			break;
+				break;
 		}
 	} else {
 		m_error_state = SUCCESS;
@@ -6201,9 +6337,6 @@ void WebCLComputeContext::enqueueWaitForEvents(WebCLCommandQueue* commandqueue, 
 PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueTask(WebCLCommandQueue* command_queue,
 		WebCLKernel* kernel, int event_wait_list)
 {
-	//TODO (siba samal) Handle enqueueTask  API
-	printf("WebCLComputeContext::enqueueTask event_wait_list=%d\n",
-													event_wait_list);
 
 	cl_command_queue cl_command_queue_id = NULL;
 	cl_kernel cl_kernel_id = NULL;
@@ -6222,13 +6355,16 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueTask(WebCLCommandQueue* comma
 		cl_kernel_id = kernel->getCLKernel();
 		if (cl_kernel_id == NULL) {
 			printf("Error: cl_kernel_id null\n");
+			//TODO (siba samal) Handle enqueueTask  API
+			printf("WebCLComputeContext::enqueueTask event_wait_list=%d\n",
+					event_wait_list);
 			m_error_state = FAILURE;
 			return NULL;
 		}
 	}
 
 	err = clEnqueueTask(cl_command_queue_id, cl_kernel_id, 0, NULL,&cl_event_id); 
-	
+
 	if (err != CL_SUCCESS) {
 		printf("Error: clEnqueueWriteBuffer\n");
 		switch (err) {
@@ -6277,20 +6413,18 @@ PassRefPtr<WebCLEvent> WebCLComputeContext::enqueueTask(WebCLCommandQueue* comma
 				m_error_state = FAILURE;
 				break;
 		}
-		
+
 	} else {
-		printf("Success: clEnqueueWriteBuffer\n");
 		RefPtr<WebCLEvent> o = WebCLEvent::create(this, cl_event_id);
 		m_event_list.append(o);
 		m_num_events++;
-		printf("m_num_events=%ld\n", m_num_events);
 		m_error_state = SUCCESS;
 		return o;
 	}
 	return NULL;
 }
 
-WebCLComputeContext::LRUImageBufferCache::LRUImageBufferCache(int capacity)
+	WebCLComputeContext::LRUImageBufferCache::LRUImageBufferCache(int capacity)
 	: m_buffers(adoptArrayPtr(new OwnPtr<ImageBuffer>[capacity]))
 	  , m_capacity(capacity)
 {
@@ -6340,6 +6474,36 @@ PassRefPtr<Image> WebCLComputeContext::videoFrameToImage(HTMLVideoElement* video
 	// FIXME: Turn this into a GPU-GPU texture copy instead of CPU readback.
 	video->paintCurrentFrameInContext(buf->context(), destRect);
 	return buf->copyImage();
+}
+template<class T> inline unsigned int WebCLComputeContext::
+clSetKernelArgPrimitiveType(cl_kernel cl_kernel_id,
+		PassRefPtr<WebCLKernelTypeValue> kernelObject,
+		T nodeId, unsigned int argIndex, int size)
+{			
+	if(!kernelObject->asNumber(&nodeId))
+	{
+		printf("Error: WebCL Kernel Type Value Not Proper\n");
+		m_error_state = FAILURE;
+		return -1;	
+	}
+	cl_int err  =  clSetKernelArg(cl_kernel_id, argIndex, size, &nodeId);		
+	return(err);
+}
+
+inline unsigned int WebCLComputeContext::
+clSetKernelArgVectorType(cl_kernel cl_kernel_id,
+		PassRefPtr<WebCLKernelTypeValue> kernelObject,
+		RefPtr<WebCLKernelTypeVector> array , unsigned int argIndex,
+		int size,unsigned int length)
+{		
+	if ((!kernelObject->asVector(&array)) || (length != array->length()))
+	{
+		printf("Error: Invalid WebCL Kernel Type %d\n", array->length());
+		m_error_state = FAILURE;
+		return -1;	
+	}
+	cl_int err = clSetKernelArg(cl_kernel_id, argIndex, size, &array);			
+	return(err);
 }
 
 } // namespace WebCore

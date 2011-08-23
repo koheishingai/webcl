@@ -254,20 +254,20 @@ function SimulateCL(cl)
     var dimx = 16;
     var dimy = 0; 
     
-    cl.setKernelArg(kernel, 0, initPosBuffer);
-    cl.setKernelArg(kernel, 1, curNorBuffer);
-    cl.setKernelArg(kernel, 2, curPosBuffer);
+    cl.setKernelArgGlobal(kernel, 0, initPosBuffer);
+    cl.setKernelArgGlobal(kernel, 1, curNorBuffer);
+    cl.setKernelArgGlobal(kernel, 2, curPosBuffer);
     
-    cl.setKernelArgFloat(kernel, 3, dimx);              // unused
-    cl.setKernelArgFloat(kernel, 4, dimy);              // unused
-    cl.setKernelArgFloat(kernel, 5, userData.frequency);
-    cl.setKernelArgFloat(kernel, 6, userData.amplitude);
-    cl.setKernelArgFloat(kernel, 7, userData.phase);
-    cl.setKernelArgFloat(kernel, 8, userData.lacunarity);
-    cl.setKernelArgFloat(kernel, 9, userData.increment);
-    cl.setKernelArgFloat(kernel, 10, userData.octaves);
-    cl.setKernelArgFloat(kernel, 11, userData.roughness);
-    cl.setKernelArg(kernel, 12, userData.nVertices);
+    cl.setKernelArg(kernel, 3, dimx, cl.KERNEL_ARG_INT); 
+    cl.setKernelArg(kernel, 4, dimy, cl.KERNEL_ARG_INT); 
+    cl.setKernelArg(kernel, 5, userData.frequency, cl.KERNEL_ARG_FLOAT);
+    cl.setKernelArg(kernel, 6, userData.amplitude, cl.KERNEL_ARG_FLOAT);
+    cl.setKernelArg(kernel, 7, userData.phase, cl.KERNEL_ARG_FLOAT);
+    cl.setKernelArg(kernel, 8, userData.lacunarity, cl.KERNEL_ARG_FLOAT);
+    cl.setKernelArg(kernel, 9, userData.increment, cl.KERNEL_ARG_FLOAT);
+    cl.setKernelArg(kernel, 10, userData.octaves, cl.KERNEL_ARG_FLOAT);
+    cl.setKernelArg(kernel, 11, userData.roughness, cl.KERNEL_ARG_FLOAT);
+    cl.setKernelArg(kernel, 12, userData.nVertices, cl.KERNEL_ARG_INT);
     if (cl.getError() !== cl.SUCCESS) {
         console.error("Failed to set kernel arguments");
         return;
