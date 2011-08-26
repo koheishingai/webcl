@@ -5,6 +5,7 @@ Tested platform
 ---------------
 - OS: Mac OSX
 - GPU: Nvidia GPU with OpenCL 1.0 support
+- GPU: AMD GPU with OpenCL 1.0 support
 
 ---------------------
 Tested WebKit version
@@ -16,7 +17,7 @@ How to build
 ------------
 1. Download a zipped file from Downloads menu to your work directory 
    (let's say, ~/work).
-2. tar -zvxf webcl-20110630.tar.gz
+2. tar -zvxf webcl-20110825.tar 
 3. cd webkit
 4. Tools/Scripts/build-webkit
 
