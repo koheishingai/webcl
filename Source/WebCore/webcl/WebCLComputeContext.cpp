@@ -207,6 +207,7 @@ WebCLGetInfo  WebCLComputeContext::getDeviceInfo(WebCLDeviceID*   webcl_device_i
 	char device_string[1024];
 	cl_uint uint_units = 0;
 	size_t sizet_units = 0;
+	size_t sizet_array[1024] = {0};
 	cl_ulong  ulong_units = 0;
 	cl_bool bool_units = false;
 	cl_device_type type = 0;
@@ -378,9 +379,17 @@ WebCLGetInfo  WebCLComputeContext::getDeviceInfo(WebCLDeviceID*   webcl_device_i
 				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
 			break;
 		case DEVICE_MAX_WORK_ITEM_SIZES:
-			err=clGetDeviceInfo(cl_device, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(size_t), &sizet_units, NULL);
-			if (err == CL_SUCCESS)
-				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
+			err=clGetDeviceInfo(cl_device, DEVICE_MAX_WORK_ITEM_DIMENSIONS, sizeof(size_t), &sizet_units, NULL);
+			if(err == CL_SUCCESS) {
+				err=clGetDeviceInfo(cl_device, CL_DEVICE_MAX_WORK_ITEM_SIZES, 1024, &sizet_array, NULL);
+				// TODO (siba samal) Check support for SizeTArray/Int16Array in WebCLGetInfo
+				if (err == CL_SUCCESS) {
+					int values[1024] = {0};
+					for(int i=0; i<((int)sizet_units); i++)
+						values[i] = (int)sizet_array[i];
+					return WebCLGetInfo(Int32Array::create(values, (int)sizet_units));
+				}
+			}
 			break;
 		case DEVICE_PROFILING_TIMER_RESOLUTION:
 			err=clGetDeviceInfo(cl_device, CL_DEVICE_PROFILING_TIMER_RESOLUTION, sizeof(size_t), &sizet_units, NULL);
@@ -6509,5 +6518,3 @@ clSetKernelArgVectorType(cl_kernel cl_kernel_id,
 } // namespace WebCore
 
 #endif // ENABLE(WEBCL)
-
-
