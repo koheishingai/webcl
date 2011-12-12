@@ -10,14 +10,14 @@ Tested platform
 ---------------------
 Tested WebKit version
 ---------------------
-r92365
+r101596
 
 ------------
 How to build
 ------------
 1. Download a zipped file from Downloads menu to your work directory 
    (let's say, ~/work).
-2. tar -zvxf webcl-20110825.tar 
+2. tar -zvxf webcl-20111212.tar 
 3. cd webkit
 4. Tools/Scripts/build-webkit
 
