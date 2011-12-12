@@ -29,6 +29,45 @@ module html {
 	interface [
 		Conditional=WEBCL,
 	] WebCLContext {
+	[StrictTypeChecking, Custom]  void getContextInfo (in long contextinfo) raises(DOMException) raises(DOMException);		
+	
+	WebCLEvent createUserEvent() raises(DOMException);		
+	WebCLCommandQueue createCommandQueue(in WebCLDeviceIDList devices, 
+				in long prop) raises(DOMException);
+	WebCLCommandQueue createCommandQueue(in WebCLDeviceID devices, 
+				in long prop) raises(DOMException);
+	WebCLProgram createProgramWithSource(in DOMString kernelSource) raises(DOMException);
+	WebCLProgram createProgramWithBinary(in WebCLDeviceIDList clDevices,
+			in DOMString kernelBinary) raises(DOMException);	
+	WebCLMem createBuffer(in long flags, in long size, in long host_ptr) raises(DOMException);			
+	WebCLSampler createSampler(in boolean normCords, in long addrMode,
+			in long fltrMode) raises(DOMException);	
+	void releaseCLResource() raises(DOMException);				
+	void retainCLResource() raises(DOMException);
+	WebCLMem createImage2D(in long flags, 
+				in HTMLCanvasElement canvasElement) raises(DOMException);
+	WebCLMem createImage2D(in long flags, 
+				in HTMLImageElement imageElement) raises(DOMException);
+	WebCLMem createImage2D(in long flags, 
+				in HTMLVideoElement videoElement) raises(DOMException);
+	WebCLMem createImage2D(in long flags, 
+				in ImageData data) raises(DOMException);
+	WebCLMem createImage2D(in long flags,
+				in unsigned long width,
+				in unsigned long height,
+				in ArrayBuffer data) raises(DOMException);
+	WebCLMem createImage3D(in long flags,
+				in unsigned long width,
+				in unsigned long height,
+				in unsigned long depth,
+				in ArrayBuffer data) raises(DOMException);
+	WebCLMem createFromGLBuffer(in long flags,
+				in WebGLBuffer bufobj) raises(DOMException);
+	WebCLMem createFromGLTexture2D(in long flags,
+				in unsigned long textureTarget,
+				in long miplevel,
+				in unsigned long texture) raises(DOMException);
+	
 	
 	};
 }

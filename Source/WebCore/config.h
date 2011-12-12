@@ -29,7 +29,7 @@
 
 #include <wtf/Platform.h>
 
-#if OS(WINDOWS) && !PLATFORM(QT) && !PLATFORM(CHROMIUM)
+#if OS(WINDOWS) && !OS(WINCE) && !PLATFORM(QT) && !PLATFORM(CHROMIUM) && !PLATFORM(GTK) && !PLATFORM(WX)
 #include <WebCore/WebCoreHeaderDetection.h>
 #endif
 
@@ -140,7 +140,7 @@
 
 #if COMPILER(MSVC)
 #define SKIP_STATIC_CONSTRUCTORS_ON_MSVC 1
-#elif !COMPILER(WINSCW)
+#else
 #define SKIP_STATIC_CONSTRUCTORS_ON_GCC 1
 #endif
 
@@ -163,10 +163,6 @@
 // New theme
 #define WTF_USE_NEW_THEME 1
 #endif // PLATFORM(MAC)
-
-#if OS(SYMBIAN)
-#define USE_SYSTEM_MALLOC 1
-#endif
 
 #if OS(UNIX) || OS(WINDOWS)
 #define WTF_USE_OS_RANDOMNESS 1
@@ -221,14 +217,10 @@ typedef float CGFloat;
 #include <bridge/npruntime_internal.h>
 #endif
 
-#if PLATFORM(MAC) && !defined(BUILDING_ON_LEOPARD) && !defined(BUILDING_ON_SNOW_LEOPARD)
+// FIXME: Move this to JavaScriptCore/wtf/Platform.h, which is where we define WTF_USE_AVFOUNDATION on the Mac.
+// https://bugs.webkit.org/show_bug.cgi?id=67334
+#if PLATFORM(WIN) && HAVE(AVCF)
 #define WTF_USE_AVFOUNDATION 1
 #endif
-
-#if PLATFORM(WIN) && HAVE(AVCF)
-/// FIXME: Adopt AVCF media back end on Windows http://webkit.org/b/65400
-#define WTF_USE_AVFOUNDATION 0
-#endif
-
 // SP
 #define ENABLE_WEBCL 1 

@@ -30,6 +30,9 @@ module html {
 	interface [
 		Conditional=WEBCL,
 	] WebCLPlatformID {
+	
+	WebCLDeviceIDList getDeviceIDs(in long deviceType) raises(DOMException);
+	[StrictTypeChecking, Custom]  void getPlatformInfo (in long platformInfo) raises(DOMException);		
 	};
 
 }

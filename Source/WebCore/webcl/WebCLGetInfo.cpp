@@ -31,9 +31,6 @@
 
 #include "WebCLGetInfo.h"
 
-#include "Float32Array.h"
-#include "Int32Array.h"
-#include "Uint8Array.h"
 #include "WebCLProgram.h"
 #include "WebCLContext.h"
 
@@ -109,6 +106,12 @@ WebCLGetInfo::WebCLGetInfo(PassRefPtr<Int32Array> value)
 {
 }
 
+
+WebCLGetInfo::WebCLGetInfo(PassRefPtr<Int8Array> value)
+    : m_type(kTypeWebCLInt8Array)
+    , m_webclInt8Array(value)
+{
+}
 WebCLGetInfo::WebCLGetInfo(PassRefPtr<WebCLProgram> value)
     : m_type(kTypeWebCLProgram)
     , m_webclProgram(value)
@@ -194,6 +197,13 @@ PassRefPtr<Int32Array> WebCLGetInfo::getWebCLIntArray() const
 {
     ASSERT(getType() == kTypeWebCLIntArray);
     return m_webclIntArray;
+}
+
+
+PassRefPtr<Int8Array> WebCLGetInfo::getWebCLInt8Array() const
+{
+    ASSERT(getType() == kTypeWebCLInt8Array);
+    return m_webclInt8Array;
 }
 
 PassRefPtr<WebCLContext> WebCLGetInfo::getWebCLContext() const

@@ -114,11 +114,11 @@ if(typeof(WebCLComputeContext) === "undefined") {
         this.finish = function (queue, cb, userData) { if(cb !== null) cb(userData); return this.SUCCESS; };
         this.enqueueReadBuffer = function(queue, buffer, blocking_read, offset, buffer_size, ptr, event_wait_list) { return new WebCLEvent(); };
         this.enqueueReadImage  = function(queue, image,  blocking_read, origin, region, jsImage, event_wait_list) { return new WebCLEvent(); };
-        this.releaseMemObject = function(input) { return this.SUCCESS; };
-        this.releaseProgram = function(program) { return this.SUCCESS; };
-        this.releaseKernel = function(kernel) { return this.SUCCESS; };
-        this.releaseCommandQueue = function(queue) { return this.SUCCESS; };
-        this.releaseContext = function(context) { return this.SUCCESS; };
+        this.releaseCLResource = function(input) { return this.SUCCESS; };
+        this.releaseCLResource = function(program) { return this.SUCCESS; };
+        this.releaseCLResource = function(kernel) { return this.SUCCESS; };
+        this.releaseCLResource = function(queue) { return this.SUCCESS; };
+        this.releaseCLResource = function(context) { return this.SUCCESS; };
         this.unloadCompiler = function() { return this.SUCCESS; };
 
         this.getCommandQueueInfo = function(queue, queue_info_type) { return new WebCLCommandQueueInfo(); };

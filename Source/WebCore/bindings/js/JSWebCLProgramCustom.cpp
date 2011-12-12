@@ -32,10 +32,7 @@
 #include "JSDOMGlobalObject.h"
 #include "DOMWindow.h"
 #include "JSDOMWindow.h"
-#include <runtime/JSFunction.h>
-#include "JSWebCLComputeContext.h"
 #include "JSDOMBinding.h"
-#include "WebCLComputeContext.h"
 #include "JSImageData.h"
 #include "JSOESStandardDerivatives.h"
 #include "JSOESTextureFloat.h"
@@ -47,36 +44,16 @@
 #include "NotImplemented.h"
 #include "OESStandardDerivatives.h"
 #include "OESTextureFloat.h"
-#include <wtf/Float32Array.h>
-#include "WebCLGetInfo.h"
-#include <wtf/Int32Array.h>
 #include <runtime/Error.h>
 #include <runtime/JSArray.h>
 #include <wtf/FastMalloc.h>
 #include <wtf/OwnFastMallocPtr.h>
-#include "JSWebCLPlatformID.h"
-#include "JSWebCLDeviceID.h"
-#include "JSWebCLKernel.h"
-#include "JSWebCLProgram.h"
-#include "JSWebCLCommandQueue.h"
-#include "JSWebCLContext.h"
-#include "JSWebCLMem.h"
-#include "JSWebCLEvent.h"
-#include "JSWebCLSampler.h"
-#include "JSWebCLImage.h"
-#include "WebCLPlatformID.h"
-#include "WebCLKernel.h"  //not needeed
+#include <runtime/JSFunction.h>
 #include "WebCLProgram.h"
 #include "WebCLDeviceID.h"
-#include "WebCLCommandQueue.h"
-#include "WebCLContext.h"
-#include "WebCLMem.h"
-#include "WebCLEvent.h"
-#include "WebCLSampler.h"
-#include "WebCLImage.h"
-#include "WebCLBuffer.h"
-#include "WebCLKernelTypes.h" //not needeed
-#include "ScriptValue.h"  //not needeed
+#include "WebCLGetInfo.h"
+#include "JSWebCLDeviceID.h"
+#include "JSWebCLProgram.h"
 #include "JSWebCLComputeContextCustom.h"
 #include <stdio.h>
 
@@ -85,43 +62,47 @@ using namespace std;
 
 namespace WebCore { 
 
-//static JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, int user_data)
-//{
-//	return getDOMObjectWrapper<JSWebCLComputeContext>(exec, globalObject, object);
-//}
 
-
-JSValue JSWebCLComputeContext::getImageInfo(JSC::ExecState* exec)
+JSValue JSWebCLProgram::getProgramInfo(JSC::ExecState* exec)
 {
-	if (exec->argumentCount() != 2)
+	if (exec->argumentCount() != 1)
 		return throwSyntaxError(exec);
 
 	ExceptionCode ec = 0;
-	WebCLComputeContext* context = static_cast<WebCLComputeContext*>(impl());
-	WebCLImage* wimage  = toWebCLImage(exec->argument(0));
+	WebCLProgram* program = static_cast<WebCLProgram*>(impl());
 	if (exec->hadException())
 		return jsUndefined();
-	unsigned image_info  = exec->argument(1).toInt32(exec);
+	unsigned programInfo  = exec->argument(0).toInt32(exec);
 	if (exec->hadException())
 		return jsUndefined();
-	WebCLGetInfo info = context->getImageInfo(wimage,image_info,ec);
+	WebCLGetInfo info = program->getProgramInfo(programInfo, ec);
 	if (ec) {
 		setDOMException(exec, ec);
 		return jsUndefined();
 	}
 	return toJS(exec, globalObject(), info);
 }
-EncodedJSValue JSC_HOST_CALL JSWebCLComputeContextConstructor::constructJSWebCLComputeContext(ExecState* exec)
+JSValue JSWebCLProgram::getProgramBuildInfo(JSC::ExecState* exec)
 {
-	JSWebCLComputeContextConstructor* jsConstructor = static_cast<JSWebCLComputeContextConstructor*>(exec->callee());
-	ScriptExecutionContext* context = jsConstructor->scriptExecutionContext();
-	RefPtr<WebCLComputeContext> webCLComputeContext = WebCLComputeContext::create(context);
+	if (exec->argumentCount() != 2)
+		return throwSyntaxError(exec);
 
-	//DOMWindow* window = asJSDOMWindow(exec->lexicalGlobalObject())->impl();
-	//RefPtr<WebCLComputeContext> webCLComputeContext = WebCLComputeContext::create(window->document());
-	//return JSValue::encode(asObject(toJS(exec, jsConstructor->globalObject())));
-	return JSValue::encode(CREATE_DOM_WRAPPER(exec, jsConstructor->globalObject(), WebCLComputeContext, webCLComputeContext.get()));
+	ExceptionCode ec = 0;
+	WebCLProgram* program = static_cast<WebCLProgram*>(impl());
+	WebCLDeviceID* device  = toWebCLDeviceID(exec->argument(0));
+	if (exec->hadException())
+		return jsUndefined();
+	unsigned build_info  = exec->argument(1).toInt32(exec);
+	if (exec->hadException())
+		return jsUndefined();
+	WebCLGetInfo info = program->getProgramBuildInfo(device,build_info, ec);
+	if (ec) {
+		setDOMException(exec, ec);
+		return jsUndefined();
+	}
+	return toJS(exec, globalObject(), info);
 }
+
 } // namespace WebCore
 
 #endif // ENABLE(WEBCL)

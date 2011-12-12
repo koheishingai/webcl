@@ -29,6 +29,11 @@ module html {
         interface [
                 Conditional=WEBCL,
         ] WebCLEvent {
+		[StrictTypeChecking, Custom]  void getEventInfo(in long param_name) raises(DOMException);
+		[StrictTypeChecking, Custom]  void getEventProfilingInfo(in long param_name) raises(DOMException);
+		void setUserEventStatus(in long execStatus) raises(DOMException);
+		void releaseCLResource() raises(DOMException);			
+		void retainCLResource() raises(DOMException);
 
         };
 }

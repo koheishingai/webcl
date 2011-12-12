@@ -29,6 +29,8 @@ module html {
 	interface [
 		Conditional=WEBCL,
 	] WebCLSampler {
-	
+		[StrictTypeChecking, Custom] void getSamplerInfo(in long paramName) raises(DOMException);
+		void releaseCLResource() raises(DOMException);			
+		void retainCLResource() raises(DOMException);
 	};
 }

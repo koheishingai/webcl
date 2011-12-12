@@ -29,6 +29,9 @@ module html {
 	interface [
 		Conditional=WEBCL,
 	] WebCLMem {
-	
+	[StrictTypeChecking, Custom]  void getMemObjectInfo(in WebCLMem MemObj, 
+				in long param_name);
+	void retainCLResource() raises(DOMException);	
+	void releaseCLResource() raises(DOMException);
 	};
 }

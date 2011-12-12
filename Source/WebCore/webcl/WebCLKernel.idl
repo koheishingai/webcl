@@ -29,6 +29,20 @@ module html {
 	interface [
 		Conditional=WEBCL,
 	] WebCLKernel {
-	
+	[StrictTypeChecking, Custom]  void getKernelInfo (in long kernelInfo) raises(DOMException);
+	[StrictTypeChecking, Custom]  void getKernelWorkGroupInfo(in WebCLDeviceID deviceId, 
+				in long param_name) raises(DOMException);
+	//unsigned long getKernelWorkGroupInfo(in WebCLDeviceIDList deviceId,in long param_name);
+	[Custom] void setKernelArg(in unsigned long argIndex, 
+						   in DOMObject kernelObject,
+						   in long argType) raises(DOMException);		
+	void setKernelArgGlobal(in unsigned long argIndex, 
+						in WebCLMem argValue) raises(DOMException);
+	void setKernelArgConstant(in unsigned long argIndex, 
+				in WebCLMem argValue) raises(DOMException);				
+	void setKernelArgLocal(in unsigned long argIndex,
+				in unsigned long argSize) raises(DOMException);
+	void retainCLResource() raises(DOMException);
+	void releaseCLResource() raises(DOMException);	
 	};
 }

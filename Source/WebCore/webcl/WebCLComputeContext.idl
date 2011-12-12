@@ -30,7 +30,8 @@ module html {
 interface [
 Conditional=WEBCL,
 	CanBeConstructed,
-	CustomConstructFunction,
+	CustomConstructor,
+//	CustomConstructFunction,
 	] WebCLComputeContext {
 		/* Error Codes */
 		const unsigned long   SUCCESS                                  = 0;
@@ -437,294 +438,31 @@ Conditional=WEBCL,
 		const unsigned long   KERNEL_ARG_SAMPLER                       = 0x2202;
 		const unsigned long   KERNEL_ARG_MEM	                       = 0x2203;
 	
-		void hello();
 
-		long getError();
-
-		WebCLPlatformIDList getPlatformIDs();
-
-		WebCLDeviceIDList getDeviceIDs(in WebCLPlatformID platformId,
-				in long deviceType);
-
-		[StrictTypeChecking, Custom] void getDeviceInfo(in WebCLDeviceID deviceId,in long deviceType);
-
-		[StrictTypeChecking, Custom]  void getPlatformInfo (in WebCLPlatformID platformId,in long platformInfo);
-
-		[StrictTypeChecking, Custom]  void getKernelInfo (in WebCLKernel kernelId,in long kernelInfo);
-
-		[StrictTypeChecking, Custom]  void getProgramInfo (in WebCLProgram program,in long programInfo);
-
-		[StrictTypeChecking, Custom]  void getCommandQueueInfo (in WebCLCommandQueue queue,in long queuenfo);
-
-		[StrictTypeChecking, Custom]  void  getProgramBuildInfo(in WebCLProgram programId, in WebCLDeviceID deviceId, 
-				in long paramName);
-		[StrictTypeChecking, Custom]  void getContextInfo (in WebCLContext context,in long contextinfo);																						
-
-		[StrictTypeChecking, Custom]  void getKernelWorkGroupInfo(in WebCLKernel KernelId, 
-				in WebCLDeviceID deviceId, 
-				in long param_name);	
-
-		[StrictTypeChecking, Custom]  void getMemObjectInfo(in WebCLMem MemObj, 
-				in long param_name);	
-
-		[StrictTypeChecking, Custom]  void getEventInfo(in WebCLEvent eventObj, 
-				in long param_name);
-		[StrictTypeChecking, Custom]  void getEventProfilingInfo(in WebCLEvent eventObj, 
-				in long param_name);
-		[StrictTypeChecking, Custom]  void getSamplerInfo(in WebCLSampler samplerObj, 
-				in long param_name);
+		WebCLPlatformIDList getPlatformIDs() raises(DOMException);			
+		
+		
+				
 		[StrictTypeChecking, Custom]  void getImageInfo(in WebCLImage image, 
-				in long param_name);
+				in long param_name) raises(DOMException) raises(DOMException);
 
-		// Availble in OpenCL 1.1
-		WebCLEvent createUserEvent(in WebCLContext contextId);
-		void setUserEventStatus(in WebCLEvent event, in long execStatus);
-		void waitForEvents(in WebCLEventList events);
-
+		// Availble in OpenCL 1.1		
+		void waitForEvents(in WebCLEventList events) raises(DOMException);
 		WebCLContext createContext(in long contextProperties, 
 				in WebCLDeviceIDList devices, 
 				in long notify, 
-				in long user_data);
-
+				in long user_data) raises(DOMException);
 		WebCLContext createContext(in long contextProperties, 
 				in WebCLDeviceID device, 
 				in long notify, 
-				in long user_data);
-				
+				in long user_data)  raises(DOMException);	
 		WebCLContext createContextFromType(in long contextProperties,
 				in long deviceType, 
 				in long notify,
-				in long user_data);
-
+				in long user_data)  raises(DOMException);
 		WebCLContext createSharedContext(in long deviceType, 
 				in long notify,
-				in long userData);
-
-		WebCLCommandQueue createCommandQueue(in WebCLContext contextId, 
-				in WebCLDeviceIDList devices, 
-				in long prop);
-
-		WebCLCommandQueue createCommandQueue(in WebCLContext contextId, 
-				in WebCLDeviceID devices, 
-				in long prop);
-
-		WebCLProgram createProgramWithSource(in WebCLContext contextId, 
-				in DOMString kernelSource);
-		WebCLProgram createProgramWithBinary(in WebCLContext contextId,
-										in WebCLDeviceIDList clDevices,
-										in DOMString kernelBinary);
-
-		void buildProgram(in WebCLProgram programId,
-						  in WebCLDeviceID deviceId,
-						  in long options,
-						  in long pfn,
-						  in long userData);
-		void buildProgram(in WebCLProgram programId,
-						  in WebCLDeviceIDList deviceIds,
-						  in long options,
-						  in long pfn,
-						  in long userData);
-		void buildProgram(in WebCLProgram programId, 
-				in long options, 
-				in long pfnNotify, 
-				in long userData);
-
-		WebCLKernel createKernel(in WebCLProgram programId, 
-				in DOMString kernelName);
-
-		WebCLKernelList createKernelsInProgram(
-					in WebCLProgram program);
-
-		WebCLMem createBuffer(in WebCLContext contextId, 
-				in long flags, 
-				in long size, 
-				in long host_ptr);
-
-		WebCLEvent enqueueWriteBuffer(in WebCLCommandQueue commandQueue, 
-				in WebCLMem bufferId, 
-				in boolean blockingWrite, 
-				in long offset, 
-				in long bufferSize, 
-				in Float32Array ptr, 
-				in long eventWaitList);
-
-		WebCLEvent enqueueWriteBuffer(in WebCLCommandQueue commandQueue, 
-				in WebCLMem bufferId, 
-				in boolean blockingWrite, 
-				in long offset, 
-				in long bufferSize, 
-				in Int32Array ptr, 
-				in long eventWaitList);
-
-		//WebCLEvent enqueueWriteBuffer(in WebCLCommandQueue commandQueue, 
-		//						in WebCLMem bufferId, 
-		//						in boolean blockingWrite, 
-		//						in long offset, 
-		//						in long bufferSize, 
-		//						in Uint8Array ptr, 
-		//						in long eventWaitList);
-
-		WebCLEvent enqueueReadBuffer(in WebCLCommandQueue commandQueue, 
-				in WebCLMem bufferId, 
-				in boolean blockingRead, 
-				in long offset, 
-				in long bufferSize, 
-				in Float32Array ptr, 
-				in long eventWaitList);
-
-		//WebCLEvent enqueueReadBuffer(in WebCLCommandQueue commandQueue,
-		//						in WebCLMem bufferId,
-		//						in boolean blockingRead,
-		//						in long offset,
-		//						in long bufferSize,
-		//						in HTMLCanvasElement canvasElement,
-		//						in long eventWaitList);		
-
-		WebCLEvent enqueueReadBuffer(in WebCLCommandQueue commandQueue, 
-				in WebCLMem bufferId, 
-				in boolean blockingRead, 
-				in long offset, 
-				in long bufferSize, 
-				in Int32Array ptr, 
-				in long eventWaitList);
-
-		//void enqueueReadBuffer(in WebCLCommandQueue commandQueue, 
-		//						in WebCLMem bufferId, 
-		//						in boolean blockingRead, 
-		//						in long offset, 
-		//						in long bufferSize, 
-		//						in Uint8Array ptr, 
-		//						in long eventWaitList);
-
-		unsigned long getKernelWorkGroupInfo(in WebCLKernel KernelId, 
-				in WebCLDeviceIDList deviceId, 
-				in long param_name);
-				
-		[Custom] void setKernelArg(in WebCLKernel kernelId,
-						   in unsigned long argIndex, 
-						   in DOMObject kernelObject,
-						   in long argType);		
-		void setKernelArgGlobal(in WebCLKernel kernelId, 
-						in unsigned long argIndex, 
-						in WebCLMem argValue);
-		void setKernelArgConstant(in WebCLKernel kernelId, 
-				in unsigned long argIndex, 
-				in WebCLMem argValue);				
-		void setKernelArgLocal(in WebCLKernel kernelId,
-				in unsigned long argIndex,
-				in unsigned long argSize);
-
-		WebCLSampler createSampler(in WebCLContext contextId,
-								   in boolean normCords, 
-								   in long addrMode,
-								   in long fltrMode);	
-
-		//void enqueueNDRangeKernel(in WebCLCommandQueue commandQueue, 
-		//							in WebCLKernel kernelId, 
-		//							in unsigned long workDim, 
-		//							in unsigned long globalWorkOffset, 
-		//							in unsigned long globalWorkSize, 
-		//							in unsigned long localWorkSize, 
-		//							in long eventWaitList);
-
-		WebCLEvent enqueueNDRangeKernel(in WebCLCommandQueue commandQueue,
-				in WebCLKernel kernelId,
-				in unsigned long workDim,
-				in unsigned long globalWorkOffset,
-				in Int32Array globalWorkSize,
-				in Int32Array localWorkSize,
-				in long eventWaitList);
-
-		[Custom] void finish(in WebCLCommandQueue commandQueue, in WebCLFinishCallback notifyCallback, in long userData);
-		void flush(in WebCLCommandQueue queue);
-
-		void releaseMemObject(in WebCLMem memobj);
-		void releaseProgram(in WebCLProgram programId);
-		void releaseEvent(in WebCLEvent event);
-		void releaseSampler(in WebCLSampler sampler);
-		void retainKernel(in WebCLKernel kernel);
-		void retainProgram(in WebCLProgram programId);
-		void retainEvent(in WebCLEvent event);
-		void retainContext(in WebCLContext contextId);
-		void retainCommandQueue(in WebCLCommandQueue commandQueue);
-		void retainSampler(in WebCLSampler sampler);
-		void retainMemObject(in WebCLMem memobj);
-		void releaseKernel(in WebCLKernel kernel);
-		void releaseCommandQueue(in WebCLCommandQueue commandQueue);
-		void releaseContext(in WebCLContext contextId);
-
-		WebCLMem createImage2D(in WebCLContext contextId, 
-				in long flags, 
-				in HTMLCanvasElement canvasElement);
-		WebCLMem createImage2D(in WebCLContext contextId, 
-				in long flags, 
-				in HTMLImageElement imageElement);
-		WebCLMem createImage2D(in WebCLContext contextId, 
-				in long flags, 
-				in HTMLVideoElement videoElement);
-		WebCLMem createImage2D(in WebCLContext contextId, 
-				in long flags, 
-				in ImageData data);
-		WebCLMem createImage2D(in WebCLContext contextId, 				
-				in long flags,
-				in unsigned long width,
-				in unsigned long height,
-				in ArrayBuffer data);
-		WebCLMem createImage3D(in WebCLContext contextId, 
-				in long flags,
-				in unsigned long width,
-				in unsigned long height,
-				in unsigned long depth,
-				in ArrayBuffer data);
-		WebCLEvent enqueueWriteImage(in WebCLCommandQueue commandQueue, 
-				in WebCLMem image, 
-				in boolean blockingWrite, 
-				in Int32Array origin, 
-				in Int32Array region, 
-				in HTMLCanvasElement canvasElement, 
-				in long eventWaitList);
-
-		//long enqueueReadImage(in WebCLCommandQueue commandQueue,
-		//						in WebCLMem image,
-		//						in boolean blockingRead,
-		//						in Int32Array origin,
-		//						in Int32Array region,
-		//						in HTMLCanvasElement canvasElement,
-		//						in long eventWaitList);
-
-		WebCLMem createFromGLBuffer(in WebCLContext contextId,
-				in long flags,
-				in WebGLBuffer bufobj);
-
-		WebCLMem createFromGLTexture2D(in WebCLContext contextId,
-				in long flags,
-				in unsigned long textureTarget,
-				in long miplevel,
-				in unsigned long texture);
-
-		void enqueueAcquireGLObjects(in WebCLCommandQueue commandQueue,
-				in WebCLMem MemObjects,
-				in long eventWaitList);
-
-		void enqueueReleaseGLObjects(in WebCLCommandQueue commandQueue,
-				in WebCLMem memObjects,
-				in long eventWaitList);
-
-		void enqueueCopyBuffer(in WebCLCommandQueue commandQueue,
-				in WebCLMem srcBuffer,
-				in WebCLMem dstBuffer,
-				in long cb);
-
-		void enqueueBarrier(in WebCLCommandQueue commandQueue);
-
-		void enqueueMarker(in WebCLCommandQueue commandQueue,in  WebCLEvent event);
-		
-		void enqueueWaitForEvents(in WebCLCommandQueue commandqueue,in WebCLEventList events);
-		
-		WebCLEvent enqueueTask(in WebCLCommandQueue commandqueue, in WebCLKernel kernel,
-							in long eventWaitList);
-
-		void unloadCompiler();
+				in long userData)  raises(DOMException);
+		void unloadCompiler()  raises(DOMException);
 
 	};
-}

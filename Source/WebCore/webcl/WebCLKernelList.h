@@ -38,6 +38,7 @@
 namespace WebCore {
 
 class WebCLComputeContext;
+class WebCLKernel;
 
 class WebCLKernelList : public RefCounted<WebCLKernelList> {
 

@@ -29,6 +29,27 @@ module html {
 	interface [
 		Conditional=WEBCL,
 	] WebCLProgram {
+	[StrictTypeChecking, Custom]  void getProgramInfo (in long programInfo) raises(DOMException);
+	[StrictTypeChecking, Custom]  void  getProgramBuildInfo(in WebCLDeviceID deviceId, 
+		in long paramName) raises(DOMException);
+	WebCLKernel createKernel(in DOMString kernelName) raises(DOMException);
+				
+	WebCLKernelList createKernelsInProgram() raises(DOMException);
+					
+	void buildProgram(   in WebCLDeviceID deviceId,
+						  in long options,
+						  in long pfn,
+						  in long userData) raises(DOMException);
+	void buildProgram(	  in WebCLDeviceIDList deviceIds,
+						  in long options,
+						  in long pfn,
+						  in long userData) raises(DOMException);
+	void buildProgram(	in long options, 
+					in long pfnNotify, 
+					in long userData) raises(DOMException);
+	void releaseCLResource() raises(DOMException);
+	void retainCLResource() raises(DOMException);
+	
 	
 	};
 }

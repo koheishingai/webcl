@@ -29,6 +29,6 @@ module html {
 	interface [
 		Conditional=WEBCL,
 	] WebCLDeviceID {
-	
+	[StrictTypeChecking, Custom] void getDeviceInfo(in long deviceType) raises(DOMException);	
 	};
 }

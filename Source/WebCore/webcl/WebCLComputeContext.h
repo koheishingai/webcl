@@ -46,8 +46,8 @@
 #include "WebCLEvent.h"
 #include "WebCLEventList.h"
 #include "WebCLSampler.h"
-#include "Float32Array.h"
-#include "Int32Array.h"
+#include <wtf/Float32Array.h>
+#include <wtf/Int32Array.h>
 #include "ImageData.h"
 #include "HTMLCanvasElement.h"
 #include "HTMLImageElement.h"
@@ -55,8 +55,6 @@
 #include "GraphicsContext3D.h"
 #include "WebGLBuffer.h"
 #include "WebGLRenderingContext.h"
-#include "WebCLGetInfo.h"
-#include "WebCLFinishCallback.h"
 #include "WebCLKernelTypes.h"
 
 #include <wtf/OwnPtr.h>
@@ -70,7 +68,7 @@
 #include "WebCLImage.h"
 #include <OpenCL/opencl.h>
 #include <stdlib.h>
-#include "ArrayBuffer.h"
+#include <wtf/ArrayBuffer.h>
 
 using namespace std ;
 
@@ -89,7 +87,7 @@ class WebCLComputeContext : public RefCounted<WebCLComputeContext>,
 public: 
 	static PassRefPtr<WebCLComputeContext> create(ScriptExecutionContext*);
 	virtual ~WebCLComputeContext();
-	enum WebCL_state {
+	enum {
 	FAILURE = -1,
 	SUCCESS = 0,
 	DEVICE_NOT_FOUND                         = -1,
@@ -502,151 +500,16 @@ public:
 };
 virtual WebCLComputeContext* toWebCLComputeContext() { return this; }
 
-void hello();
-long getError();
-
-PassRefPtr<WebCLPlatformIDList> getPlatformIDs();
-
-PassRefPtr<WebCLDeviceIDList> getDeviceIDs(WebCLPlatformID*, int);
-WebCLGetInfo getDeviceInfo(WebCLDeviceID*, int);
-WebCLGetInfo getPlatformInfo (WebCLPlatformID*,int);
-WebCLGetInfo getKernelInfo (WebCLKernel*,int);
-WebCLGetInfo getProgramInfo(WebCLProgram*,int);
-WebCLGetInfo getCommandQueueInfo(WebCLCommandQueue*,int);
-WebCLGetInfo getProgramBuildInfo(WebCLProgram*, WebCLDeviceID*, int);
+PassRefPtr<WebCLPlatformIDList> getPlatformIDs( ExceptionCode&);
 WebCLGetInfo getContextInfo(WebCLContext*, int);
-WebCLGetInfo getKernelWorkGroupInfo(WebCLKernel*, WebCLDeviceID*, int);
-WebCLGetInfo getMemObjectInfo(WebCLMem* , int);
-WebCLGetInfo getEventInfo(WebCLEvent* , int);
-WebCLGetInfo getEventProfilingInfo(WebCLEvent*,int);
-WebCLGetInfo getSamplerInfo(WebCLSampler*, cl_sampler_info);
-WebCLGetInfo getImageInfo(WebCLImage* , cl_image_info );
-// Fixed-size cache of reusable image buffers for video texImage2D calls.
-class LRUImageBufferCache {
-	public:
-		LRUImageBufferCache(int capacity);
-		// The pointer returned is owned by the image buffer map.
-		ImageBuffer* imageBuffer(const IntSize& size);
-	private:
-		void bubbleToFront(int idx);
-		OwnArrayPtr<OwnPtr<ImageBuffer> > m_buffers;
-		int m_capacity;
-};
-LRUImageBufferCache m_videoCache;
-
+WebCLGetInfo getImageInfo(WebCLImage* , cl_image_info, ExceptionCode& );
 // Present in OpenCL 1.1
-PassRefPtr<WebCLEvent> createUserEvent(WebCLContext*);
-void setUserEventStatus (WebCLEvent*,int);
-
-void waitForEvents(WebCLEventList*);
-
-PassRefPtr<WebCLContext> createContext(int, WebCLDeviceIDList*, int, int);
-PassRefPtr<WebCLContext> createContext(int, WebCLDeviceID*, int, int);
-PassRefPtr<WebCLContext> createContextFromType(int, int, int, int);
-PassRefPtr<WebCLContext> createSharedContext(int, int, int);
-
-PassRefPtr<WebCLCommandQueue> createCommandQueue(WebCLContext*, 
-		WebCLDeviceIDList*, int);
-
-PassRefPtr<WebCLCommandQueue> createCommandQueue(WebCLContext*, 
-		WebCLDeviceID*, int);
-
-PassRefPtr<WebCLProgram> createProgramWithSource(WebCLContext*, 
-		const String&);
-PassRefPtr<WebCLProgram> createProgramWithBinary(WebCLContext*,
-		WebCLDeviceIDList* ,const String&);
-		
-void buildProgram(WebCLProgram*, int, int, int);
-void buildProgram(WebCLProgram*, WebCLDeviceID*,
-				int, int, int);
-void buildProgram(WebCLProgram*, WebCLDeviceIDList*,
-				int, int, int);
-
-PassRefPtr<WebCLKernel> createKernel(WebCLProgram*, const String&);
-PassRefPtr<WebCLKernelList> createKernelsInProgram(WebCLProgram*); 
-PassRefPtr<WebCLMem> createBuffer(WebCLContext*, int, int, int);
-
-PassRefPtr<WebCLEvent> enqueueWriteBuffer(WebCLCommandQueue*, WebCLMem*, bool, int, int, 
-		Float32Array*, int);
-PassRefPtr<WebCLEvent> enqueueWriteBuffer(WebCLCommandQueue*, WebCLMem*, bool, int, int, 
-		Int32Array*, int);
-PassRefPtr<WebCLEvent> enqueueWriteBuffer(WebCLCommandQueue*, WebCLMem*, bool, int, int, 
-		Uint8Array*, int);
-
-PassRefPtr<WebCLEvent>  enqueueReadBuffer(WebCLCommandQueue*, WebCLMem*, bool, int, int, 
-		Float32Array*, int);
-//PassRefPtr<WebCLEvent>  enqueueReadBuffer(WebCLCommandQueue*, WebCLMem*, bool, int, int,
-//		HTMLCanvasElement*, int);
-PassRefPtr<WebCLEvent>  enqueueReadBuffer(WebCLCommandQueue*, WebCLMem*, bool, int, int, 
-		Int32Array*, int);
-PassRefPtr<WebCLEvent>  enqueueReadBuffer(WebCLCommandQueue*, WebCLMem*, bool, int, int, 
-		Uint8Array*, int);	
-
-		
-void setKernelArg(WebCLKernel*, unsigned int, PassRefPtr<WebCLKernelTypeValue>, int);
-void setKernelArgGlobal(WebCLKernel*, unsigned int, WebCLMem*);
-void setKernelArgConstant(WebCLKernel*, unsigned int, WebCLMem*);
-void setKernelArgLocal(WebCLKernel*, unsigned int,unsigned int);
-
-
-//PassRefPtr<WebCLEvent>  enqueueNDRangeKernel(WebCLCommandQueue*, WebCLKernel*, unsigned int, 
-//		unsigned int, unsigned int, unsigned int, int);
-PassRefPtr<WebCLEvent>  enqueueNDRangeKernel(WebCLCommandQueue*, WebCLKernel*, unsigned int,
-		unsigned int, Int32Array*, Int32Array*, int);
-
-void finish(WebCLCommandQueue*, PassRefPtr<WebCLFinishCallback>, int /*object userData*/);
-void flush(WebCLCommandQueue*);
-
-void releaseMemObject(WebCLMem*);
-void releaseProgram(WebCLProgram*);
-void releaseEvent(WebCLEvent*);
-void releaseSampler(WebCLSampler*);
-void retainKernel(WebCLKernel*);
-void retainProgram(WebCLProgram*);
-void retainEvent(WebCLEvent*);
-void retainContext(WebCLContext*);
-void retainCommandQueue(WebCLCommandQueue*);
-void retainSampler(WebCLSampler*);
-void retainMemObject(WebCLMem*);
-void releaseKernel(WebCLKernel*);
-void releaseCommandQueue(WebCLCommandQueue*);
-void releaseContext(WebCLContext*);
-
-unsigned long getKernelWorkGroupInfo(WebCLKernel*, WebCLDeviceIDList*, int);
-PassRefPtr<WebCLMem> createImage2D(WebCLContext*, int, HTMLCanvasElement*);
-PassRefPtr<WebCLMem> createImage2D(WebCLContext*, int, HTMLImageElement*);
-PassRefPtr<WebCLMem> createImage2D(WebCLContext*, int, HTMLVideoElement*);
-PassRefPtr<WebCLMem> createImage2D(WebCLContext*, int, ImageData*);
-PassRefPtr<WebCLMem> createImage2D(WebCLContext* ,int,unsigned int,unsigned int, ArrayBuffer*);
-PassRefPtr<WebCLMem> createImage3D(WebCLContext*, int, unsigned int, unsigned int, unsigned int,ArrayBuffer*);
-//PassRefPtr<WebCLMem> createImage2DADD(WebCLContext* , int , size_t, size_t , ArrayBuffer*);
-PassRefPtr<Image> videoFrameToImage(HTMLVideoElement*);
-PassRefPtr<WebCLEvent> enqueueWriteImage(WebCLCommandQueue*, WebCLMem*, bool, Int32Array*, 
-		Int32Array*, HTMLCanvasElement*, int);
-
-//long enqueueReadImage(WebCLCommandQueue*, WebCLMem*, bool, Int32Array*, 
-//		Int32Array*, HTMLCanvasElement*, int);
-
-PassRefPtr<WebCLSampler> createSampler(WebCLContext* ,bool, int, int);
-PassRefPtr<WebCLMem> createFromGLBuffer(WebCLContext*, int, WebGLBuffer*);
-
-// TODO(won.jeon) - needs testing
-PassRefPtr<WebCLMem> createFromGLTexture2D(WebCLContext*, int, GC3Denum,
-		GC3Dint, GC3Duint);
-
-void enqueueAcquireGLObjects(WebCLCommandQueue*, WebCLMem*, int);
-void enqueueReleaseGLObjects(WebCLCommandQueue*, WebCLMem*, int);
-
-void enqueueCopyBuffer(WebCLCommandQueue*, WebCLMem*, WebCLMem*, int);
-
-void enqueueBarrier(WebCLCommandQueue*);
-void enqueueMarker(WebCLCommandQueue*, WebCLEvent*);
-void enqueueWaitForEvents(WebCLCommandQueue*, WebCLEventList*);
-PassRefPtr<WebCLEvent> enqueueTask(WebCLCommandQueue*, WebCLKernel* ,int);
-
-void unloadCompiler();
-
-
+void waitForEvents(WebCLEventList*, ExceptionCode&);
+PassRefPtr<WebCLContext> createContext(int, WebCLDeviceIDList*, int, int, ExceptionCode&);
+PassRefPtr<WebCLContext> createContext(int, WebCLDeviceID*, int, int, ExceptionCode&);
+PassRefPtr<WebCLContext> createContextFromType(int, int, int, int, ExceptionCode&);
+PassRefPtr<WebCLContext> createSharedContext(int, int, int, ExceptionCode&);
+void unloadCompiler( ExceptionCode&);
 
 private:
 WebCLComputeContext(ScriptExecutionContext*);
@@ -656,11 +519,9 @@ RefPtr<WebCLPlatformIDList> m_platform_id;
 RefPtr<WebCLDeviceIDList> m_device_id;
 RefPtr<WebCLContext> m_context;
 RefPtr<WebCLCommandQueue> m_command_queue;
-RefPtr<WebCLFinishCallback> m_finishCallback;
 RefPtr<WebCLDeviceID> m_device_id_;
 
 Vector<RefPtr<WebCLProgram> > m_program_list;
-Vector<RefPtr<WebCLKernel> > m_kernel_list;
 Vector<RefPtr<WebCLMem> > m_mem_list;
 Vector<RefPtr<WebCLEvent> > m_event_list;
 Vector<RefPtr<WebCLSampler> > m_sampler_list;
@@ -668,22 +529,12 @@ Vector<RefPtr<WebCLContext> > m_context_list;
 Vector<RefPtr<WebCLCommandQueue> > m_commandqueue_list;
 
 long m_num_programs;
-long m_num_kernels;
 long m_num_mems;
 long m_num_events;
 long m_num_samplers;
 long m_num_contexts;
 long m_num_commandqueues;
-long m_error_state;
 RefPtr<WebCLMem> m_shared_mem;
-
-template<class T> unsigned int clSetKernelArgPrimitiveType(cl_kernel cl_kernel_id, 
-							PassRefPtr<WebCLKernelTypeValue> kernelObject, 
-							T nodeId, unsigned int argIndex, int size);
-unsigned int clSetKernelArgVectorType(cl_kernel cl_kernel_id, 
-							PassRefPtr<WebCLKernelTypeValue> kernelObject,
-							RefPtr<WebCLKernelTypeVector> array , 
-							unsigned int argIndex, int size,  unsigned int length);
 };
 
 } // namespace WebCore

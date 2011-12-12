@@ -31,6 +31,7 @@
 
 #include "WebCLDeviceIDList.h"
 #include "WebCLComputeContext.h"
+#include "WebCLDeviceID.h"
 
 namespace WebCore { 
 
@@ -49,27 +50,25 @@ WebCLDeviceIDList::WebCLDeviceIDList(WebCLComputeContext* compute_context,
 {
 	cl_int err = 0;
 	cl_uint num_devices = NULL;
-	long m_error_state = 0;
 
 	switch(device_type) {
-		case DEVICE_TYPE_GPU:
+		case WebCLComputeContext::DEVICE_TYPE_GPU:
 			err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, NULL, &num_devices);
 			break;
-		case DEVICE_TYPE_CPU:
+		case WebCLComputeContext::DEVICE_TYPE_CPU:
 			err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_CPU, 1, NULL, &num_devices);
 			break;  
-		case DEVICE_TYPE_ACCELERATOR:
+		case WebCLComputeContext::DEVICE_TYPE_ACCELERATOR:
 			err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_ACCELERATOR, 1, NULL, &num_devices);
 			break;  
-		case DEVICE_TYPE_DEFAULT:
+		case WebCLComputeContext::DEVICE_TYPE_DEFAULT:
 			err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_DEFAULT, 1, NULL, &num_devices);
 			break;
-		case DEVICE_TYPE_ALL:
+		case WebCLComputeContext::DEVICE_TYPE_ALL:
 			err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_ALL, 1, NULL, &num_devices);
 			break;
 		default:
 			printf("Error:Invalid Device Type \n");
-			m_error_state = FAILURE;
 			break;
 	}
 	m_num_devices = num_devices;
@@ -83,31 +82,24 @@ WebCLDeviceIDList::WebCLDeviceIDList(WebCLComputeContext* compute_context,
 		switch (err) {
 			case CL_INVALID_PLATFORM :
 				printf("Error: CL_INVALID_PLATFORM \n");
-				m_error_state=INVALID_PLATFORM;
 				break;
 			case CL_INVALID_DEVICE_TYPE :
 				printf("Error: CL_INVALID_DEVICE_TYPE \n");
-				m_error_state=INVALID_DEVICE_TYPE;
 				break;
 			case CL_INVALID_VALUE :
 				printf("Error: CL_INVALID_VALUE \n");
-				m_error_state=INVALID_VALUE;
 				break;
 			case CL_DEVICE_NOT_FOUND :
 				printf("Error: CL_DEVICE_NOT_FOUND \n");
-				m_error_state=DEVICE_NOT_FOUND;
 				break;
 			case CL_OUT_OF_RESOURCES :
 				printf("Error: CL_OUT_OF_RESOURCES  \n");
-				m_error_state=OUT_OF_RESOURCES;
 				break;
 			case CL_OUT_OF_HOST_MEMORY:
 				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
-				m_error_state=OUT_OF_HOST_MEMORY;
 				break;
 			default:
 				printf("Error: Invaild Error Type\n");
-				m_error_state = FAILURE;
 				break;
 		} 
 		return;
@@ -115,24 +107,23 @@ WebCLDeviceIDList::WebCLDeviceIDList(WebCLComputeContext* compute_context,
 
 	m_cl_devices = new cl_device_id[num_devices];
 	switch(device_type) {
-		case DEVICE_TYPE_GPU:
+		case WebCLComputeContext::DEVICE_TYPE_GPU:
 			err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, m_cl_devices, &num_devices);
 			break;
-		case DEVICE_TYPE_CPU:
+		case WebCLComputeContext::DEVICE_TYPE_CPU:
 			err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_CPU, 1, m_cl_devices, &num_devices);
 			break;
-		case DEVICE_TYPE_ACCELERATOR:
+		case WebCLComputeContext::DEVICE_TYPE_ACCELERATOR:
 			err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_ACCELERATOR, 1, m_cl_devices, &num_devices);
 			break;  
-		case DEVICE_TYPE_DEFAULT:
+		case WebCLComputeContext::DEVICE_TYPE_DEFAULT:
 			err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_DEFAULT, 1, m_cl_devices, &num_devices);
 			break;
-		case DEVICE_TYPE_ALL:
+		case WebCLComputeContext::DEVICE_TYPE_ALL:
 			err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_ALL, 1, m_cl_devices , &num_devices);
 			break;
 		default:
 			printf("Error:Invalid Device Type \n");
-			m_error_state = FAILURE;
 			break;
 	}
 
@@ -142,31 +133,24 @@ WebCLDeviceIDList::WebCLDeviceIDList(WebCLComputeContext* compute_context,
 		switch (err) {
 			case CL_INVALID_PLATFORM :
 				printf("Error: CL_INVALID_PLATFORM \n");
-				m_error_state=INVALID_PLATFORM;
 				break;
 			case CL_INVALID_DEVICE_TYPE :
 				printf("Error: CL_INVALID_DEVICE_TYPE \n");
-				m_error_state=INVALID_DEVICE_TYPE;
 				break;
 			case CL_INVALID_VALUE :
 				printf("Error: CL_INVALID_VALUE \n");
-				m_error_state=INVALID_VALUE;
 				break;
 			case CL_DEVICE_NOT_FOUND :
 				printf("Error: CL_DEVICE_NOT_FOUND \n");
-				m_error_state=DEVICE_NOT_FOUND;
 				break;
 			case CL_OUT_OF_RESOURCES :
 				printf("Error: CL_OUT_OF_RESOURCES  \n");
-				m_error_state=OUT_OF_RESOURCES;
 				break;
 			case CL_OUT_OF_HOST_MEMORY:
 				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
-				m_error_state=OUT_OF_HOST_MEMORY;
 				break;
 			default:
 				printf("Error: Invaild Error Type\n");
-				m_error_state = FAILURE;
 				break;
 		} 
 		return;
@@ -177,7 +161,6 @@ WebCLDeviceIDList::WebCLDeviceIDList(WebCLComputeContext* compute_context,
 		if (o != NULL) {
 			m_device_id_list.append(o);
 		} else {
-			m_error_state = FAILURE;
 		}
 	}
 }

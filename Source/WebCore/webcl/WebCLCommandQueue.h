@@ -31,22 +31,80 @@
 #include <Opencl/opencl.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
+#include <wtf/Vector.h>
+
+#include "WebCLGetInfo.h"
+#include "WebCLFinishCallback.h"
+#include "WebCLProgram.h"
+#include "WebCLKernel.h"
+#include "WebCLMem.h"
+#include "WebCLEvent.h"
+#include "WebCLSampler.h"
+#include "ImageData.h"
+#include "HTMLCanvasElement.h"
 
 namespace WebCore {
 
 class WebCLComputeContext;
+class WebCLEventList;
 
 class WebCLCommandQueue : public RefCounted<WebCLCommandQueue> {
 public:
 	virtual ~WebCLCommandQueue();
 	static PassRefPtr<WebCLCommandQueue> create(WebCLComputeContext*, cl_command_queue);
-	cl_command_queue getCLCommandQueue();
-	
+	WebCLGetInfo getCommandQueueInfo(int, ExceptionCode&);
+	PassRefPtr<WebCLEvent> enqueueWriteBuffer(WebCLMem*, bool, int, int, 
+		Float32Array*, int, ExceptionCode&);
+	PassRefPtr<WebCLEvent> enqueueWriteBuffer(WebCLMem*, bool, int, int, 
+		Int32Array*, int, ExceptionCode&);
+	PassRefPtr<WebCLEvent> enqueueWriteBuffer(WebCLMem*, bool, int, int, 
+		Uint8Array*, int, ExceptionCode&);
+	PassRefPtr<WebCLEvent> enqueueWriteBuffer(WebCLMem*, bool, int, int,
+        ImageData* , int , ExceptionCode&);
+	PassRefPtr<WebCLEvent>  enqueueReadBuffer(WebCLMem*, bool, int, int, 
+		Float32Array*, int, ExceptionCode&);
+	//PassRefPtr<WebCLEvent>  enqueueReadBuffer(WebCLMem*, bool, int, int,
+	//		HTMLCanvasElement*, int, ExceptionCode&);
+	PassRefPtr<WebCLEvent>  enqueueReadBuffer(WebCLMem*, bool, int, int, 
+		Int32Array*, int, ExceptionCode&);
+	PassRefPtr<WebCLEvent>  enqueueReadBuffer(WebCLMem*, bool, int, int,
+        ImageData* , int , ExceptionCode&);
+	PassRefPtr<WebCLEvent>  enqueueReadBuffer(WebCLMem*, bool, int, int, 
+		Uint8Array*, int, ExceptionCode&);	
+	//PassRefPtr<WebCLEvent>  enqueueNDRangeKernel(WebCLKernel*, unsigned int, 
+	//		unsigned int, unsigned int, unsigned int, int, ExceptionCode&);
+	PassRefPtr<WebCLEvent>  enqueueNDRangeKernel(WebCLKernel*, unsigned int,
+		unsigned int, Int32Array*, Int32Array*, int, ExceptionCode&);
+	void finish(PassRefPtr<WebCLFinishCallback>, int /*object userData*/, ExceptionCode&);
+	void flush( ExceptionCode&);
+	void retainCLResource( ExceptionCode&);
+	void releaseCLResource( ExceptionCode&);
+	PassRefPtr<WebCLEvent> enqueueWriteImage(WebCLMem*, bool, Int32Array*, 
+		Int32Array*, HTMLCanvasElement*, int, ExceptionCode&);
+	//long enqueueReadImage(WebCLMem*, bool, Int32Array*, 
+	//		Int32Array*, HTMLCanvasElement*, int, ExceptionCode&);
+	void enqueueAcquireGLObjects(WebCLMem*, int, ExceptionCode&);
+	void enqueueReleaseGLObjects(WebCLMem*, int, ExceptionCode&);
+	void enqueueCopyBuffer(WebCLMem*, WebCLMem*, int, ExceptionCode&);
+	void enqueueBarrier( ExceptionCode&);
+	void enqueueMarker(WebCLEvent*, ExceptionCode&);
+	void enqueueWaitForEvents(WebCLEventList*, ExceptionCode&);
+	PassRefPtr<WebCLEvent> enqueueTask( WebCLKernel* ,int, ExceptionCode&);
+	cl_command_queue getCLCommandQueue();	
 private:
-	WebCLCommandQueue(WebCLComputeContext*, cl_command_queue);
-	
+	WebCLCommandQueue(WebCLComputeContext*, cl_command_queue);	
 	WebCLComputeContext* m_context;
 	cl_command_queue m_cl_command_queue;
+	RefPtr<WebCLFinishCallback> m_finishCallback;
+	RefPtr<WebCLCommandQueue> m_command_queue;
+	
+	
+	long m_num_events;
+	long m_num_commandqueues;
+	long m_num_mems;
+	Vector<RefPtr<WebCLEvent> > m_event_list;
+	Vector<RefPtr<WebCLCommandQueue> > m_commandqueue_list;
+	Vector<RefPtr<WebCLMem> > m_mem_list;
 };
 
 } // namespace WebCore

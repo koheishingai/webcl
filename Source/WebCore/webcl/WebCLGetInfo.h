@@ -28,18 +28,25 @@
 #ifndef WebCLGetInfo_h
 #define WebCLGetInfo_h
 
-#include "Float32Array.h"
-#include "Int32Array.h"
+
+#include <wtf/Float32Array.h>
+#include <wtf/Int32Array.h>
+#include <wtf/Int8Array.h>
 #include "PlatformString.h"
-#include "Uint8Array.h"
+#include <wtf/Uint8Array.h>
 #include "WebCLProgram.h"
 #include "WebCLContext.h"
 #include "WebCLCommandQueue.h"
 
+
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 
+
 namespace WebCore {
+
+	class WebCLProgram;
+	class WebCLContext;
 
 	// A tagged union representing the result of get queries like
 	// getParameter (encompassing getBooleanv, getIntegerv, getFloatv) and
@@ -60,6 +67,7 @@ namespace WebCore {
 				kTypeVoidPointer,
 				kTypeWebCLFloatArray,       
 				kTypeWebCLIntArray,
+				kTypeWebCLInt8Array,
 				kTypeWebCLObjectArray,
 				kTypeWebCLProgram,
 				kTypeWebCLContext,
@@ -77,6 +85,7 @@ namespace WebCore {
 			WebCLGetInfo(void* value);
 			WebCLGetInfo(PassRefPtr<Float32Array> value);
 			WebCLGetInfo(PassRefPtr<Int32Array> value);
+			WebCLGetInfo(PassRefPtr<Int8Array> value);
 			WebCLGetInfo(PassRefPtr<WebCLProgram> value);
 			WebCLGetInfo(PassRefPtr<WebCLContext> value);
 			WebCLGetInfo(PassRefPtr<WebCLCommandQueue> value);
@@ -93,6 +102,7 @@ namespace WebCore {
 			void* getVoidPointer() const;
 			PassRefPtr<Float32Array> getWebCLFloatArray() const;
 			PassRefPtr<Int32Array> getWebCLIntArray() const;
+			PassRefPtr<Int8Array> getWebCLInt8Array() const;
 			PassRefPtr<WebCLProgram> getWebCLProgram() const;
 			PassRefPtr<WebCLContext> getWebCLContext() const;
 			PassRefPtr<WebCLCommandQueue> getWebCLCommandQueue() const;
@@ -109,11 +119,12 @@ namespace WebCore {
 			void* m_voidPointer;
 			RefPtr<Float32Array> m_webclFloatArray;
 			RefPtr<Int32Array> m_webclIntArray;
+			RefPtr<Int8Array> m_webclInt8Array;
 			RefPtr<WebCLProgram> m_webclProgram;
 			RefPtr<WebCLContext> m_webclContext;
 			RefPtr<WebCLCommandQueue> m_webCLCommandQueue;
 	};
 
-} // namespace WebCore
+} // namespace WebCoren
 
 #endif // WebCLGetInfo_h

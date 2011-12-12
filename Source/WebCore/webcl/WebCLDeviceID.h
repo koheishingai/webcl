@@ -32,17 +32,21 @@
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
 #include <OpenCL/opencl.h>
+#include "ExceptionCode.h"
+
+#include "ActiveDOMObject.h"
 
 namespace WebCore {
 
 class WebCLComputeContext;
+class WebCLGetInfo;
 
 class WebCLDeviceID : public RefCounted<WebCLDeviceID> {
 public:
 	virtual ~WebCLDeviceID();
 	static PassRefPtr<WebCLDeviceID> create(WebCLComputeContext* context, cl_device_id device_id);
+	WebCLGetInfo getDeviceInfo(int, ExceptionCode&);
 	cl_device_id getCLDeviceID();
-	
 private:
 	WebCLDeviceID(WebCLComputeContext* context, cl_device_id device_id);
 	WebCLComputeContext* m_context;

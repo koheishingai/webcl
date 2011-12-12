@@ -33,6 +33,9 @@
 #include <wtf/Vector.h>
 #include <OpenCL/opencl.h>
 
+#include "WebCLGetInfo.h"
+#include "WebCLDeviceIDList.h"
+
 namespace WebCore {
 
 class WebCLComputeContext;
@@ -41,8 +44,10 @@ class WebCLPlatformID : public RefCounted<WebCLPlatformID> {
 public:
 	virtual ~WebCLPlatformID();
 	static PassRefPtr<WebCLPlatformID> create(WebCLComputeContext* context, cl_platform_id platform_id);
+	WebCLGetInfo getPlatformInfo (int, ExceptionCode&);
+	PassRefPtr<WebCLDeviceIDList> getDeviceIDs(int, ExceptionCode&);
 	cl_platform_id getCLPlatformID();
-	
+
 private:
 	WebCLPlatformID(WebCLComputeContext* context, cl_platform_id platform_id);
 	WebCLComputeContext* m_context;

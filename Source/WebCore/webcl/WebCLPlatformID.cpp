@@ -30,6 +30,7 @@
 #if ENABLE(WEBCL)
 
 #include "WebCLPlatformID.h"
+#include "WebCLComputeContext.h"
 
 namespace WebCore {
 
@@ -45,6 +46,91 @@ PassRefPtr<WebCLPlatformID> WebCLPlatformID::create(WebCLComputeContext* context
 WebCLPlatformID::WebCLPlatformID(WebCLComputeContext* context, cl_platform_id platform_id)
  : m_context(context), m_cl_platform_id(platform_id)
 {
+}
+
+WebCLGetInfo WebCLPlatformID::getPlatformInfo (int platform_info, ExceptionCode& ec)
+{
+	cl_int err = 0;
+	if (m_cl_platform_id == NULL) {
+			ec = WebCLComputeContext::INVALID_PLATFORM;
+			printf("Error: Invalid Platform ID\n");
+			return WebCLGetInfo();
+	}
+
+	char platform_string[1024];
+	switch(platform_info)
+	{
+		case WebCLComputeContext::PLATFORM_PROFILE:
+			err = clGetPlatformInfo(m_cl_platform_id, CL_PLATFORM_PROFILE, sizeof(platform_string), &platform_string, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(String(platform_string));
+			break;
+		case WebCLComputeContext::PLATFORM_VERSION:
+			err = clGetPlatformInfo(m_cl_platform_id, CL_PLATFORM_VERSION, sizeof(platform_string), &platform_string, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(String(platform_string));
+			break;
+		case WebCLComputeContext::PLATFORM_NAME:
+			err = clGetPlatformInfo(m_cl_platform_id, CL_PLATFORM_NAME, sizeof(platform_string), &platform_string, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(String(platform_string));
+			break;
+		case WebCLComputeContext::PLATFORM_VENDOR:
+			err = clGetPlatformInfo(m_cl_platform_id, CL_PLATFORM_VENDOR, sizeof(platform_string), &platform_string, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(String(platform_string));
+			break;
+		case WebCLComputeContext::PLATFORM_EXTENSIONS:
+			err = clGetPlatformInfo(m_cl_platform_id, CL_PLATFORM_EXTENSIONS, sizeof(platform_string), &platform_string, NULL);
+			if (err == CL_SUCCESS)
+				return WebCLGetInfo(String(platform_string));
+			break;
+		default:
+			printf("Error: Unsupported Platform Info type = %d ",platform_info);
+			return WebCLGetInfo();
+	}
+
+	if(err != CL_SUCCESS)
+	{
+		switch (err) {
+			case CL_INVALID_PLATFORM:
+				ec = WebCLComputeContext::INVALID_PLATFORM;
+				printf("Error: CL_INVALID_PLATFORM  \n");
+				break;
+			case CL_INVALID_VALUE:
+				ec = WebCLComputeContext::INVALID_VALUE;
+				printf("Error: CL_INVALID_VALUE\n");
+				break;
+			case CL_OUT_OF_HOST_MEMORY:
+				ec = WebCLComputeContext::OUT_OF_HOST_MEMORY;
+				printf("Error: CL_OUT_OF_HOST_MEMORY  \n");
+				break;
+			default:
+				ec = WebCLComputeContext::FAILURE;
+				printf("Invaild Error Type\n");
+				break;
+		}
+	}
+	return WebCLGetInfo();
+}
+
+PassRefPtr<WebCLDeviceIDList> WebCLPlatformID::getDeviceIDs(int device_type, ExceptionCode& ec)
+{
+	if (m_cl_platform_id == NULL) {
+		printf("Error: Invalid Platform ID\n");
+		ec = WebCLComputeContext::FAILURE;
+		return NULL;
+	}
+	RefPtr<WebCLDeviceIDList> o = WebCLDeviceIDList::create(m_context, m_cl_platform_id, 
+			device_type);
+	if (o != NULL) {
+		//TODO (siba samal) Check if its needed
+		//m_device_id = o;
+		return o;
+	} else {
+		ec = WebCLComputeContext::FAILURE;
+		return NULL;
+	}
 }
 
 cl_platform_id WebCLPlatformID::getCLPlatformID()

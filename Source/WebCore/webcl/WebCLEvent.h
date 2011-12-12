@@ -31,6 +31,9 @@
 #include <OpenCL/opencl.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
+#include <wtf/Vector.h>
+
+#include "WebCLGetInfo.h"
 
 namespace WebCore {
 
@@ -40,12 +43,19 @@ class WebCLEvent : public RefCounted<WebCLEvent> {
 public:
         virtual ~WebCLEvent();
         static PassRefPtr<WebCLEvent> create(WebCLComputeContext*, cl_event);
+		WebCLGetInfo getEventInfo(int, ExceptionCode&);
+		WebCLGetInfo getEventProfilingInfo(int, ExceptionCode&);
+		void setUserEventStatus (int, ExceptionCode&);
+		void releaseCLResource( ExceptionCode&);
+		void retainCLResource( ExceptionCode&);
         cl_event getCLEvent();
-
+		
 private:
         WebCLEvent(WebCLComputeContext*, cl_event);
         WebCLComputeContext* m_context;
+		Vector<RefPtr<WebCLEvent> > m_event_list;
         cl_event m_cl_Event;
+		long m_num_events;
 };
 
 } // namespace WebCore

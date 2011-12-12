@@ -25,41 +25,54 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebCLDeviceIDList_h
-#define WebCLDeviceIDList_h
+#include "config.h"
 
-#include <Opencl/opencl.h>
+#if ENABLE(WEBCL)
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
-#include "ExceptionCode.h"
+#include "JSDOMGlobalObject.h"
+#include "DOMWindow.h"
+#include "JSDOMWindow.h"
+#include "JSDOMBinding.h"
+#include "JSImageData.h"
+#include "JSOESStandardDerivatives.h"
+#include "JSOESTextureFloat.h"
+#include "NotImplemented.h"
+#include <runtime/Error.h>
+#include <runtime/JSArray.h>
+#include <wtf/FastMalloc.h>
+#include <wtf/OwnFastMallocPtr.h>
+#include <runtime/JSFunction.h>
+#include "WebCLGetInfo.h"
+#include "JSWebCLContext.h"
+#include "JSWebCLComputeContextCustom.h"
+#include <stdio.h>
 
-namespace WebCore {
+using namespace JSC;
+using namespace std;
 
-	class WebCLComputeContext;
-	class WebCLDeviceID;
+namespace WebCore { 
 
-	class WebCLDeviceIDList : public RefCounted<WebCLDeviceIDList> {
-		public:
-			// TODO (siba samal) Remove if not needed 
+	
+JSValue JSWebCLContext::getContextInfo(JSC::ExecState* exec)
+{
+	if (exec->argumentCount() != 1)
+		return throwSyntaxError(exec);
 
-			virtual ~WebCLDeviceIDList();
-			static PassRefPtr<WebCLDeviceIDList> create(WebCLComputeContext*, cl_platform_id, int);
-			cl_device_id getCLDeviceIDs();
-
-			unsigned length() const;
-			WebCLDeviceID* item(unsigned index);
-
-		private:	
-			WebCLDeviceIDList(WebCLComputeContext*, cl_platform_id, int);
-
-			WebCLComputeContext* m_context;
-			Vector<RefPtr<WebCLDeviceID> > m_device_id_list;
-			cl_device_id* m_cl_devices;
-			cl_uint m_num_devices;
-	};
+	ExceptionCode ec = 0;
+	WebCLContext* context = static_cast<WebCLContext*>(impl());	
+	if (exec->hadException())
+		return jsUndefined();
+	unsigned context_info  = exec->argument(0).toInt32(exec);
+	if (exec->hadException())
+		return jsUndefined();
+	WebCLGetInfo info = context->getContextInfo(context_info, ec);
+	if (ec) {
+		setDOMException(exec, ec);
+		return jsUndefined();
+	}
+	return toJS(exec, globalObject(), info);
+}
 
 } // namespace WebCore
 
-#endif // WebCLDeviceIDList_h
+#endif // ENABLE(WEBCL)
