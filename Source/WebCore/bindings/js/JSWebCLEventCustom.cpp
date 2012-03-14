@@ -40,7 +40,6 @@
 #include <runtime/Error.h>
 #include <runtime/JSArray.h>
 #include <wtf/FastMalloc.h>
-#include <wtf/OwnFastMallocPtr.h>
 #include <runtime/JSFunction.h>
 #include "WebCLGetInfo.h"
 #include "JSWebCLEvent.h"

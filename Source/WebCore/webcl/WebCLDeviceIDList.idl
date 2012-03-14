@@ -28,7 +28,7 @@
 module html {
 	interface [
 		Conditional=WEBCL,
-		HasIndexGetter
+		IndexedGetter
 	] WebCLDeviceIDList {
 		readonly attribute unsigned long length;
 		WebCLDeviceID item(in [IsIndex] unsigned long index);

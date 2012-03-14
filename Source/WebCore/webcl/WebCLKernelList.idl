@@ -28,7 +28,7 @@
 module html {
 	interface [
 		Conditional=WEBCL,
-		HasIndexGetter
+		IndexedGetter
 	] WebCLKernelList {
         readonly attribute unsigned long length;	
 		WebCLKernel item(in [IsIndex] unsigned long index);

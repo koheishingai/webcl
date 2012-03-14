@@ -53,7 +53,6 @@
 #include <runtime/Error.h>
 #include <runtime/JSArray.h>
 #include <wtf/FastMalloc.h>
-#include <wtf/OwnFastMallocPtr.h>
 #include "JSWebCLPlatformID.h"
 #include "JSWebCLDeviceID.h"
 #include "JSWebCLKernel.h"

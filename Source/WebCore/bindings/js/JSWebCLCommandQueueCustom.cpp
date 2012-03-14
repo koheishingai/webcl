@@ -47,7 +47,6 @@
 #include <runtime/Error.h>
 #include <runtime/JSArray.h>
 #include <wtf/FastMalloc.h>
-#include <wtf/OwnFastMallocPtr.h>
 #include <runtime/JSFunction.h>
 #include "WebCLProgram.h"
 #include "WebCLDeviceID.h"

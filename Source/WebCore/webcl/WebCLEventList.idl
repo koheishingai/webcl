@@ -28,7 +28,7 @@
 module html {
 	interface [
 		Conditional=WEBCL,
-		HasIndexGetter
+		IndexedGetter
 			] WebCLEventList {
 				readonly attribute unsigned long length;	
 				WebCLEvent item(in [IsIndex] unsigned long index);

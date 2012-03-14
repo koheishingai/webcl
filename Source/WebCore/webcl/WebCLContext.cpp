@@ -1477,8 +1477,9 @@ ImageBuffer* WebCLContext::LRUImageBufferCache::imageBuffer(const IntSize& size)
 		ImageBuffer* buf = m_buffers[i].get();
 		if (!buf)
 			break;
-		if (buf->size() != size)
-			continue;
+		// TODO siba check this call
+		//if (buf->size() != size)
+		//	continue;
 		bubbleToFront(i);
 		return buf;
 	}

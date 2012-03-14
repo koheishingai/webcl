@@ -37,9 +37,9 @@ How to run samples
 4. Deform example:
 	$ Tools/Scripts/run-safari Examples/WebCL/Deform/index.html
    
------------------------------------
-How to update source code using svn
------------------------------------
+----------------------------------------------------
+How to update source code using svn [WebKit r110533]
+----------------------------------------------------
 1. cd ~/work
 2. svn checkout https://webcl.googlecode.com/svn/trunk/ webcl --usename <you_email_address>
 3. cp -Ri webcl/trunk/* webkit

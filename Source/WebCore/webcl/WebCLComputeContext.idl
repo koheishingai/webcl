@@ -29,7 +29,7 @@ module html {
 
 interface [
 Conditional=WEBCL,
-	CanBeConstructed,
+//	CanBeConstructed,
 	CustomConstructor,
 //	CustomConstructFunction,
 	] WebCLComputeContext {
