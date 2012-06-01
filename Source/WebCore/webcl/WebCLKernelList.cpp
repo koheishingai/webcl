@@ -30,7 +30,8 @@
 #if ENABLE(WEBCL)
 
 #include "WebCLKernelList.h"
-#include "WebCLComputeContext.h"
+#include "WebCL.h"
+#include "WebCLException.h"
 
 namespace WebCore {
 
@@ -42,13 +43,13 @@ WebCLKernelList::~WebCLKernelList()
 {
 }
 
-PassRefPtr<WebCLKernelList> WebCLKernelList::create(WebCLComputeContext* ctx , cl_kernel* kernellist, cl_uint num_kernels)
+PassRefPtr<WebCLKernelList> WebCLKernelList::create(WebCL* ctx , cl_kernel* kernellist, cl_uint num_kernels)
 {
 	
 	return adoptRef(new WebCLKernelList(ctx ,kernellist, num_kernels));
 }
 
-WebCLKernelList::WebCLKernelList(WebCLComputeContext* ctx,cl_kernel* kernellist, cl_uint num_kernels ) : 
+WebCLKernelList::WebCLKernelList(WebCL* ctx,cl_kernel* kernellist, cl_uint num_kernels ) : 
 					m_context(ctx),m_cl_kernels(kernellist),m_num_kernels(num_kernels)
 {
 	if (m_num_kernels == 0) {

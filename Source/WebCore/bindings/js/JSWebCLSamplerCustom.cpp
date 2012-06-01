@@ -43,7 +43,7 @@
 #include <runtime/JSFunction.h>
 #include "WebCLGetInfo.h"
 #include "JSWebCLSampler.h"
-#include "JSWebCLComputeContextCustom.h"
+#include "JSWebCLCustom.h"
 #include <stdio.h>
 
 using namespace JSC;
@@ -52,7 +52,7 @@ using namespace std;
 namespace WebCore { 
 
 
-JSValue JSWebCLSampler::getSamplerInfo(JSC::ExecState* exec)
+JSValue JSWebCLSampler::getInfo(JSC::ExecState* exec)
 {
 	if (exec->argumentCount() != 1)
 		return throwSyntaxError(exec);
@@ -64,7 +64,7 @@ JSValue JSWebCLSampler::getSamplerInfo(JSC::ExecState* exec)
 	unsigned sampler_info  = exec->argument(1).toInt32(exec);
 	if (exec->hadException())
 		return jsUndefined();
-	WebCLGetInfo info = sampler->getSamplerInfo(sampler_info,ec);
+	WebCLGetInfo info = sampler->getInfo(sampler_info,ec);
 	if (ec) {
 		setDOMException(exec, ec);
 		return jsUndefined();

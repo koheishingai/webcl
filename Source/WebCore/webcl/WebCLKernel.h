@@ -29,10 +29,10 @@
 #define WebCLKernel_h
 
 #include "ExceptionCode.h"
-#include "WebCLDeviceID.h"
+#include "WebCLDevice.h"
 #include "WebCLMem.h"
 #include "WebCLGetInfo.h"
-#include "WebCLDeviceIDList.h"
+#include "WebCLDeviceList.h"
 #include "WebCLKernelList.h"
 #include "WebCLKernelTypes.h"
 
@@ -42,27 +42,26 @@
 
 namespace WebCore {
 
-class WebCLComputeContext;
+class WebCL;
 class WebCLGetInfo;
 
 class WebCLKernel : public RefCounted<WebCLKernel> {
 public:
 	virtual ~WebCLKernel();
-	static PassRefPtr<WebCLKernel> create(WebCLComputeContext*, cl_kernel);
-	WebCLGetInfo getKernelInfo (int, ExceptionCode&);
-	WebCLGetInfo getKernelWorkGroupInfo(WebCLDeviceID*, int, ExceptionCode&);			
+	static PassRefPtr<WebCLKernel> create(WebCL*, cl_kernel);
+	WebCLGetInfo getInfo (int, ExceptionCode&);
+	WebCLGetInfo getWorkGroupInfo(WebCLDevice*, int, ExceptionCode&);			
 	void setKernelArg(unsigned int, PassRefPtr<WebCLKernelTypeValue>, int, ExceptionCode&);
 	void setKernelArgGlobal(unsigned int, WebCLMem*, ExceptionCode&);
 	void setKernelArgConstant(unsigned int, WebCLMem*, ExceptionCode&);
 	void setKernelArgLocal(unsigned int,unsigned int, ExceptionCode&);
-	//unsigned long getKernelWorkGroupInfo(WebCLDeviceIDList*, int);
-	void releaseCLResource( ExceptionCode&);
-	void retainCLResource( ExceptionCode&);
-	void setDeviceID(RefPtr<WebCLDeviceID>);
+	//unsigned long getKernelWorkGroupInfo(WebCLDeviceList*, int);
+	void releaseCL( ExceptionCode&);
+	void setDevice(RefPtr<WebCLDevice>);
 	cl_kernel getCLKernel();
 
 private:
-	WebCLKernel(WebCLComputeContext*, cl_kernel);	
+	WebCLKernel(WebCL*, cl_kernel);	
 	template<class T> unsigned int clSetKernelArgPrimitiveType(cl_kernel cl_kernel_id, 
 							PassRefPtr<WebCLKernelTypeValue> kernelObject, 
 							T nodeId, unsigned int argIndex, int size);
@@ -71,9 +70,9 @@ private:
 							RefPtr<WebCLKernelTypeVector> array , 
 							unsigned int argIndex, int size,  unsigned int length);					
 							
-	WebCLComputeContext* m_context;
+	WebCL* m_context;
 	cl_kernel m_cl_kernel;
-	RefPtr<WebCLDeviceID> m_device_id;
+	RefPtr<WebCLDevice> m_device_id;
 	Vector<RefPtr<WebCLKernel> > m_kernel_list;
 	long m_num_kernels;
 	

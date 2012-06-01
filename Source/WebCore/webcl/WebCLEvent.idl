@@ -25,16 +25,15 @@
 * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-module html {
+module webcl {
         interface [
                 Conditional=WEBCL,
         ] WebCLEvent {
-		[StrictTypeChecking, Custom]  void getEventInfo(in long param_name) raises(DOMException);
-		[StrictTypeChecking, Custom]  void getEventProfilingInfo(in long param_name) raises(DOMException);
+		[StrictTypeChecking, Custom]  void getInfo(in long param_name) raises(DOMException);
+		[StrictTypeChecking, Custom]  void getProfilingInfo(in long param_name) raises(DOMException);
 		void setUserEventStatus(in long execStatus) raises(DOMException);
-		void releaseCLResource() raises(DOMException);			
-		void retainCLResource() raises(DOMException);
-
+		//[StrictTypeChecking,Custom] void setEventCallback(in long execStatus,in  WebCLFinishCallback notifyCallback, in long userData) raises(DOMException);
+		void releaseCL() raises(DOMException);			
         };
 }
 

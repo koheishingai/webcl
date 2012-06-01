@@ -33,7 +33,10 @@
 
 #include "WebCLProgram.h"
 #include "WebCLContext.h"
-
+#include <wtf/Float32Array.h>
+#include <wtf/Int32Array.h>
+#include <wtf/Uint32Array.h>
+#include <wtf/Uint8Array.h>
 
 namespace WebCore {
 
@@ -87,7 +90,6 @@ WebCLGetInfo::WebCLGetInfo(unsigned long value)
     , m_unsignedLong(value)
 {
 }
-
 WebCLGetInfo::WebCLGetInfo(void* value)
     : m_type(kTypeVoidPointer)
     , m_voidPointer(value)
@@ -104,6 +106,8 @@ WebCLGetInfo::WebCLGetInfo(PassRefPtr<Int32Array> value)
     : m_type(kTypeWebCLIntArray)
     , m_webclIntArray(value)
 {
+
+	printf("Int32 Construcor Called \n");
 }
 
 
@@ -127,6 +131,18 @@ WebCLGetInfo::WebCLGetInfo(PassRefPtr<WebCLContext> value)
 WebCLGetInfo::WebCLGetInfo(PassRefPtr<WebCLCommandQueue> value)
     : m_type(kTypeWebCLCommandQueue)
     , m_webCLCommandQueue(value)
+{
+}
+
+WebCLGetInfo::WebCLGetInfo(PassRefPtr<WebCLDevice> value)
+    : m_type(kTypeWebCLDevice)
+    , m_webCLDevice(value)
+{
+}
+
+WebCLGetInfo::WebCLGetInfo(PassRefPtr<WebCLDeviceList> value)
+    : m_type(kTypeWebCLDeviceList)
+    , m_webCLDeviceList(value)
 {
 }
 
@@ -180,7 +196,6 @@ unsigned long WebCLGetInfo::getUnsignedLong() const
     ASSERT(getType() == kTypeUnsignedLong);
     return m_unsignedLong;
 }
-
 void* WebCLGetInfo::getVoidPointer() const
 {
     ASSERT(getType() == kTypeVoidPointer);
@@ -195,6 +210,7 @@ PassRefPtr<Float32Array> WebCLGetInfo::getWebCLFloatArray() const
 
 PassRefPtr<Int32Array> WebCLGetInfo::getWebCLIntArray() const
 {
+	printf("Int32 Construcor Called \n");
     ASSERT(getType() == kTypeWebCLIntArray);
     return m_webclIntArray;
 }
@@ -220,6 +236,16 @@ PassRefPtr<WebCLCommandQueue> WebCLGetInfo::getWebCLCommandQueue() const
 {
     ASSERT(getType() == kTypeWebCLCommandQueue);
     return m_webCLCommandQueue;
+}
+PassRefPtr<WebCLDevice> WebCLGetInfo::getWebCLDevice() const
+{
+    ASSERT(getType() == kTypeWebCLDevice);
+    return m_webCLDevice;
+}
+PassRefPtr<WebCLDeviceList> WebCLGetInfo::getWebCLDeviceList() const
+{
+    ASSERT(getType() == kTypeWebCLDeviceList);
+    return m_webCLDeviceList;
 }
 
 } // namespace WebCore

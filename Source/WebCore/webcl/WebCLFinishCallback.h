@@ -28,17 +28,20 @@
 #ifndef WebCLFinishCallback_h
 #define WebCLFinishCallback_h
 
-#include <wtf/RefCounted.h>
-#include "ActiveDOMObject.h"
+#if ENABLE(WEBCL)
+
+#include <wtf/ThreadSafeRefCounted.h>
 
 namespace WebCore {
-class WebCLComputeContext;    
-    class WebCLFinishCallback : public RefCounted<WebCLFinishCallback>, public ActiveDOMObject {
+class WebCL;    
+    class WebCLFinishCallback : public ThreadSafeRefCounted<WebCLFinishCallback> {
     public:
-	WebCLFinishCallback(ScriptExecutionContext* context) : ActiveDOMObject(context, this) { }
         virtual ~WebCLFinishCallback() { }
-        virtual void handleEvent(WebCLComputeContext*) = 0;
+        //virtual bool handleEvent(WebCL*) = 0;
+        virtual bool handleEvent(int) = 0;
     };
     
 } // namespace WebCore
+
 #endif // WebCLFinishCallback_H
+#endif

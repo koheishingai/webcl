@@ -27,6 +27,7 @@
  
 #include "config.h"
 #include "WebCLKernelTypes.h"
+#include "WebCLException.h"
 
 #if ENABLE(WEBCL)
 

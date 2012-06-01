@@ -206,7 +206,7 @@ module window {
 
 #if defined(ENABLE_WEBCL)
 			//Check if JSCustomGetter needed ?
-            attribute [JSCustomGetter] WebCLComputeContextConstructor WebCLComputeContext;
+            attribute [JSCustomGetter] WebCLConstructor WebCL;
 #endif
         // Timers
         [Custom] long setTimeout(in [Optional=DefaultIsUndefined] TimeoutHandler handler, 

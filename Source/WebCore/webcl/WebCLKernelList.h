@@ -30,30 +30,30 @@
 
 #include "WebCLKernel.h"
 
-#include <Opencl/opencl.h>
+#include <OpenCL/opencl.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
 
 namespace WebCore {
 
-class WebCLComputeContext;
+class WebCL;
 class WebCLKernel;
 
 class WebCLKernelList : public RefCounted<WebCLKernelList> {
 
 public:
 	virtual ~WebCLKernelList();
-	static PassRefPtr<WebCLKernelList> create(WebCLComputeContext* ,cl_kernel*, cl_uint);
+	static PassRefPtr<WebCLKernelList> create(WebCL* ,cl_kernel*, cl_uint);
 	WebCLKernelList();
 	cl_kernel getCLKernels();
 	
 	unsigned length() const;
 	WebCLKernel* item(unsigned index);
 private:
-	WebCLKernelList(WebCLComputeContext*, cl_kernel*, cl_uint);
+	WebCLKernelList(WebCL*, cl_kernel*, cl_uint);
 
-	WebCLComputeContext* m_context;
+	WebCL* m_context;
 
 	Vector<RefPtr<WebCLKernel> > m_kernel_id_list;
 	cl_kernel* m_cl_kernels;

@@ -25,10 +25,18 @@
 * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-module html {
+module webcl {
 	interface [
 		Conditional=WEBCL,
 	] WebCLImage {
-	
+	long getGLtextureInfo (in long paramNameobj) raises(DOMException);
+		
 	};
+
+	dictionary WebCLImageDescriptor {
+            in long channelOrder=10;
+            in long channelType=11;             
+            in long width=12;
+            in long rowPitch=14;
+        };
 }

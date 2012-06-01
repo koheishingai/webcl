@@ -26,42 +26,43 @@
 */
 
 #include "config.h"
-#include "JSCustomWebCLFinishCallback.h"
 
 #if ENABLE(WEBCL)
 
+#include "JSWebCLFinishCallback.h"
 #include "Frame.h"
-#include "JSWebCLComputeContext.h"
-#include "ScriptController.h"
+#include "JSWebCL.h"
+#include "ScriptExecutionContext.h"
 #include <runtime/JSLock.h>
+
 
 namespace WebCore {
 
 using namespace JSC;
-
-JSCustomWebCLFinishCallback::JSCustomWebCLFinishCallback(JSObject* callback, JSDOMGlobalObject* globalObject)
-    : WebCLFinishCallback(globalObject->scriptExecutionContext())
-    , m_data(callback, globalObject)
-{
-}
-
-//void JSCustomWebCLFinishCallback::handleEvent(int user_data)
-void JSCustomWebCLFinishCallback::handleEvent(WebCLComputeContext* webCLComputeContext )
+//bool JSWebCLFinishCallback::handleEvent(WebCL* webCLComputeContext )
+bool JSWebCLFinishCallback::handleEvent(int data)
 {
 
-    // ActiveDOMObject will null our pointer to the ScriptExecutionContext when it goes away.
-    if (!scriptExecutionContext())
-        return;
+	if (!m_data || !m_data->globalObject() ||  !(canInvokeCallback()))
+        return true;
 
-    RefPtr<JSCustomWebCLFinishCallback> protect(this);
-
+    RefPtr<JSWebCLFinishCallback> protect(this);
     JSC::JSLock lock(SilenceAssertionsOnly);
-    ExecState* exec = m_data.globalObject()->globalExec();
-    MarkedArgumentBuffer args;
-    args.append(toJS(exec, deprecatedGlobalObjectForPrototype(exec), webCLComputeContext));
-    m_data.invokeCallback(args);
-}
+	
+	ExecState* exec = m_data->globalObject()->globalExec();
 
+    MarkedArgumentBuffer args;
+//    args.append(toJS(exec, m_data->globalObject(), webCLComputeContext));
+    args.append(jsNumber(data));
+	printf("Insiide JSCustomWebCLFinishCallback::handleEvent44\n");
+	bool raisedException = false;
+	JSValue result = m_data->invokeCallback(args, &raisedException);
+	printf("Inside JSCustomWebCLFinishCallback::handleEvent55\n");
+    if (raisedException) {
+        return true;
+    }
+	return result.toBoolean(exec);
+}
 } // namespace WebCore
 
-#endif // ENABLE(GEOLOCATION)
+#endif // ENABLE(WEBCL)

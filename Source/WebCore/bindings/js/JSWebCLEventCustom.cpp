@@ -36,6 +36,7 @@
 #include "JSImageData.h"
 #include "JSOESStandardDerivatives.h"
 #include "JSOESTextureFloat.h"
+#include "JSWebCLFinishCallback.h"
 #include "NotImplemented.h"
 #include <runtime/Error.h>
 #include <runtime/JSArray.h>
@@ -43,16 +44,32 @@
 #include <runtime/JSFunction.h>
 #include "WebCLGetInfo.h"
 #include "JSWebCLEvent.h"
-#include "JSWebCLComputeContextCustom.h"
+#include "JSWebCLCustom.h"
 #include <stdio.h>
 
 using namespace JSC;
 using namespace std;
 
 namespace WebCore { 
+/*
+static PassRefPtr<WebCLFinishCallback> createFinishCallback(ExecState* exec, JSDOMGlobalObject* globalObject, JSValue value)
+{
+        //if (!value.inherits(&JSFunction::info)) {
+        //      setDOMException(exec, TYPE_MISMATCH_ERR);
+        //      return 0;
+        //}
+        if (value.isUndefinedOrNull())
+        {
+                setDOMException(exec, TYPE_MISMATCH_ERR);
+                return 0;
+        }
+        JSObject* object = asObject(value);
+        return JSWebCLFinishCallback::create(object, globalObject);
+}
+*/
 
 
-JSValue JSWebCLEvent::getEventInfo(JSC::ExecState* exec)
+JSValue JSWebCLEvent::getInfo(JSC::ExecState* exec)
 {
 	if (exec->argumentCount() != 1)
 		return throwSyntaxError(exec);
@@ -64,7 +81,7 @@ JSValue JSWebCLEvent::getEventInfo(JSC::ExecState* exec)
 	unsigned event_info  = exec->argument(0).toInt32(exec);
 	if (exec->hadException())
 		return jsUndefined();
-	WebCLGetInfo info = eventObj->getEventInfo(event_info, ec);
+	WebCLGetInfo info = eventObj->getInfo(event_info, ec);
 	if (ec) {
 		setDOMException(exec, ec);
 		return jsUndefined();
@@ -72,7 +89,7 @@ JSValue JSWebCLEvent::getEventInfo(JSC::ExecState* exec)
 	return toJS(exec, globalObject(), info);
 }
 
-JSValue JSWebCLEvent::getEventProfilingInfo(JSC::ExecState* exec)
+JSValue JSWebCLEvent::getProfilingInfo(JSC::ExecState* exec)
 {
 	if (exec->argumentCount() != 1)
 		return throwSyntaxError(exec);
@@ -84,13 +101,56 @@ JSValue JSWebCLEvent::getEventProfilingInfo(JSC::ExecState* exec)
 	unsigned event_info  = exec->argument(0).toInt32(exec);
 	if (exec->hadException())
 		return jsUndefined();
-	WebCLGetInfo info = eventObj->getEventProfilingInfo(event_info, ec);
+	WebCLGetInfo info = eventObj->getProfilingInfo(event_info, ec);
 	if (ec) {
 		setDOMException(exec, ec);
 		return jsUndefined();
 	}
 	return toJS(exec, globalObject(), info);
 }
+
+/*
+JSValue JSWebCLEvent::setEventCallback(JSC::ExecState* exec)
+{
+        if (exec->argumentCount() != 3)
+                return throwSyntaxError(exec);
+
+        if (exec->hadException())
+                return jsUndefined();
+        
+	unsigned executionStatus  = exec->argument(0).toInt32(exec);
+        if (exec->hadException())
+                return jsUndefined();
+
+        ExceptionCode ec = 0;
+	 RefPtr<WebCLFinishCallback> callback;
+    	if (!exec->argument(1).isUndefinedOrNull()) {
+        	JSObject* object = exec->argument(1).getObject();
+	        if (!object) {
+        	    setDOMException(exec, TYPE_MISMATCH_ERR);
+	            return jsUndefined();
+        	}
+
+        callback = JSWebCLFinishCallback::create(object, static_cast<JSDOMGlobalObject*>(globalObject()));
+    }
+
+
+//        RefPtr<WebCLFinishCallback> finishCallback = createFinishCallback(exec, static_cast<JSDOMGlobalObject*>(exec->lexicalGlobalObject()), exec->argument(1));
+        if (exec->hadException())
+                return jsUndefined();
+
+        unsigned userParam  = exec->argument(2).toInt32(exec);
+        if (exec->hadException())
+                return jsUndefined();
+
+        m_impl->setEventCallback(executionStatus,callback.release(), userParam, ec);
+        if (ec) {
+                setDOMException(exec, ec);
+                return jsUndefined();
+        }
+        return jsUndefined();
+}
+*/
 
 } // namespace WebCore
 

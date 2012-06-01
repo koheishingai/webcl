@@ -25,13 +25,12 @@
 * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-module html {
+module webcl {
 	interface [
 		Conditional=WEBCL,
 	] WebCLMem {
-	[StrictTypeChecking, Custom]  void getMemObjectInfo(in WebCLMem MemObj, 
+	[StrictTypeChecking, Custom]  void getInfo(in WebCLMem MemObj, 
 				in long param_name);
-	void retainCLResource() raises(DOMException);	
-	void releaseCLResource() raises(DOMException);
+	void releaseCL() raises(DOMException);
 	};
 }

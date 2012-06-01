@@ -43,7 +43,7 @@
 #include <runtime/JSFunction.h>
 #include "WebCLGetInfo.h"
 #include "JSWebCLContext.h"
-#include "JSWebCLComputeContextCustom.h"
+#include "JSWebCLCustom.h"
 #include <stdio.h>
 
 using namespace JSC;
@@ -52,7 +52,7 @@ using namespace std;
 namespace WebCore { 
 
 	
-JSValue JSWebCLContext::getContextInfo(JSC::ExecState* exec)
+JSValue JSWebCLContext::getInfo(JSC::ExecState* exec)
 {
 	if (exec->argumentCount() != 1)
 		return throwSyntaxError(exec);
@@ -64,7 +64,7 @@ JSValue JSWebCLContext::getContextInfo(JSC::ExecState* exec)
 	unsigned context_info  = exec->argument(0).toInt32(exec);
 	if (exec->hadException())
 		return jsUndefined();
-	WebCLGetInfo info = context->getContextInfo(context_info, ec);
+	WebCLGetInfo info = context->getInfo(context_info, ec);
 	if (ec) {
 		setDOMException(exec, ec);
 		return jsUndefined();

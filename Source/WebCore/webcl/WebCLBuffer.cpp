@@ -37,13 +37,13 @@ WebCLBuffer::~WebCLBuffer()
 {
 }
 
-PassRefPtr<WebCLBuffer> WebCLBuffer::create(WebCLComputeContext* compute_context, 
+PassRefPtr<WebCLBuffer> WebCLBuffer::create(WebCL* compute_context, 
 	cl_mem buffer, bool is_shared = false)
 {
 	return adoptRef(new WebCLBuffer(compute_context, buffer, is_shared));
 }
 
-WebCLBuffer::WebCLBuffer(WebCLComputeContext* compute_context, cl_mem buffer, bool is_shared) 
+WebCLBuffer::WebCLBuffer(WebCL* compute_context, cl_mem buffer, bool is_shared) 
 		: m_context(compute_context), m_cl_mem(buffer), m_shared(is_shared)
 {
 }

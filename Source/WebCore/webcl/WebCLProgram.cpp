@@ -33,7 +33,8 @@
 #include "WebCLGetInfo.h"
 #include "WebCLKernel.h"
 #include "WebCLKernelList.h"
-#include "WebCLComputeContext.h"
+#include "WebCL.h"
+#include "WebCLException.h"
 
 namespace WebCore {
 
@@ -41,20 +42,20 @@ WebCLProgram::~WebCLProgram()
 {
 }
 
-PassRefPtr<WebCLProgram> WebCLProgram::create(WebCLComputeContext* 
+PassRefPtr<WebCLProgram> WebCLProgram::create(WebCL* 
 											compute_context, cl_program program)
 {
 	return adoptRef(new WebCLProgram(compute_context, program));
 }
 
-WebCLProgram::WebCLProgram(WebCLComputeContext* compute_context, 
+WebCLProgram::WebCLProgram(WebCL* compute_context, 
 		cl_program program) : m_context(compute_context), m_cl_program(program)
 {
 	m_num_programs = 0;
 	m_num_kernels = 0; 
 }
 
-WebCLGetInfo WebCLProgram::getProgramInfo(int param_name, ExceptionCode& ec)
+WebCLGetInfo WebCLProgram::getInfo(int param_name, ExceptionCode& ec)
 {
 	cl_int err = 0;
 	cl_uint uint_units = 0;
@@ -62,40 +63,42 @@ WebCLGetInfo WebCLProgram::getProgramInfo(int param_name, ExceptionCode& ec)
 	char program_string[4096];
 	cl_context cl_context_id = NULL;
 	RefPtr<WebCLContext> contextObj  = NULL;
+	RefPtr<WebCLDeviceList> deviceList =  NULL;
+	size_t szParmDataBytes = 0;
 	if (m_cl_program == NULL) {
-			ec = WebCLComputeContext::INVALID_PROGRAM;
+			ec = WebCLException::INVALID_PROGRAM;
 			printf("Error: Invalid program object\n");
 			return WebCLGetInfo();
 	}
 
 	switch(param_name)
 	{   
-		case WebCLComputeContext::PROGRAM_REFERENCE_COUNT:
+		case WebCL::PROGRAM_REFERENCE_COUNT:
 			err=clGetProgramInfo(m_cl_program, CL_PROGRAM_REFERENCE_COUNT , sizeof(cl_uint), &uint_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));	
 			break;
-		case WebCLComputeContext::PROGRAM_NUM_DEVICES:
+		case WebCL::PROGRAM_NUM_DEVICES:
 			err=clGetProgramInfo(m_cl_program, CL_PROGRAM_NUM_DEVICES , sizeof(cl_uint), &uint_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));
 			break;
-		case WebCLComputeContext::PROGRAM_BINARY_SIZES:
+		case WebCL::PROGRAM_BINARY_SIZES:
 			err=clGetProgramInfo(m_cl_program, CL_PROGRAM_BINARY_SIZES, sizeof(size_t), &sizet_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
 			break;
-		case WebCLComputeContext::PROGRAM_SOURCE:
+		case WebCL::PROGRAM_SOURCE:
 			err=clGetProgramInfo(m_cl_program, CL_PROGRAM_SOURCE, sizeof(program_string), &program_string, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(String(program_string));
 			break;
-		case WebCLComputeContext::PROGRAM_BINARIES:
+		case WebCL::PROGRAM_BINARIES:
 			err=clGetProgramInfo(m_cl_program, CL_PROGRAM_BINARIES, sizeof(program_string), &program_string, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(String(program_string));
 			break;
-		case WebCLComputeContext::PROGRAM_CONTEXT:
+		case WebCL::PROGRAM_CONTEXT:
 			err=clGetProgramInfo(m_cl_program, CL_PROGRAM_CONTEXT, sizeof(cl_context), &cl_context_id, NULL);
 			contextObj = WebCLContext::create(m_context, cl_context_id);
 			if(contextObj == NULL)
@@ -106,8 +109,22 @@ WebCLGetInfo WebCLProgram::getProgramInfo(int param_name, ExceptionCode& ec)
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(PassRefPtr<WebCLContext>(contextObj));
 			break;
+		case WebCL::PROGRAM_DEVICES:
+			cl_device_id* cdDevices;
+                        clGetProgramInfo(m_cl_program, CL_PROGRAM_DEVICES, 0, NULL, &szParmDataBytes);
+                        if (err == CL_SUCCESS) {
+                                int nd = szParmDataBytes / sizeof(cl_device_id);
+                                cdDevices = (cl_device_id*) malloc(szParmDataBytes);
+                                clGetProgramInfo(m_cl_program, CL_PROGRAM_DEVICES, szParmDataBytes, cdDevices, NULL);
+                                deviceList = WebCLDeviceList::create(m_context, cdDevices, nd);
+                                printf("Size Vs Size = %lu %d %d \n\n", szParmDataBytes,nd,deviceList->length());
+                                free(cdDevices);
+                                return WebCLGetInfo(PassRefPtr<WebCLDeviceList>(deviceList));
+                        }
+                        break;
+
 			// TODO (siba samal)- Handle Array of cl_device_id 
-			//case WebCLComputeContext::PROGRAM_DEVICES:
+			//case WebCL::PROGRAM_DEVICES:
 			//  size_t numDevices;
 			//  clGetProgramInfo( m_cl_program, CL_PROGRAM_DEVICES, 0, 0, &numDevices );
 			//  cl_device_id *devices = new cl_device_id[numDevices];
@@ -115,27 +132,28 @@ WebCLGetInfo WebCLProgram::getProgramInfo(int param_name, ExceptionCode& ec)
 			//  return WebCLGetInfo(PassRefPtr<WebCLContext>(obj));
 		default:
 			printf("Error: UNSUPPORTED program Info type = %d ",param_name);
+			ec = WebCLException::INVALID_PROGRAM;
 			return WebCLGetInfo();
 	}
 	switch (err) {
 		case CL_INVALID_PROGRAM:
-			ec = WebCLComputeContext::INVALID_PROGRAM;
+			ec = WebCLException::INVALID_PROGRAM;
 			printf("Error: CL_INVALID_PROGRAM \n");
 			break;
 		case CL_INVALID_VALUE:
-			ec = WebCLComputeContext::INVALID_VALUE;
+			ec = WebCLException::INVALID_VALUE;
 			printf("Error: CL_INVALID_VALUE\n");
 			break;
 		case CL_OUT_OF_RESOURCES:
-			ec = WebCLComputeContext::OUT_OF_RESOURCES;
+			ec = WebCLException::OUT_OF_RESOURCES;
 			printf("Error: CL_OUT_OF_RESOURCES \n");
 			break;
 		case CL_OUT_OF_HOST_MEMORY:
-			ec = WebCLComputeContext::OUT_OF_HOST_MEMORY;
+			ec = WebCLException::OUT_OF_HOST_MEMORY;
 			printf("Error: CL_OUT_OF_HOST_MEMORY  \n");
 			break;
 		default:
-			ec = WebCLComputeContext::FAILURE;
+			ec = WebCLException::INVALID_PROGRAM;
 			printf("Error: Invaild Error Type\n");
 			break;
 	}
@@ -143,7 +161,7 @@ WebCLGetInfo WebCLProgram::getProgramInfo(int param_name, ExceptionCode& ec)
 }
 
 
-WebCLGetInfo WebCLProgram::getProgramBuildInfo(WebCLDeviceID* device, int param_name, ExceptionCode& ec)
+WebCLGetInfo WebCLProgram::getBuildInfo(WebCLDevice* device, int param_name, ExceptionCode& ec)
 {
 	cl_device_id device_id = NULL;
 	cl_uint err = 0;
@@ -152,61 +170,63 @@ WebCLGetInfo WebCLProgram::getProgramBuildInfo(WebCLDeviceID* device, int param_
 
 	if (m_cl_program == NULL) {
 			printf("Error: Invalid program object\n");
-			ec = WebCLComputeContext::INVALID_PROGRAM;
+			ec = WebCLException::INVALID_PROGRAM;
 			return WebCLGetInfo();
 	}
 	if (device != NULL) {
-		device_id = device->getCLDeviceID();
+		device_id = device->getCLDevice();
 		if (device_id == NULL) {
+			ec = WebCLException::INVALID_DEVICE;
 			printf("Error: device_id null\n");
 			return WebCLGetInfo();
 		}
 	}
 
 	switch (param_name) {
-		case WebCLComputeContext::PROGRAM_BUILD_LOG:
+		case WebCL::PROGRAM_BUILD_LOG:
 			err = clGetProgramBuildInfo(m_cl_program, device_id, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &len);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(String(buffer));
 			break;
-		case WebCLComputeContext::PROGRAM_BUILD_OPTIONS:
+		case WebCL::PROGRAM_BUILD_OPTIONS:
 			err = clGetProgramBuildInfo(m_cl_program, device_id, CL_PROGRAM_BUILD_OPTIONS, sizeof(buffer), &buffer, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(String(buffer));
 			break;
-		case WebCLComputeContext::PROGRAM_BUILD_STATUS:
+		case WebCL::PROGRAM_BUILD_STATUS:
 			cl_build_status build_status;
 			err = clGetProgramBuildInfo(m_cl_program, device_id, CL_PROGRAM_BUILD_STATUS, sizeof(cl_build_status), &build_status, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(build_status));
 			break;
 		default:
+			ec = WebCLException::INVALID_PROGRAM;
 			printf("Error: UNSUPPORTED Program Build Info   Type = %d ",param_name);
 			return WebCLGetInfo();			
 	}
 	switch (err) {
 		case CL_INVALID_DEVICE:
-			ec = WebCLComputeContext::INVALID_DEVICE;
+			ec = WebCLException::INVALID_DEVICE;
 			printf("Error: CL_INVALID_DEVICE   \n");
 			break;
 		case CL_INVALID_VALUE:
-			ec = WebCLComputeContext::INVALID_VALUE;
+			ec = WebCLException::INVALID_VALUE;
 			printf("Error: CL_INVALID_VALUE \n");
 			break;
 		case CL_INVALID_PROGRAM:
-			ec = WebCLComputeContext::INVALID_PROGRAM;
+			ec = WebCLException::INVALID_PROGRAM;
 			printf("Error: CL_INVALID_PROGRAM  \n");
 			break;
 		case CL_OUT_OF_RESOURCES:
-			ec = WebCLComputeContext::OUT_OF_RESOURCES;
+			ec = WebCLException::OUT_OF_RESOURCES;
 			printf("Error: CL_OUT_OF_RESOURCES \n");
 			break;
 		case CL_OUT_OF_HOST_MEMORY:
-			ec = WebCLComputeContext::OUT_OF_HOST_MEMORY;
+			ec = WebCLException::OUT_OF_HOST_MEMORY;
 			printf("Error: CL_OUT_OF_HOST_MEMORY  \n");
 			break;
 		default:
-			ec = WebCLComputeContext::FAILURE;
+			ec = WebCLException::FAILURE;
 			printf("Error: Invaild Error Type\n");
 			break;
 	}				
@@ -220,7 +240,7 @@ PassRefPtr<WebCLKernel> WebCLProgram::createKernel(	const String& kernel_name,
 	cl_kernel cl_kernel_id = NULL;
 	if (m_cl_program == NULL) {
 		printf("Error: Invalid program object\n");
-		ec = WebCLComputeContext::FAILURE;
+		ec = WebCLException::INVALID_PROGRAM;
 		return NULL;
 	}
 	// TODO(siba samal) - more detailed error code need to be addressed later
@@ -230,41 +250,41 @@ PassRefPtr<WebCLKernel> WebCLProgram::createKernel(	const String& kernel_name,
 		switch (err) {
 			case CL_INVALID_PROGRAM:
 				printf("Error: CL_INVALID_PROGRAM\n");
-				ec = WebCLComputeContext::INVALID_PROGRAM;
+				ec = WebCLException::INVALID_PROGRAM;
 				break;
 			case CL_INVALID_PROGRAM_EXECUTABLE:
 				printf("Error: CL_INVALID_PROGRAM_EXECUTABLE\n");
-				ec = WebCLComputeContext::INVALID_PROGRAM_EXECUTABLE;
+				ec = WebCLException::INVALID_PROGRAM_EXECUTABLE;
 				break;
 			case CL_INVALID_KERNEL_NAME:
 				printf("Error: CL_INVALID_KERNEL_NAME\n");
-				ec = WebCLComputeContext::INVALID_KERNEL_NAME;
+				ec = WebCLException::INVALID_KERNEL_NAME;
 				break;
 			case CL_INVALID_KERNEL_DEFINITION:
 				printf("Error: CL_INVALID_KERNEL_DEFINITION\n");
-				ec = WebCLComputeContext::INVALID_KERNEL_DEFINITION;
+				ec = WebCLException::INVALID_KERNEL_DEFINITION;
 				break;
 			case CL_INVALID_VALUE:
 				printf("Error: CL_INVALID_VALUE\n");
-				ec = WebCLComputeContext::INVALID_VALUE;
+				ec = WebCLException::INVALID_VALUE;
 				break;
 			case CL_OUT_OF_RESOURCES:
 				printf("Error: CL_OUT_OF_RESOURCES\n");
-				ec = WebCLComputeContext::OUT_OF_RESOURCES;
+				ec = WebCLException::OUT_OF_RESOURCES;
 				break;
 			case CL_OUT_OF_HOST_MEMORY:
 				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
-				ec = WebCLComputeContext::OUT_OF_HOST_MEMORY;
+				ec = WebCLException::OUT_OF_HOST_MEMORY;
 				break;
 			default:
 				printf("Error: Invaild Error Type\n");
-				ec = WebCLComputeContext::FAILURE;
+				ec = WebCLException::FAILURE;
 				break;
 		}
 
 	} else {
 		RefPtr<WebCLKernel> o = WebCLKernel::create(m_context, cl_kernel_id);
-		o->setDeviceID(m_device_id);
+		o->setDevice(m_device_id);
 		m_kernel_list.append(o);
 		m_num_kernels++;
 
@@ -280,21 +300,22 @@ PassRefPtr<WebCLKernelList> WebCLProgram::createKernelsInProgram( ExceptionCode&
 	cl_uint num = 0;
 	if (m_cl_program == NULL) {
 		printf("Error: Invalid program object\n");
-		ec = WebCLComputeContext::FAILURE;
+		ec = WebCLException::INVALID_PROGRAM;
 		return NULL;
 	}
 	err = clCreateKernelsInProgram (m_cl_program, NULL, NULL, &num);
 	if (err != CL_SUCCESS) {
+		//TODO (siba samal) Deatiled error check
 		printf("Error: clCreateKernelsInProgram \n");
-		ec = WebCLComputeContext::FAILURE;
+		ec = WebCLException::FAILURE;
 		return NULL;
 	}
 	if(num == 0) {
 		printf("Warning: createKernelsInProgram - Number of Kernels is 0 \n");
-		ec = WebCLComputeContext::FAILURE;
+		ec = WebCLException::FAILURE;
 		return NULL;
 	}
-
+	// TODO - Free the below malloc
 	kernelBuf = (cl_kernel*)malloc (sizeof(cl_kernel) * num);
 	if (!kernelBuf) {
 		return NULL;
@@ -305,27 +326,27 @@ PassRefPtr<WebCLKernelList> WebCLProgram::createKernelsInProgram( ExceptionCode&
 		switch (err) {
 			case CL_INVALID_PROGRAM:
 				printf("Error: CL_INVALID_PROGRAM\n");
-				ec = WebCLComputeContext::INVALID_PROGRAM;
+				ec = WebCLException::INVALID_PROGRAM;
 				break;
 			case CL_INVALID_PROGRAM_EXECUTABLE:
 				printf("Error: CL_INVALID_PROGRAM_EXECUTABLE\n");
-				ec = WebCLComputeContext::INVALID_PROGRAM_EXECUTABLE;
+				ec = WebCLException::INVALID_PROGRAM_EXECUTABLE;
 				break;
 			case CL_INVALID_VALUE:
 				printf("Error: CL_INVALID_VALUE\n");
-				ec = WebCLComputeContext::INVALID_VALUE;
+				ec = WebCLException::INVALID_VALUE;
 				break;
 			case CL_OUT_OF_RESOURCES:
 				printf("Error: CL_OUT_OF_RESOURCES\n");
-				ec = WebCLComputeContext::OUT_OF_RESOURCES;
+				ec = WebCLException::OUT_OF_RESOURCES;
 				break;
 			case CL_OUT_OF_HOST_MEMORY:
 				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
-				ec = WebCLComputeContext::OUT_OF_HOST_MEMORY;
+				ec = WebCLException::OUT_OF_HOST_MEMORY;
 				break;
 			default:
 				printf("Error: Invaild Error Type\n");
-				ec = WebCLComputeContext::FAILURE;
+				ec = WebCLException::FAILURE;
 				break;
 		}
 
@@ -345,7 +366,7 @@ void WebCLProgram::buildProgram(int options, int pfn_notify,
 	cl_int err = 0;
 	if (m_cl_program == NULL) {
 		printf("Error: Invalid program object\n");
-		ec = WebCLComputeContext::FAILURE;
+		ec = WebCLException::INVALID_PROGRAM;
 		return;
 	}
 
@@ -356,49 +377,49 @@ void WebCLProgram::buildProgram(int options, int pfn_notify,
 		switch (err) {
 			case CL_INVALID_PROGRAM:
 				printf("Error: CL_INVALID_PROGRAM\n");
-				ec = WebCLComputeContext::INVALID_PROGRAM;
+				ec = WebCLException::INVALID_PROGRAM;
 				break;
 			case CL_INVALID_VALUE:
 				printf("Error: CL_INVALID_VALUE\n");
-				ec = WebCLComputeContext::INVALID_VALUE;
+				ec = WebCLException::INVALID_VALUE;
 				break;
 			case CL_INVALID_DEVICE:
 				printf("Error: CL_INVALID_DEVICE\n");
-				ec = WebCLComputeContext::INVALID_DEVICE;
+				ec = WebCLException::INVALID_DEVICE;
 				break;
 			case CL_INVALID_BINARY:
 				printf("Error: CL_INVALID_BINARY\n");
-				ec = WebCLComputeContext::INVALID_BINARY;
+				ec = WebCLException::INVALID_BINARY;
 				break;
 			case CL_INVALID_OPERATION:
 				printf("Error: CL_INVALID_OPERATION\n");
-				ec = WebCLComputeContext::INVALID_OPERATION;
+				ec = WebCLException::INVALID_OPERATION;
 				break;
 			case CL_INVALID_BUILD_OPTIONS :
 				printf("Error: CL_INVALID_BUILD_OPTIONS\n");
-				ec = WebCLComputeContext::INVALID_BUILD_OPTIONS;
+				ec = WebCLException::INVALID_BUILD_OPTIONS;
 				break;
 			case CL_COMPILER_NOT_AVAILABLE:
 				printf("Error: CL_COMPILER_NOT_AVAILABLE\n");
-				ec = WebCLComputeContext::COMPILER_NOT_AVAILABLE;
+				ec = WebCLException::COMPILER_NOT_AVAILABLE;
 				break;
 			case CL_BUILD_PROGRAM_FAILURE:
 				printf("Error: CL_BUILD_PROGRAM_FAILURE\n");
-				ec = WebCLComputeContext::BUILD_PROGRAM_FAILURE;
+				ec = WebCLException::BUILD_PROGRAM_FAILURE;
 				break;
 			case CL_OUT_OF_RESOURCES:
 				printf("Error: CL_OUT_OF_RESOURCES\n");
-				ec = WebCLComputeContext::OUT_OF_RESOURCES;
+				ec = WebCLException::OUT_OF_RESOURCES;
 				break;
 			case CL_OUT_OF_HOST_MEMORY:
 				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
-				ec = WebCLComputeContext::OUT_OF_HOST_MEMORY;
+				ec = WebCLException::OUT_OF_HOST_MEMORY;
 				break;
 			default:
 				printf("Error: Invaild Error Type\n");
-				printf("WebCLComputeContext::buildProgram normal options=%d pfn_notify=%d user_data=%d\n", 
+				printf("WebCL::buildProgram normal options=%d pfn_notify=%d user_data=%d\n", 
 						options, pfn_notify, user_data);
-				ec = WebCLComputeContext::FAILURE;
+				ec = WebCLException::FAILURE;
 				break;
 
 		}
@@ -409,20 +430,20 @@ void WebCLProgram::buildProgram(int options, int pfn_notify,
 	return;
 }
 
-void WebCLProgram::buildProgram(WebCLDeviceID* device_id,int options, 
+void WebCLProgram::buildProgram(WebCLDevice* device_id,int options, 
 		int pfn_notify, int user_data, ExceptionCode& ec)
 {
 	cl_int err = 0;
 	cl_device_id cl_device = NULL;
 	if (m_cl_program == NULL) {
 		printf("Error: Invalid program object\n");
-		ec = WebCLComputeContext::FAILURE;
+		ec = WebCLException::INVALID_PROGRAM;
 		return;
 	}
-	cl_device = device_id->getCLDeviceID();
+	cl_device = device_id->getCLDevice();
 	if (cl_device == NULL) {
 		printf("Error: devices null\n");
-		ec = WebCLComputeContext::FAILURE;
+		ec = WebCLException::INVALID_DEVICE;
 		return;
 	}
 
@@ -433,49 +454,49 @@ void WebCLProgram::buildProgram(WebCLDeviceID* device_id,int options,
 		switch (err) {
 			case CL_INVALID_PROGRAM:
 				printf("Error: CL_INVALID_PROGRAM\n");
-				ec = WebCLComputeContext::INVALID_PROGRAM;
+				ec = WebCLException::INVALID_PROGRAM;
 				break;
 			case CL_INVALID_VALUE:
 				printf("Error: CL_INVALID_VALUE\n");
-				ec = WebCLComputeContext::INVALID_VALUE;
+				ec = WebCLException::INVALID_VALUE;
 				break;
 			case CL_INVALID_DEVICE:
 				printf("Error: CL_INVALID_DEVICE\n");
-				ec = WebCLComputeContext::INVALID_DEVICE;
+				ec = WebCLException::INVALID_DEVICE;
 				break;
 			case CL_INVALID_BINARY:
 				printf("Error: CL_INVALID_BINARY\n");
-				ec = WebCLComputeContext::INVALID_BINARY;
+				ec = WebCLException::INVALID_BINARY;
 				break;
 			case CL_INVALID_OPERATION:
 				printf("Error: CL_INVALID_OPERATION\n");
-				ec = WebCLComputeContext::INVALID_OPERATION;
+				ec = WebCLException::INVALID_OPERATION;
 				break;
 			case CL_INVALID_BUILD_OPTIONS :
 				printf("Error: CL_INVALID_BUILD_OPTIONS\n");
-				ec = WebCLComputeContext::INVALID_BUILD_OPTIONS;
+				ec = WebCLException::INVALID_BUILD_OPTIONS;
 				break;
 			case CL_COMPILER_NOT_AVAILABLE:
 				printf("Error: CL_COMPILER_NOT_AVAILABLE\n");
-				ec = WebCLComputeContext::COMPILER_NOT_AVAILABLE;
+				ec = WebCLException::COMPILER_NOT_AVAILABLE;
 				break;
 			case CL_BUILD_PROGRAM_FAILURE:
 				printf("Error: CL_BUILD_PROGRAM_FAILURE\n");
-				ec = WebCLComputeContext::BUILD_PROGRAM_FAILURE;
+				ec = WebCLException::BUILD_PROGRAM_FAILURE;
 				break;
 			case CL_OUT_OF_RESOURCES:
 				printf("Error: CL_OUT_OF_RESOURCES\n");
-				ec = WebCLComputeContext::OUT_OF_RESOURCES;
+				ec = WebCLException::OUT_OF_RESOURCES;
 				break;
 			case CL_OUT_OF_HOST_MEMORY:
 				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
-				ec = WebCLComputeContext::OUT_OF_HOST_MEMORY;
+				ec = WebCLException::OUT_OF_HOST_MEMORY;
 				break;
 			default:
 				printf("Error: Invaild Error Type\n");
-				printf("WebCLComputeContext::buildProgram WebCLDeviceID options=%d pfn_notify=%d user_data=%d\n", 
+				printf("WebCL::buildProgram WebCLDevice options=%d pfn_notify=%d user_data=%d\n", 
 						options, pfn_notify, user_data);
-				ec = WebCLComputeContext::FAILURE;
+				ec = WebCLException::FAILURE;
 				break;
 
 		}
@@ -486,7 +507,7 @@ void WebCLProgram::buildProgram(WebCLDeviceID* device_id,int options,
 	return;
 }
 
-void WebCLProgram::buildProgram( WebCLDeviceIDList* cl_devices, int options, 
+void WebCLProgram::buildProgram( WebCLDeviceList* cl_devices, int options, 
 		int pfn_notify, int user_data, ExceptionCode& ec)
 {
 	cl_int err = 0;	
@@ -494,16 +515,18 @@ void WebCLProgram::buildProgram( WebCLDeviceIDList* cl_devices, int options,
 
 	if (m_cl_program == NULL) {
 		printf("Error: Invalid program object\n");
-		ec = WebCLComputeContext::FAILURE;
+		ec = WebCLException::INVALID_PROGRAM;
 		return ;
 	}
 	if (cl_devices != NULL) {
-		cl_device = cl_devices->getCLDeviceIDs();
+		cl_device = cl_devices->getCLDevices();
 		if (cl_device == NULL) {
+			ec = WebCLException::INVALID_DEVICE;
 			printf("Error: devices null\n");
 			return;
 		}
 	} else {
+		ec = WebCLException::INVALID_DEVICE;
 		printf("Error: webcl_devices null\n");
 		return;
 	}
@@ -515,49 +538,49 @@ void WebCLProgram::buildProgram( WebCLDeviceIDList* cl_devices, int options,
 		switch (err) {
 			case CL_INVALID_PROGRAM:
 				printf("Error: CL_INVALID_PROGRAM\n");
-				ec = WebCLComputeContext::INVALID_PROGRAM;
+				ec = WebCLException::INVALID_PROGRAM;
 				break;
 			case CL_INVALID_VALUE:
 				printf("Error: CL_INVALID_VALUE\n");
-				ec = WebCLComputeContext::INVALID_VALUE;
+				ec = WebCLException::INVALID_VALUE;
 				break;
 			case CL_INVALID_DEVICE:
 				printf("Error: CL_INVALID_DEVICE\n");
-				ec = WebCLComputeContext::INVALID_DEVICE;
+				ec = WebCLException::INVALID_DEVICE;
 				break;
 			case CL_INVALID_BINARY:
 				printf("Error: CL_INVALID_BINARY\n");
-				ec = WebCLComputeContext::INVALID_BINARY;
+				ec = WebCLException::INVALID_BINARY;
 				break;
 			case CL_INVALID_OPERATION:
 				printf("Error: CL_INVALID_OPERATION\n");
-				ec = WebCLComputeContext::INVALID_OPERATION;
+				ec = WebCLException::INVALID_OPERATION;
 				break;
 			case CL_INVALID_BUILD_OPTIONS :
 				printf("Error: CL_INVALID_BUILD_OPTIONS\n");
-				ec = WebCLComputeContext::INVALID_BUILD_OPTIONS;
+				ec = WebCLException::INVALID_BUILD_OPTIONS;
 				break;
 			case CL_COMPILER_NOT_AVAILABLE:
 				printf("Error: CL_COMPILER_NOT_AVAILABLE\n");
-				ec = WebCLComputeContext::COMPILER_NOT_AVAILABLE;
+				ec = WebCLException::COMPILER_NOT_AVAILABLE;
 				break;
 			case CL_BUILD_PROGRAM_FAILURE:
 				printf("Error: CL_BUILD_PROGRAM_FAILURE\n");
-				ec = WebCLComputeContext::BUILD_PROGRAM_FAILURE;
+				ec = WebCLException::BUILD_PROGRAM_FAILURE;
 				break;
 			case CL_OUT_OF_RESOURCES:
 				printf("Error: CL_OUT_OF_RESOURCES\n");
-				ec = WebCLComputeContext::OUT_OF_RESOURCES;
+				ec = WebCLException::OUT_OF_RESOURCES;
 				break;
 			case CL_OUT_OF_HOST_MEMORY:
 				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
-				ec = WebCLComputeContext::OUT_OF_HOST_MEMORY;
+				ec = WebCLException::OUT_OF_HOST_MEMORY;
 				break;
 			default:
 				printf("Error: Invaild Error Type\n");
-				printf("WebCLComputeContext::buildProgram WebCLDeviceIDList  options=%d pfn_notify=%d user_data=%d\n", 
+				printf("WebCL::buildProgram WebCLDeviceList  options=%d pfn_notify=%d user_data=%d\n", 
 						options, pfn_notify, user_data);
-				ec = WebCLComputeContext::FAILURE;
+				ec = WebCLException::FAILURE;
 				break;
 
 		}
@@ -568,13 +591,13 @@ void WebCLProgram::buildProgram( WebCLDeviceIDList* cl_devices, int options,
 	return;
 }
 
-void WebCLProgram::releaseCLResource( ExceptionCode& ec)
+void WebCLProgram::releaseCL( ExceptionCode& ec)
 {
 	cl_int err = 0;
 
 	if (m_cl_program == NULL) {
 		printf("Error: Invalid program object\n");
-		ec = WebCLComputeContext::FAILURE;
+		ec = WebCLException::INVALID_DEVICE;
 		return;
 	}
 	err = clReleaseProgram(m_cl_program);
@@ -582,19 +605,19 @@ void WebCLProgram::releaseCLResource( ExceptionCode& ec)
 		switch (err) {
 			case CL_INVALID_PROGRAM:
 				printf("Error: CL_INVALID_PROGRAM  \n");
-				ec = WebCLComputeContext::INVALID_PROGRAM;
+				ec = WebCLException::INVALID_PROGRAM;
 				break;
 			case CL_OUT_OF_RESOURCES:
 				printf("Error: CL_OUT_OF_RESOURCES  \n");
-				ec = WebCLComputeContext::OUT_OF_RESOURCES ;
+				ec = WebCLException::OUT_OF_RESOURCES ;
 				break;
 			case CL_OUT_OF_HOST_MEMORY:
 				printf("Error: CL_OUT_OF_HOST_MEMORY  \n");
-				ec = WebCLComputeContext::OUT_OF_HOST_MEMORY ;
+				ec = WebCLException::OUT_OF_HOST_MEMORY ;
 				break;
 			default:
 				printf("Error: Invaild Error Type\n");
-				ec = WebCLComputeContext::FAILURE;
+				ec = WebCLException::FAILURE;
 				break;
 		}
 	} else {
@@ -610,48 +633,8 @@ void WebCLProgram::releaseCLResource( ExceptionCode& ec)
 	return;
 }
 
-
-void WebCLProgram::retainCLResource( ExceptionCode& ec)
-{
-	cl_int err = 0;
-
-	if (m_cl_program == NULL) {
-		printf("Error: Invalid program object\n");
-		ec = WebCLComputeContext::FAILURE;
-		return;
-	}
-	err = clRetainProgram(m_cl_program);
-	if (err != CL_SUCCESS) {
-		switch (err) {
-			case CL_INVALID_PROGRAM:
-				printf("Error: CL_INVALID_PROGRAM\n");
-				ec = WebCLComputeContext::INVALID_PROGRAM;
-				break;
-			case CL_OUT_OF_RESOURCES:
-				printf("Error: CL_OUT_OF_RESOURCES\n");
-				ec = WebCLComputeContext::OUT_OF_RESOURCES ;
-				break;
-			case CL_OUT_OF_HOST_MEMORY:
-				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
-				ec = WebCLComputeContext::OUT_OF_HOST_MEMORY ;
-				break;
-			default:
-				printf("Error: Invaild Error Type\n");
-				ec = WebCLComputeContext::FAILURE;
-				break;
-		}
-	} else {
-		printf("Success: clRetainProgram\n");
-		// TODO - Check if has to be really added
-		RefPtr<WebCLProgram> o = WebCLProgram::create(m_context, m_cl_program);
-		m_program_list.append(o);
-		m_num_programs++;
-		return;
-	}
-	return;
-}
 	
-void WebCLProgram::setDeviceID(RefPtr<WebCLDeviceID> m_device_id_)
+void WebCLProgram::setDevice(RefPtr<WebCLDevice> m_device_id_)
 {
 	m_device_id = m_device_id_;
 }

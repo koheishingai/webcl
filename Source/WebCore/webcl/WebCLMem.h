@@ -28,7 +28,7 @@
 #ifndef WebCLMem_h
 #define WebCLMem_h
 
-#include <Opencl/opencl.h>
+#include <OpenCL/opencl.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
@@ -37,23 +37,22 @@
 
 namespace WebCore {
 
-class WebCLComputeContext;
+class WebCL;
 
 class WebCLMem : public RefCounted<WebCLMem> {
 public:
 	virtual ~WebCLMem();
-	static PassRefPtr<WebCLMem> create(WebCLComputeContext*, cl_mem, bool);
-	WebCLGetInfo getMemObjectInfo(int, ExceptionCode&);
-	void retainCLResource( ExceptionCode&);
-	void releaseCLResource( ExceptionCode&);
+	static PassRefPtr<WebCLMem> create(WebCL*, cl_mem, bool);
+	WebCLGetInfo getInfo(int, ExceptionCode&);
+	void releaseCL( ExceptionCode&);
 	
 	cl_mem getCLMem();
 	bool isShared() { return m_shared; }
 	
 
 private:
-	WebCLMem(WebCLComputeContext*, cl_mem, bool);
-	WebCLComputeContext* m_context;
+	WebCLMem(WebCL*, cl_mem, bool);
+	WebCL* m_context;
 	cl_mem m_cl_mem;
 	bool m_shared;
 	long m_num_mems;

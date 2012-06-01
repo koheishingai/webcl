@@ -76,7 +76,7 @@
 
 // Siba
 #if ENABLE(WEBCL)
-#include "JSWebCLComputeContext.h"
+#include "JSWebCL.h"
 #endif
 
 
@@ -471,10 +471,10 @@ JSValue JSDOMWindow::sharedWorker(ExecState* exec) const
 
 // Siba Check if not reqd ??
 #if ENABLE(WEBCL)
-JSValue JSDOMWindow::webCLComputeContext(ExecState* exec) const
+JSValue JSDOMWindow::webCL(ExecState* exec) const
 
 {
-    return getDOMConstructor<JSWebCLComputeContextConstructor>(exec, this);
+    return getDOMConstructor<JSWebCLConstructor>(exec, this);
 }
 #endif
 

@@ -30,28 +30,28 @@
 
 #include "WebCLEvent.h"
 
-#include <Opencl/opencl.h>
+#include <OpenCL/opencl.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
 
 namespace WebCore {
 
-class WebCLComputeContext;
+class WebCL;
 
 class WebCLEventList : public RefCounted<WebCLEventList> {
 
 public:
 	virtual ~WebCLEventList();
-	static PassRefPtr<WebCLEventList> create(WebCLComputeContext* ,cl_event*, cl_uint);
+	static PassRefPtr<WebCLEventList> create(WebCL* ,cl_event*, cl_uint);
 	WebCLEventList();
 	cl_event* getCLEvents();
 	
 	unsigned length() const;
 	WebCLEvent* item(unsigned index);
 private:
-	WebCLEventList(WebCLComputeContext*, cl_event*, cl_uint);
-	WebCLComputeContext* m_context;
+	WebCLEventList(WebCL*, cl_event*, cl_uint);
+	WebCL* m_context;
 	Vector<RefPtr<WebCLEvent> > m_event_id_list;
 	cl_event* m_cl_events;
 	cl_uint m_num_events;

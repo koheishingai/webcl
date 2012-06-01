@@ -49,11 +49,11 @@
 #include <wtf/FastMalloc.h>
 #include <runtime/JSFunction.h>
 #include "WebCLProgram.h"
-#include "WebCLDeviceID.h"
+#include "WebCLDevice.h"
 #include "WebCLGetInfo.h"
-#include "JSWebCLDeviceID.h"
+#include "JSWebCLDevice.h"
 #include "JSWebCLProgram.h"
-#include "JSWebCLComputeContextCustom.h"
+#include "JSWebCLCustom.h"
 #include <stdio.h>
 
 using namespace JSC;
@@ -62,7 +62,7 @@ using namespace std;
 namespace WebCore { 
 
 
-JSValue JSWebCLProgram::getProgramInfo(JSC::ExecState* exec)
+JSValue JSWebCLProgram::getInfo(JSC::ExecState* exec)
 {
 	if (exec->argumentCount() != 1)
 		return throwSyntaxError(exec);
@@ -74,27 +74,27 @@ JSValue JSWebCLProgram::getProgramInfo(JSC::ExecState* exec)
 	unsigned programInfo  = exec->argument(0).toInt32(exec);
 	if (exec->hadException())
 		return jsUndefined();
-	WebCLGetInfo info = program->getProgramInfo(programInfo, ec);
+	WebCLGetInfo info = program->getInfo(programInfo, ec);
 	if (ec) {
 		setDOMException(exec, ec);
 		return jsUndefined();
 	}
 	return toJS(exec, globalObject(), info);
 }
-JSValue JSWebCLProgram::getProgramBuildInfo(JSC::ExecState* exec)
+JSValue JSWebCLProgram::getBuildInfo(JSC::ExecState* exec)
 {
 	if (exec->argumentCount() != 2)
 		return throwSyntaxError(exec);
 
 	ExceptionCode ec = 0;
 	WebCLProgram* program = static_cast<WebCLProgram*>(impl());
-	WebCLDeviceID* device  = toWebCLDeviceID(exec->argument(0));
+	WebCLDevice* device  = toWebCLDevice(exec->argument(0));
 	if (exec->hadException())
 		return jsUndefined();
 	unsigned build_info  = exec->argument(1).toInt32(exec);
 	if (exec->hadException())
 		return jsUndefined();
-	WebCLGetInfo info = program->getProgramBuildInfo(device,build_info, ec);
+	WebCLGetInfo info = program->getBuildInfo(device,build_info, ec);
 	if (ec) {
 		setDOMException(exec, ec);
 		return jsUndefined();

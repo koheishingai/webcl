@@ -27,10 +27,10 @@
 
 // local OpenCL info
 //
-var platform_ids;                           // array of OpenCL platform ids
-var platform_id;                            // OpenCL platform id
-var device_ids;                             // array of OpenCL device ids
-var device_id;                              // OpenCL device id
+var platforms;                           // array of OpenCL platform ids
+var platform;                            // OpenCL platform id
+var devices;                             // array of OpenCL device ids
+var device;                              // OpenCL device id
 var context;                                // OpenCL context
 var queue;                                  // OpenCL command queue
 var program;                                // OpenCL program
@@ -95,11 +95,13 @@ function InitCL() {
 
 		// Initial load of velocity data
 		//
-		queue.enqueueAcquireGLObjects(curVelBuffer, null);
+		//queue.enqueueAcquireGLObjects(curVelBuffer, null);
+		queue.enqueueAcquireGLObjects(curVelBuffer);
 
 		queue.enqueueWriteBuffer(curVelBuffer, true, 0, bufferSize, userData.curVel, null);
 
-		queue.enqueueReleaseGLObjects(curVelBuffer, null);
+		//queue.enqueueReleaseGLObjects(curVelBuffer, null);
+		queue.enqueueReleaseGLObjects(curVelBuffer);
 
 		queue.finish(GetNullResults, 0);
 	}
@@ -120,8 +122,10 @@ function SimulateCL(cl) {
 		if(cl === null)
 			return;
 		if(userData.isGLCLshared) {
-			queue.enqueueAcquireGLObjects(curPosBuffer, null);
-			queue.enqueueAcquireGLObjects(curVelBuffer, null);
+			queue.enqueueAcquireGLObjects(curPosBuffer);
+			queue.enqueueAcquireGLObjects(curVelBuffer);
+			//queue.enqueueAcquireGLObjects(curPosBuffer, null);
+			//queue.enqueueAcquireGLObjects(curVelBuffer, null);
 		}
 		var localMemSize = localWorkSize[0] * POS_ATTRIB_SIZE * Float32Array.BYTES_PER_ELEMENT;
 		kernel.setKernelArgGlobal(0, curPosBuffer);
@@ -132,27 +136,18 @@ function SimulateCL(cl) {
 		kernel.setKernelArgLocal(5, localMemSize);  // __local: val (ignored) and size
 		kernel.setKernelArgGlobal(6, nxtPosBuffer);
 		kernel.setKernelArgGlobal(7, nxtVelBuffer);
-		queue.enqueueNDRangeKernel(kernel, 1, 0, globalWorkSize, localWorkSize, null);
+		queue.enqueueNDRangeKernel(kernel, null, globalWorkSize, localWorkSize, null);
 
-		queue.finish(GetResults, cl);
-	}
-	catch (e)
-	{
-		console.error("Nbody Demo Failed ; Message: "+ e.message);
-		test.showFailure();
-	}
-}
-
-function GetResults(cl)
-{  
-	try {
+		queue.finish();
 		queue.enqueueCopyBuffer(nxtPosBuffer, curPosBuffer, bufferSize);
 
 		queue.enqueueCopyBuffer(nxtVelBuffer, curVelBuffer, bufferSize);
 
 		if(userData.isGLCLshared) {
-			queue.enqueueReleaseGLObjects(curPosBuffer, null);
-			queue.enqueueReleaseGLObjects(curVelBuffer, null);
+			//queue.enqueueReleaseGLObjects(curPosBuffer, null);
+			//queue.enqueueReleaseGLObjects(curVelBuffer, null);
+			queue.enqueueReleaseGLObjects(curPosBuffer);
+			queue.enqueueReleaseGLObjects(curVelBuffer);
 		}
 
 		if(!userData.isGLCLshared || userData.drawMode === JS_DRAW_MODE) {
@@ -169,12 +164,12 @@ function GetResults(cl)
 
 function GetWorkGroupSize() {
 	try {
-		if(typeof(WebCLComputeContext) === "undefined") {
-			console.error("WebCLComputeContext is yet to be defined");
+		if(typeof(WebCL) === "undefined") {
+			console.error("WebCL is yet to be defined");
 			return null;
 		}
 
-		cl = new WebCLComputeContext();
+		cl = new WebCL();
 
 		if(cl === null) {
 			console.error("Failed to create WebCL context");
@@ -183,31 +178,31 @@ function GetWorkGroupSize() {
 
 		// Select a compute device
 		//
-		platform_ids = cl.getPlatformIDs();
+		platforms = cl.getPlatforms();
 
-		if(platform_ids.length === 0) {
+		if(platforms.length === 0) {
 			console.error("No platforms available");
 			return;
 		}
-		platform_id = platform_ids[0];
+		platform = platforms[0];
 
 		// Select a compute device
 		//
-		device_ids = platform_id.getDeviceIDs(cl.DEVICE_TYPE_GPU);
-		if(device_ids.length === 0) {
+		devices = platform.getDevices(cl.DEVICE_TYPE_GPU);
+		if(devices.length === 0) {
 			console.error("No devices available");
 			//return;
 		}
-		device_id = device_ids[0];
+		device = devices[0];
 
 		// Create a compute context
 		//
-		//context = cl.createContext(null, device_id, null, null);
+		//context = cl.createContext(null, device, null, null);
 		context = cl.createSharedContext(cl.DEVICE_TYPE_GPU, null, null);
 
 		// Create a command queue
 		//
-		queue = context.createCommandQueue(device_id, null);
+		queue = context.createCommandQueue(devices, null);
 
 		// Create the compute program from the source buffer
 		//
@@ -217,7 +212,7 @@ function GetWorkGroupSize() {
 			return;
 		}
 
-		program = context.createProgramWithSource(kernelSource);
+		program = context.createProgram(kernelSource);
 
 		// Build the program executable
 		//
@@ -229,7 +224,7 @@ function GetWorkGroupSize() {
 
 		// Get the maximum work group size for executing the kernel on the device
 		//
-		workGroupSize = kernel.getKernelWorkGroupInfo(device_id, cl.KERNEL_WORK_GROUP_SIZE);
+		workGroupSize = kernel.getWorkGroupInfo(device, cl.KERNEL_WORK_GROUP_SIZE);
 	}
 	catch (e)
 	{

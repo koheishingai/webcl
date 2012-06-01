@@ -67,10 +67,11 @@
 
 namespace WebCore {
 
-class WebCLComputeContext;
+class WebCL;
 class WebCLCommandQueue;
 class WebCLProgram;
 class WebCLMem;
+class WebCLImage;
 class WebCLSampler;
 class WebCLEvent;
 class ImageData;
@@ -80,13 +81,19 @@ class IntSize;
 class WebCLContext : public RefCounted<WebCLContext> {
 public:
 	virtual ~WebCLContext();
-	static PassRefPtr<WebCLContext> create(WebCLComputeContext*, cl_context);
+	static PassRefPtr<WebCLContext> create(WebCL*, cl_context);
 	
-	WebCLGetInfo getContextInfo(int, ExceptionCode&);
-	PassRefPtr<WebCLCommandQueue> createCommandQueue(WebCLDeviceIDList*, int, ExceptionCode&);
-	PassRefPtr<WebCLCommandQueue> createCommandQueue(WebCLDeviceID*, int, ExceptionCode&);
-	PassRefPtr<WebCLProgram> createProgramWithSource(const String&, ExceptionCode&);
-	PassRefPtr<WebCLProgram> createProgramWithBinary(WebCLDeviceIDList* ,const String&, ExceptionCode&);
+	WebCLGetInfo getInfo(int, ExceptionCode&);
+	PassRefPtr<WebCLCommandQueue> createCommandQueue(WebCLDeviceList*, int, ExceptionCode&);
+	PassRefPtr<WebCLCommandQueue> createCommandQueue(WebCLDeviceList* deviceList, ExceptionCode& ec) {
+		return(createCommandQueue(deviceList, NULL, ec));
+	}
+	PassRefPtr<WebCLCommandQueue> createCommandQueue(ExceptionCode& ec) {
+		return(createCommandQueue(NULL, NULL, ec));
+	}
+
+	//PassRefPtr<WebCLCommandQueue> createCommandQueue(WebCLDevice*, int, ExceptionCode&);
+	PassRefPtr<WebCLProgram> createProgram(const String&, ExceptionCode&);
 	PassRefPtr<WebCLMem> createBuffer(int, int, int, ExceptionCode&);
 	PassRefPtr<WebCLMem> createImage2D(int, HTMLCanvasElement*, ExceptionCode&);
 	PassRefPtr<WebCLMem> createImage2D(int, HTMLImageElement*, ExceptionCode&);
@@ -96,11 +103,11 @@ public:
 	PassRefPtr<WebCLMem> createImage3D(int, unsigned int, unsigned int, unsigned int,ArrayBuffer*, ExceptionCode&);
 	PassRefPtr<WebCLSampler> createSampler(bool, int, int, ExceptionCode&);
 	PassRefPtr<WebCLMem> createFromGLBuffer(int, WebGLBuffer*, ExceptionCode&);
+	PassRefPtr<WebCLImage> createFromGLRenderBuffer(int, WebGLRenderbuffer*,ExceptionCode&);
 	PassRefPtr<WebCLMem> createFromGLTexture2D(int, GC3Denum,GC3Dint, GC3Duint, ExceptionCode&);
 	PassRefPtr<WebCLEvent> createUserEvent(ExceptionCode&);	
-	void releaseCLResource( ExceptionCode&);
-	void retainCLResource( ExceptionCode&);
-	void setDeviceID(RefPtr<WebCLDeviceID>);
+	void releaseCL( ExceptionCode&);
+	void setDevice(RefPtr<WebCLDevice>);
 	cl_context getCLContext();
 	// Fixed-size cache of reusable image buffers for video texImage2D calls.
 	class LRUImageBufferCache {
@@ -116,15 +123,20 @@ public:
 	LRUImageBufferCache m_videoCache;
 
 	private:
-	WebCLContext(WebCLComputeContext*, cl_context);
-	WebCLComputeContext* m_context;
+	WebCLContext(WebCL*, cl_context);
+	WebCL* m_context;
 	cl_context m_cl_context;
-	RefPtr<WebCLDeviceID> m_device_id;
+	RefPtr<WebCLDevice> m_device_id;
 	
 	Vector<RefPtr<WebCLProgram> > m_program_list;
 	long m_num_programs;
 	Vector<RefPtr<WebCLMem> > m_mem_list;
 	long m_num_mems;
+	
+       Vector<RefPtr<WebCLImage> > m_img_list;
+	long m_num_images;
+
+
 	Vector<RefPtr<WebCLEvent> > m_event_list;
 	long m_num_events;
 	Vector<RefPtr<WebCLSampler> > m_sampler_list;

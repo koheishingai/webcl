@@ -30,6 +30,9 @@
 #if ENABLE(WEBCL)
 
 #include "WebCLImage.h"
+#include "WebCLException.h"
+#include "WebCLContext.h"
+#include "WebCL.h"
 
 namespace WebCore {
 
@@ -37,13 +40,13 @@ WebCLImage::~WebCLImage()
 {
 }
 
-PassRefPtr<WebCLImage> WebCLImage::create(WebCLComputeContext* compute_context, 
+PassRefPtr<WebCLImage> WebCLImage::create(WebCL* compute_context, 
 	cl_mem image, bool is_shared = false)
 {
 	return adoptRef(new WebCLImage(compute_context, image, is_shared));
 }
 
-WebCLImage::WebCLImage(WebCLComputeContext* compute_context, cl_mem image, bool is_shared) 
+WebCLImage::WebCLImage(WebCL* compute_context, cl_mem image, bool is_shared) 
 		: m_context(compute_context), m_cl_mem(image), m_shared(is_shared)
 {
 }
@@ -51,6 +54,72 @@ WebCLImage::WebCLImage(WebCLComputeContext* compute_context, cl_mem image, bool 
 cl_mem WebCLImage::getCLImage()
 {
 	return m_cl_mem;
+}
+
+int WebCLImage::getGLtextureInfo(int paramNameobj, ExceptionCode& ec)
+{
+      cl_int err = 0;
+      
+      if (m_cl_mem == NULL) {
+		printf("Error: Invalid CL Context\n");
+		ec = WebCLException::INVALID_MEM_OBJECT;
+		return NULL;
+	  }
+	  cl_int int_units = 0;
+	  
+	  switch(paramNameobj)
+	  {
+            case WebCL::TEXTURE_TARGET:
+			err = clGetGLTextureInfo(m_cl_mem, CL_GL_TEXTURE_TARGET, sizeof(cl_int), &int_units, NULL);
+			if (err == CL_SUCCESS)
+			return ((int)int_units);
+			break;
+		
+            case WebCL::MIPMAP_LEVEL:
+			err = clGetGLTextureInfo(m_cl_mem, CL_GL_MIPMAP_LEVEL, sizeof(cl_int), &int_units, NULL);
+			if (err == CL_SUCCESS)
+			return ((int)int_units);
+			break;
+			
+	     default:
+			printf("Error: Unsupported paramName Info type = %d ",paramNameobj);
+			return (NULL);
+                          
+      }
+      if(err != CL_SUCCESS)
+	  {
+        	switch (err) {
+        		case CL_INVALID_MEM_OBJECT:
+        			ec = WebCLException::INVALID_MEM_OBJECT;
+        			printf("Error: CL_INVALID_MEM_OBJECT  \n");
+        			break;
+        		case CL_INVALID_GL_OBJECT:
+        			ec = WebCLException::INVALID_GL_OBJECT;
+        			printf("Error: CL_INVALID_GL_OBJECT \n");
+        			break;
+        		case CL_INVALID_VALUE:
+        			ec = WebCLException::INVALID_VALUE;
+        			printf("Error: CL_INVALID_VALUE \n");
+        			break;
+       			case CL_OUT_OF_RESOURCES:
+        			ec = WebCLException::OUT_OF_RESOURCES;
+        			printf("Error: CL_OUT_OF_RESOURCES \n");
+        			break;
+        		case CL_OUT_OF_HOST_MEMORY:
+        			ec = WebCLException::OUT_OF_HOST_MEMORY;
+        			printf("Error: CL_OUT_OF_HOST_MEMORY  \n");
+        			break;
+        		default:
+        			ec = WebCLException::FAILURE;
+        			printf("Invaild Error Type\n");
+        			break;
+        	}
+	  }
+	  
+      return (NULL);
+      //clGetGLObjectInfo (cl_mem memobj,cl_gl_object_type *gl_object_type,GLuint *gl_object_name)
+      
+      
 }
 
 } // namespace WebCore

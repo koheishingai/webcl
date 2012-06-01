@@ -25,11 +25,11 @@
 * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-if(typeof(WebCLComputeContext) === "undefined") {
+if(typeof(WebCL) === "undefined") {
 
     console.log("Using opencl.js stub");
 
-    function WebCLComputeContext () {
+    function WebCL () {
         this.SUCCESS = 0;
         this.DEVICE_TYPE_GPU = 1;
         this.DEVICE_TYPE_CPU = 2;

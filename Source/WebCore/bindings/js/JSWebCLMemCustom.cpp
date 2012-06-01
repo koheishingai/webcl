@@ -43,7 +43,7 @@
 #include <runtime/JSFunction.h>
 #include "WebCLGetInfo.h"
 #include "JSWebCLMem.h"
-#include "JSWebCLComputeContextCustom.h"
+#include "JSWebCLCustom.h"
 #include <stdio.h>
 
 using namespace JSC;
@@ -53,7 +53,7 @@ namespace WebCore {
 
 
 
-JSValue JSWebCLMem::getMemObjectInfo(JSC::ExecState* exec)
+JSValue JSWebCLMem::getInfo(JSC::ExecState* exec)
 {
 	if (exec->argumentCount() != 1)
 		return throwSyntaxError(exec);
@@ -65,7 +65,7 @@ JSValue JSWebCLMem::getMemObjectInfo(JSC::ExecState* exec)
 	unsigned mem_info  = exec->argument(0).toInt32(exec);
 	if (exec->hadException())
 		return jsUndefined();
-	WebCLGetInfo info = memObj->getMemObjectInfo(mem_info, ec);
+	WebCLGetInfo info = memObj->getInfo(mem_info, ec);
 	if (ec) {
 		setDOMException(exec, ec);
 		return jsUndefined();

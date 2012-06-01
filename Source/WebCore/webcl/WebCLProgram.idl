@@ -25,30 +25,29 @@
 * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-module html {
+module webcl {
 	interface [
 		Conditional=WEBCL,
 	] WebCLProgram {
-	[StrictTypeChecking, Custom]  void getProgramInfo (in long programInfo) raises(DOMException);
-	[StrictTypeChecking, Custom]  void  getProgramBuildInfo(in WebCLDeviceID deviceId, 
+	[StrictTypeChecking, Custom]  void getInfo (in long programInfo) raises(DOMException);
+	[StrictTypeChecking, Custom]  void  getBuildInfo(in WebCLDevice device, 
 		in long paramName) raises(DOMException);
 	WebCLKernel createKernel(in DOMString kernelName) raises(DOMException);
 				
 	WebCLKernelList createKernelsInProgram() raises(DOMException);
 					
-	void buildProgram(   in WebCLDeviceID deviceId,
+	void buildProgram(   in WebCLDevice device,
 						  in long options,
 						  in long pfn,
 						  in long userData) raises(DOMException);
-	void buildProgram(	  in WebCLDeviceIDList deviceIds,
+	void buildProgram(	  in WebCLDeviceList devices,
 						  in long options,
 						  in long pfn,
 						  in long userData) raises(DOMException);
 	void buildProgram(	in long options, 
 					in long pfnNotify, 
 					in long userData) raises(DOMException);
-	void releaseCLResource() raises(DOMException);
-	void retainCLResource() raises(DOMException);
+	void releaseCL() raises(DOMException);
 	
 	
 	};

@@ -28,18 +28,18 @@
 #ifndef WebCLProgram_h
 #define WebCLProgram_h
 
-#include <Opencl/opencl.h>
+#include <OpenCL/opencl.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <PlatformString.h>
 #include "ExceptionCode.h"
 
-#include "WebCLDeviceID.h"
-#include "WebCLDeviceIDList.h"
+#include "WebCLDevice.h"
+#include "WebCLDeviceList.h"
 
 namespace WebCore {
 
-class WebCLComputeContext;
+class WebCL;
 class WebCLGetInfo;
 class WebCLKernel;
 class WebCLKernelList;
@@ -47,28 +47,27 @@ class WebCLKernelList;
 class WebCLProgram : public RefCounted<WebCLProgram> {
 public:
 	virtual ~WebCLProgram();
-	static PassRefPtr<WebCLProgram> create(WebCLComputeContext*, cl_program);
-	WebCLGetInfo getProgramInfo(int, ExceptionCode&);
-	WebCLGetInfo getProgramBuildInfo(WebCLDeviceID*, int, ExceptionCode&);
+	static PassRefPtr<WebCLProgram> create(WebCL*, cl_program);
+	WebCLGetInfo getInfo(int, ExceptionCode&);
+	WebCLGetInfo getBuildInfo(WebCLDevice*, int, ExceptionCode&);
 	PassRefPtr<WebCLKernel> createKernel(const String&, ExceptionCode&);
 	void buildProgram(int, int, int, ExceptionCode&);
-	void buildProgram(WebCLDeviceID*,int, int, int, ExceptionCode&);
-	void buildProgram(WebCLDeviceIDList*,int, int, int, ExceptionCode&);
-	void releaseCLResource( ExceptionCode&);
-	void retainCLResource( ExceptionCode&);
-	void setDeviceID(RefPtr<WebCLDeviceID>);
+	void buildProgram(WebCLDevice*,int, int, int, ExceptionCode&);
+	void buildProgram(WebCLDeviceList*,int, int, int, ExceptionCode&);
+	void releaseCL( ExceptionCode&);
+	void setDevice(RefPtr<WebCLDevice>);
 	PassRefPtr<WebCLKernelList> createKernelsInProgram( ExceptionCode&); 
 	cl_program getCLProgram();
 
 private:
-	WebCLProgram(WebCLComputeContext*, cl_program);
-	WebCLComputeContext* m_context;
+	WebCLProgram(WebCL*, cl_program);
+	WebCL* m_context;
 	cl_program m_cl_program;
 	long m_num_programs;
 	long m_num_kernels;
 	Vector<RefPtr<WebCLProgram> > m_program_list;
 	Vector<RefPtr<WebCLKernel> > m_kernel_list;
-	RefPtr<WebCLDeviceID> m_device_id;
+	RefPtr<WebCLDevice> m_device_id;
 	
 };
 

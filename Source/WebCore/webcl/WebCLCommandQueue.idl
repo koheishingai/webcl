@@ -25,24 +25,18 @@
 * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-module html {
+module webcl {
 	interface [
 		Conditional=WEBCL,
 	] WebCLCommandQueue {
-	[StrictTypeChecking, Custom]  void getCommandQueueInfo(in long queuenfo) raises(DOMException);
-	WebCLEvent enqueueWriteBuffer(in WebCLMem bufferId, 
+	[StrictTypeChecking, Custom]  void getInfo(in long queuenfo) raises(DOMException);
+	void enqueueWriteBuffer(in WebCLMem bufferId, 
 				in boolean blockingWrite, 
 				in long offset, 
 				in long bufferSize, 
-				in Float32Array ptr, 
-				in long eventWaitList) raises(DOMException);
-
-	WebCLEvent enqueueWriteBuffer(in WebCLMem bufferId, 
-				in boolean blockingWrite, 
-				in long offset, 
-				in long bufferSize, 
-				in Int32Array ptr, 
-				in long eventWaitList) raises(DOMException);
+				in ArrayBufferView ptr,
+				in [Optional] WebCLEventList eventWaitList,
+                in [Optional] WebCLEvent event) raises(DOMException);
 
 	WebCLEvent enqueueWriteBuffer(in WebCLMem bufferId, 
 				in boolean blockingWrite, 
@@ -50,19 +44,14 @@ module html {
 				in long bufferSize, 
 				in ImageData ptr, 
 				in long eventWaitList) raises(DOMException);
-	//WebCLEvent enqueueWriteBuffer(in WebCLMem bufferId, 
-	//			in boolean blockingWrite, 
-	//			in long offset, 
-	//			in long bufferSize, 
-	//			in Uint8Array ptr, 
-	//			in long eventWaitList) raises(DOMException);
 
-	WebCLEvent enqueueReadBuffer(in WebCLMem bufferId, 
+	void enqueueReadBuffer(in WebCLMem bufferId, 
 				in boolean blockingRead, 
 				in long offset, 
 				in long bufferSize, 
-				in Float32Array ptr, 
-				in long eventWaitList) raises(DOMException);
+				in ArrayBufferView ptr, 
+				in [Optional] WebCLEventList eventWaitList,
+                in [Optional] WebCLEvent event) raises(DOMException);
 	
 	WebCLEvent enqueueReadBuffer(in WebCLMem bufferId, 
 				in boolean blockingRead, 
@@ -71,45 +60,16 @@ module html {
 				in ImageData ptr, 
 				in long eventWaitList) raises(DOMException);
 
-	//WebCLEvent enqueueReadBuffer(in WebCLMem bufferId,
-	//			in boolean blockingRead,
-	//			in long offset,
-	//			in long bufferSize,
-	//			in HTMLCanvasElement canvasElement,
-	//			in long eventWaitList) raises(DOMException);		
+	
+	void enqueueNDRangeKernel(in WebCLKernel kernel,
+				in Int32Array offsets, in Int32Array globalWorkSize,
+				in Int32Array localWorkSize, in [Optional] WebCLEventList eventWaitList, 
+				in [Optional] WebCLEvent event)  raises(DOMException);		
 
-		WebCLEvent enqueueReadBuffer(in WebCLMem bufferId, 
-				in boolean blockingRead, 
-				in long offset, 
-				in long bufferSize, 
-				in Int32Array ptr, 
-				in long eventWaitList) raises(DOMException);
-
-		//void enqueueReadBuffer(in WebCLMem bufferId, 
-		//						in boolean blockingRead, 
-		//						in long offset, 
-		//						in long bufferSize, 
-		//						in Uint8Array ptr, 
-		//						in long eventWaitList) raises(DOMException);				
-
-		//void enqueueNDRangeKernel(in WebCLKernel kernelId, 
-		//							in unsigned long workDim, 
-		//							in unsigned long globalWorkOffset, 
-		//							in unsigned long globalWorkSize, 
-		//							in unsigned long localWorkSize, 
-		//							in long eventWaitList) raises(DOMException);
-
-		WebCLEvent enqueueNDRangeKernel(in WebCLKernel kernelId,
-				in unsigned long workDim,
-				in unsigned long globalWorkOffset,
-				in Int32Array globalWorkSize,
-				in Int32Array localWorkSize,
-				in long eventWaitList)  raises(DOMException);
-
-		[Custom] void finish(in WebCLFinishCallback notifyCallback, in long userData) raises(DOMException);
+		//[Custom] void finish(in WebCLFinishCallback notifyCallback, in long userData) raises(DOMException);
+		[Custom] void finish() raises(DOMException);
 		void flush()  raises(DOMException);
-		void retainCLResource() raises(DOMException);					
-		void releaseCLResource() raises(DOMException);
+		void releaseCL() raises(DOMException);
 		WebCLEvent enqueueWriteImage(in WebCLMem image, 
 				in boolean blockingWrite, 
 				in Int32Array origin, 
@@ -125,10 +85,12 @@ module html {
 		//		in long eventWaitList) raises(DOMException);
 
 		void enqueueAcquireGLObjects(in WebCLMem MemObjects,
-				in long eventWaitList) raises(DOMException);
+				in [Optional] WebCLEventList eventWaitList,  
+                in [Optional] WebCLEvent event) raises(DOMException);
 
 		void enqueueReleaseGLObjects(in WebCLMem memObjects,
-				in long eventWaitList) raises(DOMException);
+				in [Optional] WebCLEventList eventWaitList,
+                in [Optional] WebCLEvent event) raises(DOMException);
 
 		void enqueueCopyBuffer(in WebCLMem srcBuffer,
 				in WebCLMem dstBuffer,

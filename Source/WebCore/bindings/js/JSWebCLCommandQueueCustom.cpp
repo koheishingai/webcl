@@ -49,12 +49,11 @@
 #include <wtf/FastMalloc.h>
 #include <runtime/JSFunction.h>
 #include "WebCLProgram.h"
-#include "WebCLDeviceID.h"
+#include "WebCLDevice.h"
 #include "WebCLGetInfo.h"
-#include "JSWebCLDeviceID.h"
-#include "JSCustomWebCLFinishCallback.h"
+#include "JSWebCLDevice.h"
 #include "JSWebCLCommandQueue.h"
-#include "JSWebCLComputeContextCustom.h"
+#include "JSWebCLCustom.h"
 #include <stdio.h>
 
 using namespace JSC;
@@ -62,24 +61,7 @@ using namespace std;
 
 namespace WebCore { 
 
-
-
-static PassRefPtr<WebCLFinishCallback> createFinishCallback(ExecState* exec, JSDOMGlobalObject* globalObject, JSValue value)
-{
-	//if (!value.inherits(&JSFunction::info)) {
-	//	setDOMException(exec, TYPE_MISMATCH_ERR);
-	//	return 0;
-	//}
-	if (value.isUndefinedOrNull())
-	{
-		setDOMException(exec, TYPE_MISMATCH_ERR);
-		return 0;
-	}
-	JSObject* object = asObject(value);
-	return JSCustomWebCLFinishCallback::create(object, globalObject);
-}
-
-JSValue JSWebCLCommandQueue::getCommandQueueInfo(JSC::ExecState* exec)
+JSValue JSWebCLCommandQueue::getInfo(JSC::ExecState* exec)
 {
 	if (exec->argumentCount() != 1)
 		return throwSyntaxError(exec);
@@ -91,7 +73,7 @@ JSValue JSWebCLCommandQueue::getCommandQueueInfo(JSC::ExecState* exec)
 	unsigned queue_info  = exec->argument(0).toInt32(exec);
 	if (exec->hadException())
 		return jsUndefined();
-	WebCLGetInfo info = queue->getCommandQueueInfo(queue_info, ec);
+	WebCLGetInfo info = queue->getInfo(queue_info, ec);
 	if (ec) {
 		setDOMException(exec, ec);
 		return jsUndefined();
@@ -100,6 +82,7 @@ JSValue JSWebCLCommandQueue::getCommandQueueInfo(JSC::ExecState* exec)
 }
 JSValue JSWebCLCommandQueue::finish(ExecState* exec)
 {
+	/*
 	if (exec->argumentCount() != 2)
 		return throwSyntaxError(exec);
 
@@ -124,7 +107,15 @@ JSValue JSWebCLCommandQueue::finish(ExecState* exec)
 		return jsUndefined();
 	}
 	return jsUndefined();
-
+	*/
+	ExceptionCode ec = 0;
+	WebCLCommandQueue*  queue = static_cast<WebCLCommandQueue*>(impl());
+	queue->finish(ec);
+	if (ec) {
+		setDOMException(exec, ec);
+		return jsUndefined();
+	}
+	return jsUndefined();
 }
 } // namespace WebCore
 

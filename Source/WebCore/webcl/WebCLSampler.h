@@ -28,7 +28,7 @@
 #ifndef WebCLSampler_h
 #define WebCLSampler_h
 
-#include <Opencl/opencl.h>
+#include <OpenCL/opencl.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <PlatformString.h>
@@ -37,18 +37,17 @@
 
 namespace WebCore {
 
-class WebCLComputeContext;
+class WebCL;
 
 class WebCLSampler : public RefCounted<WebCLSampler> {
 public:
 	virtual ~WebCLSampler();
-	static PassRefPtr<WebCLSampler> create(WebCLComputeContext*, cl_sampler);
-	WebCLGetInfo getSamplerInfo(cl_sampler_info, ExceptionCode&);
-	void releaseCLResource( ExceptionCode&);
-	void retainCLResource(ExceptionCode&);
+	static PassRefPtr<WebCLSampler> create(WebCL*, cl_sampler);
+	WebCLGetInfo getInfo(cl_sampler_info, ExceptionCode&);
+	void releaseCL( ExceptionCode&);
 private:
-	WebCLSampler(WebCLComputeContext*, cl_sampler);	
-	WebCLComputeContext* m_context;
+	WebCLSampler(WebCL*, cl_sampler);	
+	WebCL* m_context;
 	cl_sampler m_cl_sampler;
 	long m_num_samplers;
 	Vector<RefPtr<WebCLSampler> > m_sampler_list;

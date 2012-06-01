@@ -37,6 +37,8 @@
 #include "WebCLProgram.h"
 #include "WebCLContext.h"
 #include "WebCLCommandQueue.h"
+#include "WebCLDeviceList.h"
+#include "WebCLDevice.h"
 
 
 #include <wtf/PassRefPtr.h>
@@ -72,23 +74,27 @@ namespace WebCore {
 				kTypeWebCLProgram,
 				kTypeWebCLContext,
 				kTypeWebCLCommandQueue,
+				kTypeWebCLDevice,
+				kTypeWebCLDeviceList
 			};
 
-			WebCLGetInfo(bool value);
+			explicit WebCLGetInfo(bool value);
 			WebCLGetInfo(const bool* value, int size);
-			WebCLGetInfo(float value);
-			WebCLGetInfo(int value);
+			explicit WebCLGetInfo(float value);
+			explicit WebCLGetInfo(int value);
 			WebCLGetInfo();
-			WebCLGetInfo(const String& value);
-			WebCLGetInfo(unsigned int value); 
-			WebCLGetInfo(unsigned long value);   	
-			WebCLGetInfo(void* value);
-			WebCLGetInfo(PassRefPtr<Float32Array> value);
-			WebCLGetInfo(PassRefPtr<Int32Array> value);
-			WebCLGetInfo(PassRefPtr<Int8Array> value);
-			WebCLGetInfo(PassRefPtr<WebCLProgram> value);
-			WebCLGetInfo(PassRefPtr<WebCLContext> value);
-			WebCLGetInfo(PassRefPtr<WebCLCommandQueue> value);
+			explicit WebCLGetInfo(const String& value);
+			explicit WebCLGetInfo(unsigned int value); 
+			explicit WebCLGetInfo(unsigned long value);   	
+			explicit WebCLGetInfo(void* value);
+			explicit WebCLGetInfo(PassRefPtr<Float32Array> value);
+			explicit WebCLGetInfo(PassRefPtr<Int32Array> value);
+			explicit WebCLGetInfo(PassRefPtr<Int8Array> value);
+			explicit WebCLGetInfo(PassRefPtr<WebCLProgram> value);
+			explicit WebCLGetInfo(PassRefPtr<WebCLContext> value);
+			explicit WebCLGetInfo(PassRefPtr<WebCLCommandQueue> value);
+			explicit WebCLGetInfo(PassRefPtr<WebCLDeviceList> value);
+			explicit WebCLGetInfo(PassRefPtr<WebCLDevice> value);
 
 			virtual ~WebCLGetInfo();
 			Type getType() const;
@@ -106,6 +112,8 @@ namespace WebCore {
 			PassRefPtr<WebCLProgram> getWebCLProgram() const;
 			PassRefPtr<WebCLContext> getWebCLContext() const;
 			PassRefPtr<WebCLCommandQueue> getWebCLCommandQueue() const;
+			PassRefPtr<WebCLDevice> getWebCLDevice() const;
+			PassRefPtr<WebCLDeviceList> getWebCLDeviceList() const;
 
 		private:
 			Type m_type;
@@ -123,8 +131,10 @@ namespace WebCore {
 			RefPtr<WebCLProgram> m_webclProgram;
 			RefPtr<WebCLContext> m_webclContext;
 			RefPtr<WebCLCommandQueue> m_webCLCommandQueue;
+			RefPtr<WebCLDevice> m_webCLDevice;
+			RefPtr<WebCLDeviceList> m_webCLDeviceList;
 	};
 
-} // namespace WebCoren
+} // namespace WebCore
 
 #endif // WebCLGetInfo_h

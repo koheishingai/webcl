@@ -28,25 +28,27 @@
 #ifndef WebCLImage_h
 #define WebCLImage_h
 
-#include <Opencl/opencl.h>
+#include <OpenCL/opencl.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
+#include "WebCLException.h"
 
 namespace WebCore {
 
-class WebCLComputeContext;
+class WebCL;
 
 class WebCLImage : public RefCounted<WebCLImage> {
 public:
 	virtual ~WebCLImage();
-	static PassRefPtr<WebCLImage> create(WebCLComputeContext*, cl_mem, bool);
+	static PassRefPtr<WebCLImage> create(WebCL*, cl_mem, bool);
 	cl_mem getCLImage();
 	bool isShared() { return m_shared; }
+	int getGLtextureInfo(int, ExceptionCode&);
 
 private:
-	WebCLImage(WebCLComputeContext*, cl_mem, bool);
+	WebCLImage(WebCL*, cl_mem, bool);
 	
-	WebCLComputeContext* m_context;
+	WebCL* m_context;
 	cl_mem m_cl_mem;
 	bool m_shared;
 };

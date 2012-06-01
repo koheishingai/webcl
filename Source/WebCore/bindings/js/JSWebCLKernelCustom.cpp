@@ -49,15 +49,15 @@
 #include <wtf/FastMalloc.h>
 #include <runtime/JSFunction.h>
 #include "WebCLKernel.h"
-#include "WebCLDeviceID.h"
+#include "WebCLDevice.h"
 #include "WebCLKernelTypes.h"
 #include <wtf/Float32Array.h>
 #include "WebCLGetInfo.h"
 #include <wtf/Int32Array.h>
 #include "ScriptValue.h"
-#include "JSWebCLDeviceID.h"
+#include "JSWebCLDevice.h"
 #include "JSWebCLKernel.h"
-#include "JSWebCLComputeContextCustom.h"
+#include "JSWebCLCustom.h"
 #include <stdio.h>
 
 using namespace JSC;
@@ -67,7 +67,7 @@ namespace WebCore {
 
 
 
-JSValue JSWebCLKernel::getKernelInfo(JSC::ExecState* exec)
+JSValue JSWebCLKernel::getInfo(JSC::ExecState* exec)
 {
 	if (exec->argumentCount() != 1)
 		return throwSyntaxError(exec);
@@ -79,7 +79,7 @@ JSValue JSWebCLKernel::getKernelInfo(JSC::ExecState* exec)
 	unsigned kernel_info  = exec->argument(0).toInt32(exec);
 	if (exec->hadException())
 		return jsUndefined();
-	WebCLGetInfo info = kernel->getKernelInfo(kernel_info, ec);
+	WebCLGetInfo info = kernel->getInfo(kernel_info, ec);
 	if (ec) {
 		setDOMException(exec, ec);
 		return jsUndefined();
@@ -87,20 +87,20 @@ JSValue JSWebCLKernel::getKernelInfo(JSC::ExecState* exec)
 	return toJS(exec, globalObject(), info);
 }
 
-JSValue JSWebCLKernel::getKernelWorkGroupInfo(JSC::ExecState* exec)
+JSValue JSWebCLKernel::getWorkGroupInfo(JSC::ExecState* exec)
 {
 	if (exec->argumentCount() != 2)
 		return throwSyntaxError(exec);
 
 	ExceptionCode ec = 0;
 	WebCLKernel* kernel = static_cast<WebCLKernel*>(impl());
-	WebCLDeviceID* device  = toWebCLDeviceID(exec->argument(0));
+	WebCLDevice* device  = toWebCLDevice(exec->argument(0));
 	if (exec->hadException())
 		return jsUndefined();
 	unsigned work_info  = exec->argument(1).toInt32(exec);
 	if (exec->hadException())
 		return jsUndefined();
-	WebCLGetInfo info = kernel->getKernelWorkGroupInfo(device,work_info, ec);
+	WebCLGetInfo info = kernel->getWorkGroupInfo(device,work_info, ec);
 	if (ec) {
 		setDOMException(exec, ec);
 		return jsUndefined();

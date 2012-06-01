@@ -33,26 +33,32 @@
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
 
+#include "WebCLFinishCallback.h"
 #include "WebCLGetInfo.h"
 
 namespace WebCore {
 
-class WebCLComputeContext;
+class WebCL;
 
 class WebCLEvent : public RefCounted<WebCLEvent> {
 public:
         virtual ~WebCLEvent();
-        static PassRefPtr<WebCLEvent> create(WebCLComputeContext*, cl_event);
-		WebCLGetInfo getEventInfo(int, ExceptionCode&);
-		WebCLGetInfo getEventProfilingInfo(int, ExceptionCode&);
+        static PassRefPtr<WebCLEvent> create(WebCL*, cl_event);
+		WebCLGetInfo getInfo(int, ExceptionCode&);
+		WebCLGetInfo getProfilingInfo(int, ExceptionCode&);
+		void setEventCallback(int, PassRefPtr<WebCLFinishCallback>, int , ExceptionCode&);
 		void setUserEventStatus (int, ExceptionCode&);
-		void releaseCLResource( ExceptionCode&);
-		void retainCLResource( ExceptionCode&);
+		void releaseCL( ExceptionCode&);
         cl_event getCLEvent();
+		RefPtr<WebCLFinishCallback> m_finishCallback;
+		WebCL*  getContext();
+		int b;
 		
 private:
-        WebCLEvent(WebCLComputeContext*, cl_event);
-        WebCLComputeContext* m_context;
+        WebCLEvent(WebCL*, cl_event);
+		//	void CL_CALLBACK execComplete(cl_event ev, cl_int event_status, void* user_data);
+		//static 	void  execComplete(cl_event ev, cl_int event_status, void* this_pointer);
+        WebCL* m_context;
 		Vector<RefPtr<WebCLEvent> > m_event_list;
         cl_event m_cl_Event;
 		long m_num_events;

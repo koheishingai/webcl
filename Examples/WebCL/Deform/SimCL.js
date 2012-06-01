@@ -27,10 +27,10 @@
 
 // local OpenCL info
 //
-var platform_ids;                           // array of OpenCL platform ids
-var platform_id;                            // OpenCL platform id
-var device_ids;                             // array of OpenCL device ids
-var device_id;                              // OpenCL device id
+var platforms;                           // array of OpenCL platform ids
+var platform;                            // OpenCL platform id
+var devices;                             // array of OpenCL device ids
+var device;                              // OpenCL device id
 var context;                                // OpenCL context
 var queue;                                  // OpenCL command queue
 var program;                                // OpenCL program
@@ -55,12 +55,12 @@ function getKernel(id) {
 function InitCL() {
 
 	try  {
-		if(typeof(WebCLComputeContext) === "undefined") {
-			console.error("WebCLComputeContext is yet to be defined");
+		if(typeof(WebCL) === "undefined") {
+			console.error("WebCL is yet to be defined");
 			return null;
 		}
 
-		var cl = new WebCLComputeContext();
+		var cl = new WebCL();
 
 		if(cl === null) {
 			console.error("Failed to create WebCL context");
@@ -69,31 +69,30 @@ function InitCL() {
 
 		// Select a compute device
 		//
-		platform_ids = cl.getPlatformIDs();
+		platforms = cl.getPlatforms();
 
-		if(platform_ids.length === 0) {
+		if(platforms.length === 0) {
 			console.error("No platforms available");
 			return null;
 		}
-		platform_id = platform_ids[0];
+		platform = platforms[0];
 
 		// Select a compute device
 		//
-		device_ids = platform_id.getDeviceIDs(cl.DEVICE_TYPE_GPU);
-		if(device_ids.length === 0) {
+		devices = platform.getDevices(cl.DEVICE_TYPE_GPU);
+		if(devices.length === 0) {
 			console.error("No devices available");
 			return null;
 		}
-		device_id = device_ids[0];
+		device = devices[0];
 
 		// Create a compute context
 		//
-		//context = cl.createContext(null, device_id, null, null);
 		context = cl.createSharedContext(cl.DEVICE_TYPE_GPU, null, null);
 
 		// Create a command queue
 		//
-		queue = context.createCommandQueue(device_id, null);
+		queue = context.createCommandQueue(devices, null);
 
 		// Create the compute program from the source buffer
 		//
@@ -103,7 +102,7 @@ function InitCL() {
 			return null;
 		}
 
-		program = context.createProgramWithSource(kernelSource);
+		program = context.createProgram(kernelSource);
 
 		// Build the program executable
 		//
@@ -161,7 +160,7 @@ function InitCLBuffers(cl) {
 
 		// Get the maximum work group size for executing the kernel on the device
 		//
-		var workGroupSize = kernel.getKernelWorkGroupInfo(device_id, cl.KERNEL_WORK_GROUP_SIZE);
+		var workGroupSize = kernel.getWorkGroupInfo(device, cl.KERNEL_WORK_GROUP_SIZE);
 
 		var groupSize = 4;
 		var uiSplitCount = Math.ceil(Math.sqrt(userData.nVertices));
@@ -180,7 +179,8 @@ function InitCLBuffers(cl) {
 
 		globalWorkSize[0] = workGroupSize/2; //uiSplitCount; //divide_up(uiSplitCount, uiActive) * uiActive;
 		globalWorkSize[1] = workGroupSize/2; //uiSplitCount; //divide_up(uiSplitCount, uiQueued) * uiQueued;
-
+		
+	
 		//localWorkSize[0] = 64; //uiActive;
 		//localWorkSize[1] = 4; //uiQueued;
 
@@ -197,7 +197,7 @@ function InitCLBuffers(cl) {
 		queue.enqueueWriteBuffer(initPosBuffer, true, 0, bufferSize, userData.initPos, null);
 
 		//queue.finish(null, null);
-		queue.finish(finishCB,0);
+		queue.finish();
 
 	}
 	catch (e)
@@ -207,9 +207,6 @@ function InitCLBuffers(cl) {
 	}
 }
 
-function finishCB()
-{
-}
 
 function SimulateCL(cl)
 {
@@ -217,8 +214,10 @@ function SimulateCL(cl)
 		if(cl === null) return;
 
 		if(GLCL_SHARE_MODE) {
-			queue.enqueueAcquireGLObjects(curPosBuffer, null);
-			queue.enqueueAcquireGLObjects(curNorBuffer, null);
+			//queue.enqueueAcquireGLObjects(curPosBuffer, null);
+			//queue.enqueueAcquireGLObjects(curPosBuffer, null);
+			queue.enqueueAcquireGLObjects(curNorBuffer);
+			queue.enqueueAcquireGLObjects(curNorBuffer);
 		}
 
 		var dimx = 16;
@@ -237,25 +236,17 @@ function SimulateCL(cl)
 		kernel.setKernelArg(10, userData.octaves, cl.KERNEL_ARG_FLOAT);
 		kernel.setKernelArg(11, userData.roughness, cl.KERNEL_ARG_FLOAT);
 		kernel.setKernelArg(12, userData.nVertices, cl.KERNEL_ARG_INT);
+		
+		queue.enqueueNDRangeKernel(kernel, new Int32Array(0,0), globalWorkSize, localWorkSize, null);
+		//queue.enqueueNDRangeKernel(kernel,null, globalWorkSize, null, null);
 
-		queue.enqueueNDRangeKernel(kernel, 2, 0, globalWorkSize, localWorkSize, null);
+		queue.finish();
 
-		queue.finish(GetResults, cl);
-
-	}
-	catch (e)
-	{
-		console.error("Deform Demo Failed ; Message: "+ e.message);
-		test.showFailure();
-	}
-}   
-
-function GetResults(cl)
-{ 
-	try {		
 		if(GLCL_SHARE_MODE) {
-			queue.enqueueReleaseGLObjects(curPosBuffer, null);
-			queue.enqueueReleaseGLObjects(curNorBuffer, null);
+			//queue.enqueueReleaseGLObjects(curPosBuffer, null);
+			//queue.enqueueReleaseGLObjects(curNorBuffer, null);
+			queue.enqueueReleaseGLObjects(curPosBuffer);
+			queue.enqueueReleaseGLObjects(curNorBuffer);
 		}    
 		else {
 			var bufferSize = userData.nVertices * NUM_VERTEX_COMPONENTS * Float32Array.BYTES_PER_ELEMENT;

@@ -30,7 +30,7 @@
 #if ENABLE(WEBCL)
 
 #include "WebCLMem.h"
-#include "WebCLComputeContext.h"
+#include "WebCL.h"
 
 namespace WebCore {
 
@@ -38,19 +38,19 @@ WebCLMem::~WebCLMem()
 {
 }
 
-PassRefPtr<WebCLMem> WebCLMem::create(WebCLComputeContext* compute_context, 
+PassRefPtr<WebCLMem> WebCLMem::create(WebCL* compute_context, 
 	cl_mem mem, bool is_shared = false)
 {
 	return adoptRef(new WebCLMem(compute_context, mem, is_shared));
 }
 
-WebCLMem::WebCLMem(WebCLComputeContext* compute_context, cl_mem mem, bool is_shared) 
+WebCLMem::WebCLMem(WebCL* compute_context, cl_mem mem, bool is_shared) 
 		: m_context(compute_context), m_cl_mem(mem), m_shared(is_shared)
 {
 	m_num_mems = 0;
 }
 
-WebCLGetInfo WebCLMem::getMemObjectInfo(int param_name, ExceptionCode& ec)
+WebCLGetInfo WebCLMem::getInfo(int param_name, ExceptionCode& ec)
 {
 	cl_int err =0;
 	cl_uint uint_units = 0;
@@ -60,33 +60,33 @@ WebCLGetInfo WebCLMem::getMemObjectInfo(int param_name, ExceptionCode& ec)
 	cl_mem_object_type mem_type = 0;
 	void* mem_ptr = NULL; 
 	if (m_cl_mem == NULL) {
-		ec = WebCLComputeContext::INVALID_MEM_OBJECT;
+		ec = WebCL::INVALID_MEM_OBJECT;
 		printf("Error: Invalid CLMem\n");
 		return WebCLGetInfo();
 	}
 	switch(param_name)
 	{   	
-		case WebCLComputeContext::MEM_MAP_COUNT:
+		case WebCL::MEM_MAP_COUNT:
 			err=clGetMemObjectInfo(m_cl_mem, CL_MEM_MAP_COUNT , sizeof(cl_uint), &uint_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));	
 			break;
-		case WebCLComputeContext::MEM_REFERENCE_COUNT:
+		case WebCL::MEM_REFERENCE_COUNT:
 			err=clGetMemObjectInfo(m_cl_mem, CL_MEM_REFERENCE_COUNT , sizeof(cl_uint), &uint_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(uint_units));	
 			break;
-		case WebCLComputeContext::MEM_SIZE:
+		case WebCL::MEM_SIZE:
 			err=clGetMemObjectInfo(m_cl_mem, CL_MEM_SIZE, sizeof(size_t), &sizet_units, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(sizet_units));
 			break;
-		case WebCLComputeContext::MEM_TYPE:			
+		case WebCL::MEM_TYPE:			
 			err=clGetMemObjectInfo(m_cl_mem, CL_MEM_TYPE, sizeof(cl_mem_object_type), &mem_type, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(static_cast<unsigned int>(mem_type));
 			break;
-		case WebCLComputeContext::MEM_CONTEXT:			
+		case WebCL::MEM_CONTEXT:			
 			err=clGetMemObjectInfo(m_cl_mem, CL_MEM_CONTEXT, sizeof(cl_context), &cl_context_id, NULL);
 			contextObj = WebCLContext::create(m_context, cl_context_id);
 			if(contextObj == NULL)
@@ -97,7 +97,7 @@ WebCLGetInfo WebCLMem::getMemObjectInfo(int param_name, ExceptionCode& ec)
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(PassRefPtr<WebCLContext>(contextObj));
 			break;
-		case WebCLComputeContext::MEM_HOST_PTR:			
+		case WebCL::MEM_HOST_PTR:			
 			err=clGetMemObjectInfo(m_cl_mem, CL_MEM_HOST_PTR, sizeof(mem_ptr), &mem_ptr, NULL);
 			if (err == CL_SUCCESS)
 				return WebCLGetInfo(mem_ptr);
@@ -108,79 +108,41 @@ WebCLGetInfo WebCLMem::getMemObjectInfo(int param_name, ExceptionCode& ec)
 	}
 	switch (err) {
 		case CL_INVALID_VALUE:
-			ec = WebCLComputeContext::INVALID_VALUE;
+			ec = WebCL::INVALID_VALUE;
 			printf("Error: CL_INVALID_VALUE   \n");
 			break;
 			// TODO (siba samal) Handle CL_INVALID_D3D10_RESOURCE_KHR Case
 			//	case CL_INVALID_D
-			//	ec = WebCLComputeContext::INVALID_D;
+			//	ec = WebCL::INVALID_D;
 			//	printf("CL_INVALID_D3D10_RESOURCE_KHR    \n");
 			//	break; 
 		case CL_INVALID_MEM_OBJECT:
-			ec = WebCLComputeContext::INVALID_MEM_OBJECT;
+			ec = WebCL::INVALID_MEM_OBJECT;
 			printf("Error: CL_INVALID_MEM_OBJECT    \n");
 			break;
 		case CL_OUT_OF_RESOURCES:
-			ec = WebCLComputeContext::OUT_OF_RESOURCES;
+			ec = WebCL::OUT_OF_RESOURCES;
 			printf("Error: CL_OUT_OF_RESOURCES   \n");
 			break;
 		case CL_OUT_OF_HOST_MEMORY:
-			ec = WebCLComputeContext::OUT_OF_HOST_MEMORY;
+			ec = WebCL::OUT_OF_HOST_MEMORY;
 			printf("Error: CL_OUT_OF_HOST_MEMORY  \n");
 			break;
 		default:
-			ec = WebCLComputeContext::FAILURE;
+			ec = WebCL::FAILURE;
 			printf("Error: Invaild Error Type\n");
 			break;
 	}				
 	return WebCLGetInfo();
 }
 
-void WebCLMem::retainCLResource( ExceptionCode& ec)
+
+void WebCLMem::releaseCL( ExceptionCode& ec)
 {
 	cl_int err = 0;
 	if (m_cl_mem == NULL) {
 		printf("Error: Invalid CLMem\n");
-		ec = WebCLComputeContext::FAILURE;
-		return;
-	}
-
-	err = clRetainMemObject(m_cl_mem);
-	if (err != CL_SUCCESS) {
-		switch (err) {
-			case CL_INVALID_MEM_OBJECT  :
-				printf("Error: CL_INVALID_MEM_OBJECT\n");
-				ec = WebCLComputeContext::INVALID_MEM_OBJECT ;
-				break;
-			case CL_OUT_OF_RESOURCES  :
-				printf("Error: CL_OUT_OF_RESOURCES\n");
-				ec = WebCLComputeContext::OUT_OF_RESOURCES ;
-				break;
-			case CL_OUT_OF_HOST_MEMORY  :
-				printf("Error: CL_OUT_OF_HOST_MEMORY\n");
-				ec = WebCLComputeContext::OUT_OF_HOST_MEMORY ;
-				break;
-			default:
-				printf("Error: Invaild Error Type\n");
-				ec = WebCLComputeContext::FAILURE;
-				break;
-		}
-	} else {
-		// TODO - Check if has to be really added
-		RefPtr<WebCLMem> o = WebCLMem::create(m_context, m_cl_mem,false);
-		m_mem_list.append(o);
-		m_num_mems++;
-		return;
-	}
-	return;
-}
-
-void WebCLMem::releaseCLResource( ExceptionCode& ec)
-{
-	cl_int err = 0;
-	if (m_cl_mem == NULL) {
-		printf("Error: Invalid CLMem\n");
-		ec = WebCLComputeContext::FAILURE;
+		ec = WebCL::FAILURE;
 		return;
 	}
 	err = clReleaseMemObject(m_cl_mem);
@@ -188,19 +150,19 @@ void WebCLMem::releaseCLResource( ExceptionCode& ec)
 		switch (err) {
 			case CL_INVALID_MEM_OBJECT:
 				printf("Error: CL_INVALID_MEM_OBJECT \n");
-				ec = WebCLComputeContext::INVALID_MEM_OBJECT;
+				ec = WebCL::INVALID_MEM_OBJECT;
 				break;
 			case CL_OUT_OF_RESOURCES:
 				printf("Error: CL_OUT_OF_RESOURCES  \n");
-				ec = WebCLComputeContext::OUT_OF_RESOURCES ;
+				ec = WebCL::OUT_OF_RESOURCES ;
 				break;
 			case CL_OUT_OF_HOST_MEMORY:
 				printf("Error: CL_OUT_OF_HOST_MEMORY  \n");
-				ec = WebCLComputeContext::OUT_OF_HOST_MEMORY ;
+				ec = WebCL::OUT_OF_HOST_MEMORY ;
 				break;
 			default:
 				printf("Error: Invaild Error Type\n");
-				ec = WebCLComputeContext::FAILURE;
+				ec = WebCL::FAILURE;
 				break;
 		}
 	} else {

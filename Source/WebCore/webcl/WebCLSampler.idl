@@ -25,12 +25,11 @@
 * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-module html {
+module webcl {
 	interface [
 		Conditional=WEBCL,
 	] WebCLSampler {
-		[StrictTypeChecking, Custom] void getSamplerInfo(in long paramName) raises(DOMException);
-		void releaseCLResource() raises(DOMException);			
-		void retainCLResource() raises(DOMException);
+		[StrictTypeChecking, Custom] void getInfo(in long paramName) raises(DOMException);
+		void releaseCL() raises(DOMException);			
 	};
 }

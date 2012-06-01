@@ -28,10 +28,12 @@
 #ifndef WebCLCommandQueue_h
 #define WebCLCommandQueue_h
 
-#include <Opencl/opencl.h>
+#include <OpenCL/opencl.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
+#include <wtf/ArrayBufferView.h>
+#include <wtf/Uint8ClampedArray.h>
 
 #include "WebCLGetInfo.h"
 #include "WebCLFinishCallback.h"
@@ -45,46 +47,77 @@
 
 namespace WebCore {
 
-class WebCLComputeContext;
+class WebCL;
 class WebCLEventList;
 
 class WebCLCommandQueue : public RefCounted<WebCLCommandQueue> {
 public:
 	virtual ~WebCLCommandQueue();
-	static PassRefPtr<WebCLCommandQueue> create(WebCLComputeContext*, cl_command_queue);
-	WebCLGetInfo getCommandQueueInfo(int, ExceptionCode&);
+	static PassRefPtr<WebCLCommandQueue> create(WebCL*, cl_command_queue);
+	WebCLGetInfo getInfo(int, ExceptionCode&);
+	
+	void enqueueWriteBuffer(WebCLMem*, bool, int, int, ArrayBufferView*, WebCLEventList* ,WebCLEvent* , ExceptionCode&);
+	
+	void enqueueWriteBuffer(WebCLMem* mem, bool blocking_write, int offset, int buffer_size, ArrayBufferView* ptr, 
+									WebCLEventList* events, ExceptionCode& ec) {
+		return(enqueueWriteBuffer(mem, blocking_write, offset, buffer_size, ptr, events, NULL, ec));
+	}
+
+	void enqueueWriteBuffer(WebCLMem* mem, bool blocking_write, int offset, int buffer_size, ArrayBufferView* ptr, 
+												 ExceptionCode& ec) {
+		return(enqueueWriteBuffer(mem, blocking_write, offset, buffer_size, ptr, NULL, NULL, ec));
+	}
 	PassRefPtr<WebCLEvent> enqueueWriteBuffer(WebCLMem*, bool, int, int, 
-		Float32Array*, int, ExceptionCode&);
-	PassRefPtr<WebCLEvent> enqueueWriteBuffer(WebCLMem*, bool, int, int, 
-		Int32Array*, int, ExceptionCode&);
-	PassRefPtr<WebCLEvent> enqueueWriteBuffer(WebCLMem*, bool, int, int, 
-		Uint8Array*, int, ExceptionCode&);
-	PassRefPtr<WebCLEvent> enqueueWriteBuffer(WebCLMem*, bool, int, int,
-        ImageData* , int , ExceptionCode&);
+		ImageData*, int, ExceptionCode&);
+
 	PassRefPtr<WebCLEvent>  enqueueReadBuffer(WebCLMem*, bool, int, int, 
-		Float32Array*, int, ExceptionCode&);
-	//PassRefPtr<WebCLEvent>  enqueueReadBuffer(WebCLMem*, bool, int, int,
-	//		HTMLCanvasElement*, int, ExceptionCode&);
-	PassRefPtr<WebCLEvent>  enqueueReadBuffer(WebCLMem*, bool, int, int, 
-		Int32Array*, int, ExceptionCode&);
-	PassRefPtr<WebCLEvent>  enqueueReadBuffer(WebCLMem*, bool, int, int,
-        ImageData* , int , ExceptionCode&);
-	PassRefPtr<WebCLEvent>  enqueueReadBuffer(WebCLMem*, bool, int, int, 
-		Uint8Array*, int, ExceptionCode&);	
-	//PassRefPtr<WebCLEvent>  enqueueNDRangeKernel(WebCLKernel*, unsigned int, 
-	//		unsigned int, unsigned int, unsigned int, int, ExceptionCode&);
-	PassRefPtr<WebCLEvent>  enqueueNDRangeKernel(WebCLKernel*, unsigned int,
-		unsigned int, Int32Array*, Int32Array*, int, ExceptionCode&);
-	void finish(PassRefPtr<WebCLFinishCallback>, int /*object userData*/, ExceptionCode&);
+		ImageData*, int, ExceptionCode&);
+	
+	void enqueueReadBuffer(WebCLMem*, bool, int, int, ArrayBufferView*, WebCLEventList* ,WebCLEvent* , ExceptionCode&);
+	void enqueueReadBuffer(WebCLMem* mem, bool blocking_read, int offset, int buffer_size, ArrayBufferView* ptr, 
+									WebCLEventList* events, ExceptionCode& ec) {
+		return(enqueueReadBuffer(mem, blocking_read, offset, buffer_size, ptr, events, NULL, ec));
+	}
+
+	void enqueueReadBuffer(WebCLMem* mem, bool blocking_read, int offset, int buffer_size, ArrayBufferView* ptr, 
+												 ExceptionCode& ec) {
+		return(enqueueReadBuffer(mem, blocking_read, offset, buffer_size, ptr, NULL, NULL, ec));
+	}
+
+	void  enqueueNDRangeKernel(WebCLKernel* ,Int32Array* ,
+		Int32Array* ,Int32Array* ,WebCLEventList* ,WebCLEvent* , ExceptionCode&);
+	void  enqueueNDRangeKernel(WebCLKernel* kernel, Int32Array* offsets,
+			Int32Array* global_work_size, Int32Array* local_work_size, WebCLEventList* events, ExceptionCode& ec) {
+			return (enqueueNDRangeKernel(kernel ,offsets ,global_work_size ,local_work_size ,events, NULL, ec)); 	
+		}
+	void  enqueueNDRangeKernel(WebCLKernel* kernel, Int32Array* offsets,
+			Int32Array* global_work_size, Int32Array* local_work_size, ExceptionCode& ec) {
+			return (enqueueNDRangeKernel(kernel ,offsets ,global_work_size ,local_work_size , NULL,	NULL, ec)); 	
+		}
+	
+	void finish(ExceptionCode&);
 	void flush( ExceptionCode&);
-	void retainCLResource( ExceptionCode&);
-	void releaseCLResource( ExceptionCode&);
+	void releaseCL( ExceptionCode&);
 	PassRefPtr<WebCLEvent> enqueueWriteImage(WebCLMem*, bool, Int32Array*, 
 		Int32Array*, HTMLCanvasElement*, int, ExceptionCode&);
 	//long enqueueReadImage(WebCLMem*, bool, Int32Array*, 
 	//		Int32Array*, HTMLCanvasElement*, int, ExceptionCode&);
-	void enqueueAcquireGLObjects(WebCLMem*, int, ExceptionCode&);
-	void enqueueReleaseGLObjects(WebCLMem*, int, ExceptionCode&);
+	void enqueueAcquireGLObjects(WebCLMem* ,WebCLEventList* ,WebCLEvent*, ExceptionCode&);
+	void enqueueAcquireGLObjects(WebCLMem* mem, WebCLEventList* events, ExceptionCode& ec) {
+		return(enqueueAcquireGLObjects(mem,  events,  NULL, ec));
+	}
+	void enqueueAcquireGLObjects(WebCLMem* mem, ExceptionCode& ec) {
+		return(enqueueAcquireGLObjects(mem,  NULL, NULL, ec));
+	}
+	
+	void enqueueReleaseGLObjects(WebCLMem*, WebCLEventList* ,WebCLEvent*, ExceptionCode&);
+	void enqueueReleaseGLObjects(WebCLMem* mem,WebCLEventList* events, ExceptionCode& ec) {
+		return(enqueueReleaseGLObjects(mem,  events,  NULL, ec));
+	}
+	void enqueueReleaseGLObjects(WebCLMem* mem, ExceptionCode& ec) {
+		return(enqueueReleaseGLObjects(mem,  NULL, NULL, ec));
+	}
+
 	void enqueueCopyBuffer(WebCLMem*, WebCLMem*, int, ExceptionCode&);
 	void enqueueBarrier( ExceptionCode&);
 	void enqueueMarker(WebCLEvent*, ExceptionCode&);
@@ -92,8 +125,8 @@ public:
 	PassRefPtr<WebCLEvent> enqueueTask( WebCLKernel* ,int, ExceptionCode&);
 	cl_command_queue getCLCommandQueue();	
 private:
-	WebCLCommandQueue(WebCLComputeContext*, cl_command_queue);	
-	WebCLComputeContext* m_context;
+	WebCLCommandQueue(WebCL*, cl_command_queue);	
+	WebCL* m_context;
 	cl_command_queue m_cl_command_queue;
 	RefPtr<WebCLFinishCallback> m_finishCallback;
 	RefPtr<WebCLCommandQueue> m_command_queue;

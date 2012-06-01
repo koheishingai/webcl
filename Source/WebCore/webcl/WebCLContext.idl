@@ -25,25 +25,26 @@
 * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-module html {
+module webcl {
 	interface [
 		Conditional=WEBCL,
 	] WebCLContext {
-	[StrictTypeChecking, Custom]  void getContextInfo (in long contextinfo) raises(DOMException) raises(DOMException);		
+	[StrictTypeChecking, Custom]  void getInfo (in long contextinfo) raises(DOMException) raises(DOMException);		
 	
 	WebCLEvent createUserEvent() raises(DOMException);		
-	WebCLCommandQueue createCommandQueue(in WebCLDeviceIDList devices, 
-				in long prop) raises(DOMException);
-	WebCLCommandQueue createCommandQueue(in WebCLDeviceID devices, 
-				in long prop) raises(DOMException);
-	WebCLProgram createProgramWithSource(in DOMString kernelSource) raises(DOMException);
-	WebCLProgram createProgramWithBinary(in WebCLDeviceIDList clDevices,
-			in DOMString kernelBinary) raises(DOMException);	
+
+	WebCLCommandQueue createCommandQueue(in [Optional] WebCLDeviceList devices, 
+				in [Optional] long prop) raises(DOMException);
+
+
+
+	//WebCLCommandQueue createCommandQueue(in WebCLDevice devices, 
+	//			in long prop) raises(DOMException);
+	WebCLProgram createProgram(in DOMString kernelSource) raises(DOMException);
 	WebCLMem createBuffer(in long flags, in long size, in long host_ptr) raises(DOMException);			
 	WebCLSampler createSampler(in boolean normCords, in long addrMode,
 			in long fltrMode) raises(DOMException);	
-	void releaseCLResource() raises(DOMException);				
-	void retainCLResource() raises(DOMException);
+	void releaseCL() raises(DOMException);				
 	WebCLMem createImage2D(in long flags, 
 				in HTMLCanvasElement canvasElement) raises(DOMException);
 	WebCLMem createImage2D(in long flags, 
@@ -63,6 +64,8 @@ module html {
 				in ArrayBuffer data) raises(DOMException);
 	WebCLMem createFromGLBuffer(in long flags,
 				in WebGLBuffer bufobj) raises(DOMException);
+	WebCLImage createFromGLRenderBuffer(in long flags, 
+                in WebGLRenderbuffer renderbufferobj) raises(DOMException);
 	WebCLMem createFromGLTexture2D(in long flags,
 				in unsigned long textureTarget,
 				in long miplevel,

@@ -30,7 +30,8 @@
 #if ENABLE(WEBCL)
 
 #include "WebCLEventList.h"
-#include "WebCLComputeContext.h"
+#include "WebCL.h"
+
 
 namespace WebCore {
 
@@ -42,13 +43,13 @@ WebCLEventList::~WebCLEventList()
 {
 }
 
-PassRefPtr<WebCLEventList> WebCLEventList::create(WebCLComputeContext* ctx , cl_event* eventlist, cl_uint num_events)
+PassRefPtr<WebCLEventList> WebCLEventList::create(WebCL* ctx , cl_event* eventlist, cl_uint num_events)
 {
 	
 	return adoptRef(new WebCLEventList(ctx ,eventlist, num_events));
 }
 
-WebCLEventList::WebCLEventList(WebCLComputeContext* ctx,cl_event* eventlist, cl_uint num_events ) : 
+WebCLEventList::WebCLEventList(WebCL* ctx,cl_event* eventlist, cl_uint num_events ) : 
 					m_context(ctx),m_cl_events(eventlist),m_num_events(num_events)
 {
 	if (m_num_events == 0) {
