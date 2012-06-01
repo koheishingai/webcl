@@ -25,34 +25,76 @@
 * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef JSCustomWebCLFinishCallback_h
-#define JSCustomWebCLFinishCallback_h
+#include "config.h"
 
-#include "JSCallbackData.h"
-#include "WebCLFinishCallback.h"
-#include <wtf/Forward.h>
+#if ENABLE(WEBCL)
+
+#include "WebCLPlatformList.h"
+#include "WebCL.h"
 
 namespace WebCore {
 
-class JSDOMGlobalObject;
-class WebCLComputeContext;
+WebCLPlatformList::WebCLPlatformList()
+{
+}
+
+WebCLPlatformList::~WebCLPlatformList()
+{
+}
+
+PassRefPtr<WebCLPlatformList> WebCLPlatformList::create(WebCL* ctx)
+{
+	
+	return adoptRef(new WebCLPlatformList(ctx));
+}
+
+WebCLPlatformList::WebCLPlatformList(WebCL* ctx) : m_context(ctx)
+{
+	
+	cl_int err = 0;
+	
+	err = clGetPlatformIDs(0, NULL, &m_num_platforms);
+	if (err != CL_SUCCESS) {
+		// TODO (siba samal) Error handling
+	}
+	
+	m_cl_platforms = new cl_platform_id[m_num_platforms];
+	err = clGetPlatformIDs(m_num_platforms, m_cl_platforms, NULL);
+	if (err != CL_SUCCESS) {
+		// TODO (siba samal) Error handling
+	}
+	
+	for (unsigned int i = 0 ; i < m_num_platforms; i++) {
+		RefPtr<WebCLPlatform> o = WebCLPlatform::create(m_context, m_cl_platforms[i]);
+		if (o != NULL) {
+			m_platform_id_list.append(o);
+		} else {
+			// TODO (siba samal) Error handling
+		}
+	}
+	
+}
+
+cl_platform_id WebCLPlatformList::getCLPlatforms()
+{
+	return *m_cl_platforms;
+}
+
+unsigned WebCLPlatformList::length() const
+{
+	return m_num_platforms;
+}
+
+WebCLPlatform* WebCLPlatformList::item(unsigned index)
+{
+	if (index >= m_num_platforms) {
+		return 0;
+	}
+	WebCLPlatform* ret = (m_platform_id_list[index]).get();
+	return ret;
+}
 
 
-class JSCustomWebCLFinishCallback : public WebCLFinishCallback {
-public:
-    static PassRefPtr<JSCustomWebCLFinishCallback> create(JSC::JSObject* callback, JSDOMGlobalObject* globalObject)
-    {
-        return adoptRef(new JSCustomWebCLFinishCallback(callback, globalObject));
-    }
-    
-private:
-    JSCustomWebCLFinishCallback(JSC::JSObject* callback, JSDOMGlobalObject*);
+} // namespace WebCore
 
-    virtual void handleEvent(WebCLComputeContext*);
-    
-    JSCallbackData m_data; 
-};
-    
-} // namespace WebCore 
-
-#endif // JSWebCLFInishCallback_h
+#endif // ENABLE(WEBCL)
