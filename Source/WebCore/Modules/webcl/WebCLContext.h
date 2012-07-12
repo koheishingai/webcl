@@ -94,7 +94,19 @@ public:
 
 	//PassRefPtr<WebCLCommandQueue> createCommandQueue(WebCLDevice*, int, ExceptionCode&);
 	PassRefPtr<WebCLProgram> createProgram(const String&, ExceptionCode&);
-	PassRefPtr<WebCLMem> createBuffer(int, int, int, ExceptionCode&);
+	//PassRefPtr<WebCLMem> createBuffer(int, int, int, ExceptionCode&);
+	
+    PassRefPtr<WebCLMem> createBuffer(int, ImageData*, ExceptionCode&);
+    PassRefPtr<WebCLMem> createBuffer(int, HTMLCanvasElement*, ExceptionCode&);
+    PassRefPtr<WebCLMem> createBuffer(int, int, ArrayBuffer*, ExceptionCode&);
+	//CLenum memFlags, CLuint sizeInBytes, optional ArrayBuffer srcBuffer
+	PassRefPtr<WebCLMem> createBuffer(int memFlags, int sizeInBytes, ExceptionCode& ec)
+	{
+		return(createBuffer(memFlags,sizeInBytes,NULL,ec));
+	}
+    
+    
+    
 	PassRefPtr<WebCLMem> createImage2D(int, HTMLCanvasElement*, ExceptionCode&);
 	PassRefPtr<WebCLMem> createImage2D(int, HTMLImageElement*, ExceptionCode&);
 	PassRefPtr<WebCLMem> createImage2D(int, HTMLVideoElement*, ExceptionCode&);

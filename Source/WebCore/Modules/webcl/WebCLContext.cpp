@@ -83,16 +83,15 @@ WebCLGetInfo WebCLContext::getInfo(int param_name, ExceptionCode& ec)
 						if (err == CL_SUCCESS)
 								return WebCLGetInfo(static_cast<unsigned int>(uint_units));	
 						break;
-				# if 0 //OpenCl1.1
 				case WebCL::CONTEXT_NUM_DEVICES:
 						err = clGetContextInfo(m_cl_context,CL_CONTEXT_NUM_DEVICES, sizeof(cl_uint), &uint_units, NULL);
 						if (err == CL_SUCCESS)
 								return WebCLGetInfo(static_cast<unsigned int>(uint_units));	
 						break;
-				#endif
 				case WebCL::CONTEXT_DEVICES:
 						cl_device_id* cdDevices;
-						clGetContextInfo(m_cl_context, CL_CONTEXT_DEVICES, 0, NULL, &szParmDataBytes);
+						clGetContextInfo(m_cl_context, CL_CONTEXT_DEVICES, 0, NULL, &szParmDataBytes);		
+						printf(" szParmDataBytes  => %lu ", szParmDataBytes );
 						if (err == CL_SUCCESS) {
 								int nd = szParmDataBytes / sizeof(cl_device_id);
 								cdDevices = (cl_device_id*) malloc(szParmDataBytes);
@@ -106,8 +105,10 @@ WebCLGetInfo WebCLContext::getInfo(int param_name, ExceptionCode& ec)
 				case WebCL::CONTEXT_PROPERTIES:
 						err = clGetContextInfo(m_cl_context, CL_CONTEXT_PROPERTIES, 0, NULL, &szParmDataBytes);
 						if (err == CL_SUCCESS) {
+								printf(" szParmDataBytes  => %lu ", szParmDataBytes );
 								int nd = szParmDataBytes / sizeof(cl_uint);
-								if(nd == 0)	 {	
+								if(nd == 0)	 
+								{	
 										printf("No Context Properties defined \n");
 										return WebCLGetInfo();
 								}
@@ -158,8 +159,15 @@ PassRefPtr<WebCLCommandQueue> WebCLContext::createCommandQueue(WebCLDeviceList* 
 				int command_queue_prop, ExceptionCode& ec)
 {
 		cl_int err = 0;
-		cl_device_id cl_device = NULL;
+		cl_device_id* cl_device = NULL;
 		cl_command_queue cl_command_queue_id = NULL;
+
+		//cl_int err_dev = 0;
+		//cl_uint m_num_platforms = 0;
+		//cl_uint num_devices = 0;
+		//cl_platform_id* m_cl_platforms = NULL;
+
+
 		if (m_cl_context == NULL) {
 				printf("Error: Invalid CL Context\n");
 				ec = WebCLException::INVALID_CONTEXT;
@@ -173,19 +181,59 @@ PassRefPtr<WebCLCommandQueue> WebCLContext::createCommandQueue(WebCLDeviceList* 
 						return NULL;
 				}
 		}
+		else {
+
+            printf(" devices is NULL \n ");
+            cl_device = m_context->getcl_device_id();
+            //cl_int err_dev = 0;
+			//cl_uint m_num_platforms = 0;
+			//cl_uint num_devices = 0;
+			//cl_platform_id* m_cl_platforms = NULL;
+
+
+			/*err_dev = clGetPlatformIDs(0, NULL, &m_num_platforms);
+
+			if(err_dev == CL_SUCCESS) {
+				m_cl_platforms = new cl_platform_id[m_num_platforms];
+				err_dev = clGetPlatformIDs(m_num_platforms, m_cl_platforms, NULL);
+			}
+			if(err_dev == CL_SUCCESS) {
+				err_dev = clGetDeviceIDs(m_cl_platforms[0], CL_DEVICE_TYPE_DEFAULT, 1, NULL, &num_devices);
+			}
+			if((num_devices != 0) && (err == CL_SUCCESS)) {
+				cl_device = new cl_device_id[num_devices];
+				err_dev = clGetDeviceIDs(m_cl_platforms[0], CL_DEVICE_TYPE_DEFAULT, 1, cl_device,
+																		&num_devices);
+
+			}
+			else {
+				ec = WebCLException::INVALID_DEVICE;
+				printf("Error: Device Type Not Supported \n");
+				return NULL;
+			}*/
+
+
+
+			//	Creates a new command queue for the devices in the given array.
+			//If devices is null, the WebCL implementation will select any single WebCLDevice that matches the given properties and is covered by this WebCLContext.
+			//If properties is omitted, the command queue is created with out-of-order execution disabled and profiling disabled
+
+
+		}
+		
 		switch (command_queue_prop)
 		{
 				case WebCL::QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE:
-						cl_command_queue_id = clCreateCommandQueue(m_cl_context, cl_device, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, &err);
+						cl_command_queue_id = clCreateCommandQueue(m_cl_context, *cl_device, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, &err);
 						break;
 				case WebCL::QUEUE_PROFILING_ENABLE:
-						cl_command_queue_id = clCreateCommandQueue(m_cl_context, cl_device, CL_QUEUE_PROFILING_ENABLE, &err);
+						cl_command_queue_id = clCreateCommandQueue(m_cl_context, *cl_device, CL_QUEUE_PROFILING_ENABLE, &err);
 						break;
 				default:
-						cl_command_queue_id = clCreateCommandQueue(m_cl_context, cl_device, NULL, &err);
+						cl_command_queue_id = clCreateCommandQueue(m_cl_context, *cl_device,NULL, &err);
 						break;
 		}
-		if (err != CL_SUCCESS) {
+		if (err != CL_SUCCESS  ) {
 				switch (err) {
 						case CL_INVALID_CONTEXT:
 								printf("Error: CL_INVALID_CONTEXT \n");
@@ -360,7 +408,7 @@ PassRefPtr<WebCLProgram> WebCLContext::createProgram(const String& kernelSource,
 		return NULL;
 }
 
-PassRefPtr<WebCLMem> WebCLContext::createBuffer(int flags, int size, int host_ptr, ExceptionCode& ec)
+/*PassRefPtr<WebCLMem> WebCLContext::createBuffer(int flags, int size, int host_ptr, ExceptionCode& ec)
 {
 		cl_int err = 0;	
 		cl_mem cl_mem_id = NULL;
@@ -430,7 +478,363 @@ PassRefPtr<WebCLMem> WebCLContext::createBuffer(int flags, int size, int host_pt
 				return o;
 		}
 		return NULL;
+}*/
+
+
+    
+PassRefPtr<WebCLMem> WebCLContext::createBuffer(int flags, int size, ArrayBuffer* data, ExceptionCode& ec)
+{
+    
+	cl_int err = 0;
+	cl_mem cl_mem_id = NULL;
+	void *vData = NULL;
+	if (m_cl_context == NULL) {
+			printf("Error: Invalid CL Context\n");
+			ec = WebCLException::INVALID_CONTEXT;
+			return NULL;
+	}
+
+
+	if (data == NULL) {
+		//printf("createBuffer:Error: ArraryBuffer null SIze =%d\n", size);
+		//ec = WebCLException::FAILURE;
+		//return NULL;
+		vData = NULL;
+	}
+	else {
+		//printf(" ArraryBuffer NOT null\n");
+	 vData = data->data();
+	}
+	// TODO(won.jeon) - NULL parameter needs to be addressed later
+	switch (flags)
+	{
+			case WebCL::MEM_READ_ONLY:
+					cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_READ_ONLY, size, vData , &err);
+                    //printf(" WebCL::MEM_READ_ONLY  ");
+					break;
+			case WebCL::MEM_WRITE_ONLY:
+					cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_WRITE_ONLY, size, vData , &err);
+					break;
+			case WebCL::MEM_READ_WRITE:
+					cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_READ_WRITE, size, vData , &err);
+					break;
+			case WebCL::MEM_USE_HOST_PTR:
+					cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_USE_HOST_PTR, size, vData , &err);
+					break;
+			case WebCL::MEM_ALLOC_HOST_PTR:
+					cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_ALLOC_HOST_PTR, size, vData , &err);
+					break;
+			case WebCL::MEM_COPY_HOST_PTR:
+				    cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_COPY_HOST_PTR, size, vData , &err);
+					break;
+			/*case WebCL::MEM_HOST_WRITE_ONLY:
+				    cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_HOST_WRITE_ONLY, size, vData , &err);
+					break;
+			case WebCL::MEM_HOST_READ_ONLY:
+				 	cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_HOST_READ_ONLY, size, vData , &err);
+					break;
+			case WebCL::MEM_HOST_NO_ACCESS:
+				 	cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_HOST_NO_ACCESS, size, vData , &err);
+					break;*/
+
+			default:
+					printf("Error: Unsupported Mem Flag\n");
+					//printf("WebCLContext::createBuffer host_ptr = %d\n", data->data());
+					ec = WebCLException::INVALID_CONTEXT;
+					break;
+	}
+	if (err != CL_SUCCESS) {
+			printf("Error: clCreateBuffer\n");
+			switch(err) {
+					case CL_INVALID_CONTEXT:
+							printf("Error: CL_INVALID_CONTEXT\n");
+							ec = WebCLException::INVALID_CONTEXT;
+							break;
+					case CL_INVALID_VALUE:
+							printf("Error: CL_INVALID_VALUE\n");
+							ec = WebCLException::INVALID_VALUE;
+							break;
+					case CL_INVALID_BUFFER_SIZE:
+							printf("Error: CL_INVALID_BUFFER_SIZE\n");
+							ec = WebCLException::INVALID_BUFFER_SIZE;
+							break;
+					case CL_INVALID_HOST_PTR:
+							printf("Error: CL_INVALID_HOST_PTR\n");
+							ec = WebCLException::INVALID_HOST_PTR;
+							break;
+					case CL_MEM_OBJECT_ALLOCATION_FAILURE:
+							printf("Error: CL_MEM_OBJECT_ALLOCATION_FAILURE\n");
+							ec = WebCLException::MEM_OBJECT_ALLOCATION_FAILURE;
+							break;
+					case CL_OUT_OF_HOST_MEMORY:
+							printf("Error: CL_OUT_OF_HOST_MEMORY\n");
+							ec = WebCLException::OUT_OF_HOST_MEMORY;
+							break;
+					case CL_OUT_OF_RESOURCES:
+							printf("Error: CL_OUT_OF_RESOURCES\n");
+							ec = WebCLException::OUT_OF_RESOURCES;
+							break;
+					default:
+							printf("Error: Invaild Error Type\n");
+							ec = WebCLException::FAILURE;
+							break;
+			}
+	} else {
+			RefPtr<WebCLMem> o = WebCLMem::create(m_context, cl_mem_id, false);
+			m_mem_list.append(o);
+			m_num_mems++;
+			return o;
+	}
+	return NULL;
 }
+
+    
+PassRefPtr<WebCLMem> WebCLContext::createBuffer(int memFlags, ImageData *ptr , ExceptionCode& ec)
+{
+        printf(" inside WebCLContext::createBuffer(int memFlags, ImageData *ptr , ExceptionCode& ec) \n ");
+        
+        unsigned char* buffer;
+        int buffer_size = 0;
+        
+        cl_int err = 0;
+        cl_mem cl_mem_id = NULL;
+        
+        if(ptr!=NULL && ptr->data()!=NULL && ptr->data()->data()!=NULL && ptr->data()->data()->data()!=NULL )
+        {
+            buffer = ptr->data()->data()->data();
+            printf(" buffer => %s ",buffer);
+            buffer_size =  ptr->data()->data()->length();
+            printf(" buffer_size => %d ",buffer_size);
+        }
+        else
+        {
+            printf("Error: Invalid ImageData\n");
+            ec = WebCL::FAILURE;
+            return NULL;
+            
+        }
+        
+        switch (memFlags)
+        {
+            case WebCL::MEM_READ_ONLY:
+                cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_READ_ONLY, buffer_size, buffer , &err);
+                //printf(" WebCL::MEM_READ_ONLY  ");
+                break;
+            case WebCL::MEM_WRITE_ONLY:
+                cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_WRITE_ONLY, buffer_size, buffer , &err);
+                break;
+            case WebCL::MEM_READ_WRITE:
+                cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_READ_WRITE, buffer_size, buffer , &err);
+                break;
+            case WebCL::MEM_USE_HOST_PTR:
+                cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_USE_HOST_PTR, buffer_size, buffer , &err);
+                break;
+            case WebCL::MEM_ALLOC_HOST_PTR:
+                cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_ALLOC_HOST_PTR, buffer_size, buffer , &err);
+                break;
+            case WebCL::MEM_COPY_HOST_PTR:
+                cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_COPY_HOST_PTR, buffer_size, buffer , &err);
+                break;
+                /*case WebCL::MEM_HOST_WRITE_ONLY:
+                 cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_HOST_WRITE_ONLY, size, vData , &err);
+                 break;
+                 case WebCL::MEM_HOST_READ_ONLY:
+                 cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_HOST_READ_ONLY, size, vData , &err);
+                 break;
+                 case WebCL::MEM_HOST_NO_ACCESS:
+                 cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_HOST_NO_ACCESS, size, vData , &err);
+                 break;*/
+                
+            default:
+                printf("Error: Unsupported Mem Flag\n");
+                //printf("WebCLContext::createBuffer host_ptr = %d\n", data->data());
+                ec = WebCLException::INVALID_CONTEXT;
+                break;
+        }
+        
+        if (err != CL_SUCCESS) {
+            printf("Error: clCreateBuffer\n");
+            switch(err) {
+                case CL_INVALID_CONTEXT:
+                    printf("Error: CL_INVALID_CONTEXT\n");
+                    ec = WebCLException::INVALID_CONTEXT;
+                    break;
+                case CL_INVALID_VALUE:
+                    printf("Error: CL_INVALID_VALUE\n");
+                    ec = WebCLException::INVALID_VALUE;
+                    break;
+                case CL_INVALID_BUFFER_SIZE:
+                    printf("Error: CL_INVALID_BUFFER_SIZE\n");
+                    ec = WebCLException::INVALID_BUFFER_SIZE;
+                    break;
+                case CL_INVALID_HOST_PTR:
+                    printf("Error: CL_INVALID_HOST_PTR\n");
+                    ec = WebCLException::INVALID_HOST_PTR;
+                    break;
+                case CL_MEM_OBJECT_ALLOCATION_FAILURE:
+                    printf("Error: CL_MEM_OBJECT_ALLOCATION_FAILURE\n");
+                    ec = WebCLException::MEM_OBJECT_ALLOCATION_FAILURE;
+                    break;
+                case CL_OUT_OF_HOST_MEMORY:
+                    printf("Error: CL_OUT_OF_HOST_MEMORY\n");
+                    ec = WebCLException::OUT_OF_HOST_MEMORY;
+                    break;
+                case CL_OUT_OF_RESOURCES:
+                    printf("Error: CL_OUT_OF_RESOURCES\n");
+                    ec = WebCLException::OUT_OF_RESOURCES;
+                    break;
+                default:
+                    printf("Error: Invaild Error Type\n");
+                    ec = WebCLException::FAILURE;
+                    break;
+            }
+        } else {
+            RefPtr<WebCLMem> o = WebCLMem::create(m_context, cl_mem_id, false);
+            m_mem_list.append(o);
+            m_num_mems++;
+            return o;
+        }
+        return NULL;
+        
+        
+}
+PassRefPtr<WebCLMem> WebCLContext::createBuffer(int memFlags, HTMLCanvasElement *srcCanvas,ExceptionCode& ec) 
+{
+        
+        printf(" inside PassRefPtr<WebCLMem> WebCLContext::createBuffer(int memFlags, HTMLCanvasElement *srcCanvas,ExceptionCode& ec)   \n ");
+        
+        
+        
+        unsigned char* buffer;
+        int buffer_size = 0;
+        
+        cl_int err = 0;
+        cl_mem cl_mem_id = NULL;
+        
+        ImageData *ptr;
+        
+        if(srcCanvas != NULL )
+        {
+            if(srcCanvas->getImageData() != NULL)//(srcCanvas->getContext("2d") != NULL)
+            {
+               ptr = srcCanvas->getImageData().get(); 
+            }
+            else
+            {
+                printf("Error: HTMLCanvasElement:srcCanvas->getImageData() is NULL \n ");
+                ec = WebCL::FAILURE;
+                return NULL;
+            }
+            
+            
+        }
+        else
+        {
+            printf("Error: HTMLCanvasElement:srcCanvas is NULL \n ");
+            ec = WebCL::FAILURE;
+            return NULL;
+        }
+        
+        if(ptr!=NULL && ptr->data()!=NULL && ptr->data()->data()!=NULL && ptr->data()->data()->data()!=NULL )
+        {
+            buffer = ptr->data()->data()->data();
+            printf(" buffer => %s ",buffer);
+            buffer_size =  ptr->data()->data()->length();
+            printf(" buffer_size => %d ",buffer_size);
+        }
+        else
+        {
+            printf("Error: Invalid ImageData\n");
+            ec = WebCL::FAILURE;
+            return NULL;
+            
+        }
+        
+        
+        switch (memFlags)
+        {
+            case WebCL::MEM_READ_ONLY:
+                cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_READ_ONLY, buffer_size, buffer , &err);
+                //printf(" WebCL::MEM_READ_ONLY  ");
+                break;
+            case WebCL::MEM_WRITE_ONLY:
+                cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_WRITE_ONLY, buffer_size, buffer , &err);
+                break;
+            case WebCL::MEM_READ_WRITE:
+                cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_READ_WRITE, buffer_size, buffer , &err);
+                break;
+            case WebCL::MEM_USE_HOST_PTR:
+                cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_USE_HOST_PTR, buffer_size, buffer , &err);
+                break;
+            case WebCL::MEM_ALLOC_HOST_PTR:
+                cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_ALLOC_HOST_PTR, buffer_size, buffer , &err);
+                break;
+            case WebCL::MEM_COPY_HOST_PTR:
+                cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_COPY_HOST_PTR, buffer_size, buffer , &err);
+                break;
+                /*case WebCL::MEM_HOST_WRITE_ONLY:
+                 cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_HOST_WRITE_ONLY, size, vData , &err);
+                 break;
+                 case WebCL::MEM_HOST_READ_ONLY:
+                 cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_HOST_READ_ONLY, size, vData , &err);
+                 break;
+                 case WebCL::MEM_HOST_NO_ACCESS:
+                 cl_mem_id = clCreateBuffer(m_cl_context, CL_MEM_HOST_NO_ACCESS, size, vData , &err);
+                 break;*/
+                
+            default:
+                printf("Error: Unsupported Mem Flag\n");
+                //printf("WebCLContext::createBuffer host_ptr = %d\n", data->data());
+                ec = WebCLException::INVALID_CONTEXT;
+                break;
+        }
+        
+        if (err != CL_SUCCESS) {
+            printf("Error: clCreateBuffer\n");
+            switch(err) {
+                case CL_INVALID_CONTEXT:
+                    printf("Error: CL_INVALID_CONTEXT\n");
+                    ec = WebCLException::INVALID_CONTEXT;
+                    break;
+                case CL_INVALID_VALUE:
+                    printf("Error: CL_INVALID_VALUE\n");
+                    ec = WebCLException::INVALID_VALUE;
+                    break;
+                case CL_INVALID_BUFFER_SIZE:
+                    printf("Error: CL_INVALID_BUFFER_SIZE\n");
+                    ec = WebCLException::INVALID_BUFFER_SIZE;
+                    break;
+                case CL_INVALID_HOST_PTR:
+                    printf("Error: CL_INVALID_HOST_PTR\n");
+                    ec = WebCLException::INVALID_HOST_PTR;
+                    break;
+                case CL_MEM_OBJECT_ALLOCATION_FAILURE:
+                    printf("Error: CL_MEM_OBJECT_ALLOCATION_FAILURE\n");
+                    ec = WebCLException::MEM_OBJECT_ALLOCATION_FAILURE;
+                    break;
+                case CL_OUT_OF_HOST_MEMORY:
+                    printf("Error: CL_OUT_OF_HOST_MEMORY\n");
+                    ec = WebCLException::OUT_OF_HOST_MEMORY;
+                    break;
+                case CL_OUT_OF_RESOURCES:
+                    printf("Error: CL_OUT_OF_RESOURCES\n");
+                    ec = WebCLException::OUT_OF_RESOURCES;
+                    break;
+                default:
+                    printf("Error: Invaild Error Type\n");
+                    ec = WebCLException::FAILURE;
+                    break;
+            }
+        } else {
+            RefPtr<WebCLMem> o = WebCLMem::create(m_context, cl_mem_id, false);
+            m_mem_list.append(o);
+            m_num_mems++;
+            return o;
+        }
+        return NULL; 
+    }
+    
+
 
 
 PassRefPtr<WebCLMem> WebCLContext::createImage2D(int flags, 
@@ -1210,6 +1614,9 @@ PassRefPtr<WebCLImage> WebCLContext::createFromGLRenderBuffer(int flags, WebGLRe
 PassRefPtr<WebCLSampler> WebCLContext::createSampler(bool norm_cords, 
 				int addr_mode, int fltr_mode, ExceptionCode& ec)
 {
+
+		
+		printf(" addr_mode = %d , norm_cords = %d , fltr_mode = %d " ,addr_mode,norm_cords,fltr_mode);
 		cl_int err = 0;
 		cl_bool normalized_coords = CL_FALSE;
 		cl_addressing_mode addressing_mode = CL_ADDRESS_NONE;
@@ -1227,6 +1634,7 @@ PassRefPtr<WebCLSampler> WebCLContext::createSampler(bool norm_cords,
 		{
 				case WebCL::ADDRESS_NONE:
 						addressing_mode = CL_ADDRESS_NONE;
+						printf(" came to ADDRESS_NONE  ");
 						break;
 				case WebCL::ADDRESS_CLAMP_TO_EDGE:
 						addressing_mode = CL_ADDRESS_CLAMP_TO_EDGE;
@@ -1249,6 +1657,7 @@ PassRefPtr<WebCLSampler> WebCLContext::createSampler(bool norm_cords,
 						break;
 				case WebCL::FILTER_NEAREST :
 						filter_mode = CL_FILTER_NEAREST ;
+						printf(" came to FILTER_NEARES ");
 						break;
 				default:
 						printf("Error: Invaild Filtering Mode\n");
@@ -1382,8 +1791,11 @@ PassRefPtr<WebCLEvent> WebCLContext::createUserEvent( ExceptionCode& ec)
 				return NULL;
 		}
 
+    
+    //printf(" inside createUserEvent call before clCreateUserEvent ");
 		//(TODO) To be uncommented for OpenCL1.1
-		//event =  clCreateUserEvent(cl_context_id, &err);
+		event =  clCreateUserEvent(m_cl_context, &err);
+    //printf(" inside createUserEvent call after clCreateUserEvent ");
 		if (err != CL_SUCCESS) {
 				switch (err) {
 						case CL_INVALID_CONTEXT :

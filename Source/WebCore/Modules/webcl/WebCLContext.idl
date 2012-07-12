@@ -41,7 +41,11 @@ module webcl {
 	//WebCLCommandQueue createCommandQueue(in WebCLDevice devices, 
 	//			in long prop) raises(DOMException);
 	WebCLProgram createProgram(in DOMString kernelSource) raises(DOMException);
-	WebCLMem createBuffer(in long flags, in long size, in long host_ptr) raises(DOMException);			
+	//WebCLMem createBuffer(in long flags, in long size, in long host_ptr) raises(DOMException);	
+	
+    	[StrictTypeChecking] WebCLMem createBuffer(in long memFlags, in ImageData srcPixels) raises(DOMException);	
+    	[StrictTypeChecking] WebCLMem createBuffer(in long memFlags, in HTMLCanvasElement srcCanvas) raises(DOMException);	
+    	[StrictTypeChecking] WebCLMem createBuffer(in long memFlags, in long sizeInBytes, in [Optional] ArrayBuffer srcBuffer) raises(DOMException);		
 	WebCLSampler createSampler(in boolean normCords, in long addrMode,
 			in long fltrMode) raises(DOMException);	
 	void releaseCL() raises(DOMException);				

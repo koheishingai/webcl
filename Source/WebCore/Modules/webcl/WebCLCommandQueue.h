@@ -55,26 +55,56 @@ public:
 	virtual ~WebCLCommandQueue();
 	static PassRefPtr<WebCLCommandQueue> create(WebCL*, cl_command_queue);
 	WebCLGetInfo getInfo(int, ExceptionCode&);
-	
+
 	void enqueueWriteBuffer(WebCLMem*, bool, int, int, ArrayBufferView*, WebCLEventList* ,WebCLEvent* , ExceptionCode&);
-	
-	void enqueueWriteBuffer(WebCLMem* mem, bool blocking_write, int offset, int buffer_size, ArrayBufferView* ptr, 
+
+	void enqueueWriteBuffer(WebCLMem* mem, bool blocking_write, int offset, int buffer_size, ArrayBufferView* ptr,
 									WebCLEventList* events, ExceptionCode& ec) {
 		return(enqueueWriteBuffer(mem, blocking_write, offset, buffer_size, ptr, events, NULL, ec));
 	}
 
-	void enqueueWriteBuffer(WebCLMem* mem, bool blocking_write, int offset, int buffer_size, ArrayBufferView* ptr, 
+	void enqueueWriteBuffer(WebCLMem* mem, bool blocking_write, int offset, int buffer_size, ArrayBufferView* ptr,
 												 ExceptionCode& ec) {
 		return(enqueueWriteBuffer(mem, blocking_write, offset, buffer_size, ptr, NULL, NULL, ec));
 	}
-	PassRefPtr<WebCLEvent> enqueueWriteBuffer(WebCLMem*, bool, int, int, 
+
+	/*PassRefPtr<WebCLEvent> enqueueWriteBuffer(WebCLMem*, bool, int, int, 
 		ImageData*, int, ExceptionCode&);
 
 	PassRefPtr<WebCLEvent>  enqueueReadBuffer(WebCLMem*, bool, int, int, 
-		ImageData*, int, ExceptionCode&);
+		ImageData*, int, ExceptionCode&);*/
+    
+    
+     void enqueueWriteBuffer(WebCLMem*, bool, int, int,ImageData*,WebCLEventList* ,WebCLEvent*,ExceptionCode&);
+    
+     void enqueueWriteBuffer(WebCLMem* mem, bool blocking_write, int offset, int buffer_size, ImageData* ptr,WebCLEventList* events, ExceptionCode& ec)
+     {
+        return(enqueueWriteBuffer(mem, blocking_write, offset, buffer_size, ptr, events, NULL, ec));
+     }
+    
+     void enqueueWriteBuffer(WebCLMem* mem, bool blocking_write, int offset, int buffer_size, ImageData* ptr,ExceptionCode& ec)
+     {
+        return(enqueueWriteBuffer(mem, blocking_write, offset, buffer_size, ptr,NULL,NULL, ec));
+     }
+    
+    
+     
+     void enqueueReadBuffer(WebCLMem*, bool, int, int,ImageData*,WebCLEventList* ,WebCLEvent*,ExceptionCode&);
+     
+     void enqueueReadBuffer( WebCLMem* mem, bool blocking_read, int offset, int buffer_size, ImageData* ptr,WebCLEventList* events, ExceptionCode& ec) 
+     {
+		return(enqueueReadBuffer(mem, blocking_read, offset, buffer_size, ptr, events, NULL, ec));
+	 }
+    
+	 void enqueueReadBuffer(WebCLMem* mem, bool blocking_read, int offset, int buffer_size, ImageData* ptr, ExceptionCode& ec) {
+		return(enqueueReadBuffer(mem, blocking_read, offset, buffer_size, ptr, NULL, NULL, ec));
+	 }
+    
+    
+    
 	
 	void enqueueReadBuffer(WebCLMem*, bool, int, int, ArrayBufferView*, WebCLEventList* ,WebCLEvent* , ExceptionCode&);
-	void enqueueReadBuffer(WebCLMem* mem, bool blocking_read, int offset, int buffer_size, ArrayBufferView* ptr, 
+	void enqueueReadBuffer( WebCLMem* mem, bool blocking_read, int offset, int buffer_size, ArrayBufferView* ptr, 
 									WebCLEventList* events, ExceptionCode& ec) {
 		return(enqueueReadBuffer(mem, blocking_read, offset, buffer_size, ptr, events, NULL, ec));
 	}
@@ -100,8 +130,23 @@ public:
 	void releaseCL( ExceptionCode&);
 	PassRefPtr<WebCLEvent> enqueueWriteImage(WebCLMem*, bool, Int32Array*, 
 		Int32Array*, HTMLCanvasElement*, int, ExceptionCode&);
+
 	//long enqueueReadImage(WebCLMem*, bool, Int32Array*, 
 	//		Int32Array*, HTMLCanvasElement*, int, ExceptionCode&);
+
+	void enqueueReadImage(WebCLMem*, bool, Int32Array*, Int32Array*, int, int, ArrayBufferView*, WebCLEventList* ,WebCLEvent* , ExceptionCode&);
+	
+	void enqueueReadImage(WebCLMem* mem, bool blocking_read, Int32Array* origin, Int32Array* region,int rowPitch , int slicePitch, ArrayBufferView* ptr,
+									WebCLEventList* events, ExceptionCode& ec) {
+		return(enqueueReadImage(mem, blocking_read, origin, region, rowPitch, slicePitch, ptr, events, NULL, ec));
+	}
+
+	void enqueueReadImage(WebCLMem* mem, bool blocking_read, Int32Array* origin, Int32Array* region,int rowPitch , int slicePitch, ArrayBufferView* ptr,
+												 ExceptionCode& ec) {
+		return(enqueueReadImage(mem, blocking_read, origin, region, rowPitch, slicePitch, ptr, NULL, NULL, ec));
+	}
+
+
 	void enqueueAcquireGLObjects(WebCLMem* ,WebCLEventList* ,WebCLEvent*, ExceptionCode&);
 	void enqueueAcquireGLObjects(WebCLMem* mem, WebCLEventList* events, ExceptionCode& ec) {
 		return(enqueueAcquireGLObjects(mem,  events,  NULL, ec));
@@ -119,6 +164,29 @@ public:
 	}
 
 	void enqueueCopyBuffer(WebCLMem*, WebCLMem*, int, ExceptionCode&);
+	void enqueueCopyBuffer(WebCLMem*, WebCLMem*, int, int, int, WebCLEventList* ,WebCLEvent*, ExceptionCode&);
+	void enqueueCopyBuffer(WebCLMem* src_buffer, WebCLMem* dst_buffer,int srcOffset,int dstOffset,int sizeInBytes, WebCLEventList* events,
+		ExceptionCode& ec) {
+		return	(enqueueCopyBuffer(src_buffer,dst_buffer,srcOffset,dstOffset,sizeInBytes,events,NULL,ec));
+	}
+
+	void enqueueCopyBuffer(WebCLMem* src_buffer, WebCLMem* dst_buffer,int srcOffset,int dstOffset,int sizeInBytes,
+		ExceptionCode& ec) {
+		return	(enqueueCopyBuffer(src_buffer,dst_buffer,srcOffset,dstOffset,sizeInBytes,NULL,NULL,ec));
+	}
+	
+	void enqueueCopyImage(WebCLMem*, WebCLMem*, Int32Array*, Int32Array*, Int32Array*, WebCLEventList* ,WebCLEvent*, ExceptionCode&);
+	void enqueueCopyImage(WebCLMem* src_buffer, WebCLMem* dst_buffer,Int32Array* srcOffset,Int32Array* dstOffset,Int32Array* region, WebCLEventList* events,
+		ExceptionCode& ec) {
+		return	(enqueueCopyImage(src_buffer,dst_buffer,srcOffset,dstOffset,region,events,NULL,ec));
+	}
+
+	void enqueueCopyImage(WebCLMem* src_buffer, WebCLMem* dst_buffer,Int32Array* srcOffset,Int32Array* dstOffset,Int32Array* region,
+		ExceptionCode& ec) {
+		return	(enqueueCopyImage(src_buffer,dst_buffer,srcOffset,dstOffset,region,NULL,NULL,ec));
+	}
+
+
 	void enqueueBarrier( ExceptionCode&);
 	void enqueueMarker(WebCLEvent*, ExceptionCode&);
 	void enqueueWaitForEvents(WebCLEventList*, ExceptionCode&);
