@@ -32,6 +32,7 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include "WebCLException.h"
+#include "WebCLImageDescriptor.h"
 
 namespace WebCore {
 
@@ -44,6 +45,7 @@ public:
 	cl_mem getCLImage();
 	bool isShared() { return m_shared; }
 	int getGLtextureInfo(int, ExceptionCode&);
+	PassRefPtr<WebCLImageDescriptor> getInfo(ExceptionCode&);
 
 private:
 	WebCLImage(WebCL*, cl_mem, bool);

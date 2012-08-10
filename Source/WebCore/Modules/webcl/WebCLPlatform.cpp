@@ -88,6 +88,7 @@ WebCLGetInfo WebCLPlatform::getInfo (int platform_info, ExceptionCode& ec)
 			break;
 		default:
 			printf("Error: Unsupported Platform Info type = %d ",platform_info);
+            ec = WebCLException::FAILURE;
 			return WebCLGetInfo();
 	}
 
@@ -122,6 +123,12 @@ PassRefPtr<WebCLDeviceList> WebCLPlatform::getDevices(int device_type, Exception
 		ec = WebCLException::INVALID_PLATFORM;
 		return NULL;
 	}
+    
+    if(device_type == 0)
+    {
+        device_type = WebCL::DEVICE_TYPE_DEFAULT;
+    }
+    
 	RefPtr<WebCLDeviceList> o = WebCLDeviceList::create(m_context, m_cl_platform_id, 
 			device_type);
 	if (o != NULL) {

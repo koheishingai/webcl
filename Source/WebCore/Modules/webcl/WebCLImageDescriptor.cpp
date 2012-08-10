@@ -25,35 +25,84 @@
 * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef WebCLSampler_h
-#define WebCLSampler_h
+#include "config.h"
 
-#include <OpenCL/opencl.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <PlatformString.h>
+#if ENABLE(WEBCL)
 
-#include "WebCLGetInfo.h"
+#include "WebCLImage.h"
+#include "WebCLException.h"
+#include "webclcontext.h"
+#include "WebCL.h"
+#include "WebCLImageDescriptor.h"
 
 namespace WebCore {
 
-class WebCL;
+WebCLImageDescriptor::~WebCLImageDescriptor()
+{
+}
 
-class WebCLSampler : public RefCounted<WebCLSampler> {
-public:
-	virtual ~WebCLSampler();
-	static PassRefPtr<WebCLSampler> create(WebCL*, cl_sampler);
-	WebCLGetInfo getInfo(int, ExceptionCode&);
-	void releaseCL( ExceptionCode&);
-private:
-	WebCLSampler(WebCL*, cl_sampler);	
-	WebCL* m_context;
-	cl_sampler m_cl_sampler;
-	long m_num_samplers;
-	Vector<RefPtr<WebCLSampler> > m_sampler_list;
-	cl_sampler getCLSampler();
-};
+PassRefPtr<WebCLImageDescriptor> WebCLImageDescriptor::create()
+{
+    return adoptRef(new WebCLImageDescriptor()) ;
+}
+
+WebCLImageDescriptor::WebCLImageDescriptor()
+{
+      this->objchannelOrder=0x10B5;
+      this->objchannelType=0x10D2;
+      this->objwidth  = 0;
+      this->objheight = 0;
+      this->objrowPitch = 0;
+}
+
+
+void WebCLImageDescriptor::setChannelOrder(long channelOrder){
+  this->objchannelOrder = channelOrder;
+}
+
+long WebCLImageDescriptor::channelOrder() const
+{
+	return objchannelOrder;
+}
+
+void WebCLImageDescriptor::setChannelType(long channelType){
+  this->objchannelType = channelType;
+}
+
+long WebCLImageDescriptor::channelType() const
+{
+	return objchannelType;
+}
+
+void WebCLImageDescriptor::setWidth(long width){
+  this->objwidth = width;
+}
+
+long WebCLImageDescriptor::width() const
+{
+	return objwidth;
+}
+
+void WebCLImageDescriptor::setHeight(long height){
+  this->objheight  = height;
+}
+
+long WebCLImageDescriptor::height() const
+{
+	return objheight;
+}
+
+void WebCLImageDescriptor::setRowPitch(long rowPitch){
+  this->objrowPitch = rowPitch;
+}
+
+long WebCLImageDescriptor::rowPitch() const
+{
+	return objrowPitch;
+}
+
+                
 
 } // namespace WebCore
 
-#endif // WebCLSampler_h
+#endif // ENABLE(WEBCL)

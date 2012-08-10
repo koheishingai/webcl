@@ -46,37 +46,37 @@ class WebCL;
 
 class WebCLContextProperties : public RefCounted<WebCLContextProperties>
 {
-      public:
-      virtual ~WebCLContextProperties();
-	  static PassRefPtr<WebCLContextProperties> create();
+public:
+    virtual ~WebCLContextProperties();
+    static PassRefPtr<WebCLContextProperties> create();
 
-	  WebCLContextProperties();
-	 
-	  WebCLPlatform* platform() const; 
-	  void setPlatform(WebCLPlatform*);
-	  
-	  WebCLDeviceList* devices() const;    
-	  void setDevices(WebCLDeviceList*);
+    WebCLContextProperties();
 
-	  int deviceType() const;             
-	  void setDeviceType(int);
+    WebCLPlatform* platform() const; 
+    void setPlatform(WebCLPlatform*);
 
-	  int shareGroup() const;            
-	  void setShareGroup(int);
+    WebCLDeviceList* devices() const;    
+    void setDevices(WebCLDeviceList*);
 
-	  String hint() const;      
-	  void setHint(String);
+    int deviceType() const;             
+    void setDeviceType(int);
 
-	private:
+    int shareGroup() const;            
+    void setShareGroup(int);
 
-	 	WebCLPlatform* objplatform;
-		WebCLDeviceList* objdevices;
-		int objdeviceType;
-		int objshareGroup;
-		String objhint;		
-		
+    String hint() const;      
+    void setHint(String);
 
-	  
+private:
+
+    WebCLPlatform* objplatform;
+    WebCLDeviceList* objdevices;
+    int objdeviceType;
+    int objshareGroup;
+    String objhint;		
+
+
+
 
 };
 

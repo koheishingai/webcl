@@ -51,7 +51,7 @@ using namespace JSC;
 using namespace std;
 
 namespace WebCore { 
-/*
+
 static PassRefPtr<WebCLFinishCallback> createFinishCallback(ExecState* exec, JSDOMGlobalObject* globalObject, JSValue value)
 {
         //if (!value.inherits(&JSFunction::info)) {
@@ -66,7 +66,7 @@ static PassRefPtr<WebCLFinishCallback> createFinishCallback(ExecState* exec, JSD
         JSObject* object = asObject(value);
         return JSWebCLFinishCallback::create(object, globalObject);
 }
-*/
+
 
 
 JSValue JSWebCLEvent::getInfo(JSC::ExecState* exec)
@@ -109,9 +109,10 @@ JSValue JSWebCLEvent::getProfilingInfo(JSC::ExecState* exec)
 	return toJS(exec, globalObject(), info);
 }
 
-/*
-JSValue JSWebCLEvent::setEventCallback(JSC::ExecState* exec)
+
+JSValue JSWebCLEvent::setCallback(JSC::ExecState* exec)
 {
+	printf(" SWebCLEvent::setCallback(JSC::ExecState* exec)\n");
         if (exec->argumentCount() != 3)
                 return throwSyntaxError(exec);
 
@@ -135,7 +136,7 @@ JSValue JSWebCLEvent::setEventCallback(JSC::ExecState* exec)
     }
 
 
-//        RefPtr<WebCLFinishCallback> finishCallback = createFinishCallback(exec, static_cast<JSDOMGlobalObject*>(exec->lexicalGlobalObject()), exec->argument(1));
+        RefPtr<WebCLFinishCallback> finishCallback = createFinishCallback(exec, static_cast<JSDOMGlobalObject*>(exec->lexicalGlobalObject()), exec->argument(1));
         if (exec->hadException())
                 return jsUndefined();
 
@@ -143,14 +144,14 @@ JSValue JSWebCLEvent::setEventCallback(JSC::ExecState* exec)
         if (exec->hadException())
                 return jsUndefined();
 
-        m_impl->setEventCallback(executionStatus,callback.release(), userParam, ec);
+        m_impl->setCallback(executionStatus,callback.release(), userParam, ec);
         if (ec) {
                 setDOMException(exec, ec);
                 return jsUndefined();
         }
         return jsUndefined();
 }
-*/
+
 
 } // namespace WebCore
 

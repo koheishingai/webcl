@@ -51,8 +51,7 @@
 #include "ImageBuffer.h"
 #include "CachedImage.h"
 #include <wtf/ArrayBuffer.h>
-#include "CanvasPixelArray.h"
-
+#include "CachedImage.h"
 
 #include <wtf/OwnPtr.h>
 #include <wtf/RefCounted.h>
@@ -64,6 +63,7 @@
 #include <PlatformString.h>
 #include <OpenCL/opencl.h>
 #include <wtf/ArrayBuffer.h>
+#include <WebCLImageDescriptor.h>
 
 namespace WebCore {
 
@@ -106,11 +106,21 @@ public:
 	}
     
     
+    PassRefPtr<WebCLMem> createImage(int, HTMLCanvasElement*, ExceptionCode&);
+	PassRefPtr<WebCLMem> createImage(int, HTMLImageElement*, ExceptionCode&);
+	PassRefPtr<WebCLMem> createImage(int, HTMLVideoElement*, ExceptionCode&);
+	PassRefPtr<WebCLMem> createImage(int, ImageData*, ExceptionCode&);
+    PassRefPtr<WebCLMem> createImageWithDescriptor(int,WebCLImageDescriptor*,ArrayBuffer*,ExceptionCode&);
+    PassRefPtr<WebCLMem> createImageWithDescriptor(int flag,WebCLImageDescriptor* descriptor,ExceptionCode& ec)
+    {
+        return ( createImageWithDescriptor(flag,descriptor,NULL,ec) );
+    }
     
 	PassRefPtr<WebCLMem> createImage2D(int, HTMLCanvasElement*, ExceptionCode&);
 	PassRefPtr<WebCLMem> createImage2D(int, HTMLImageElement*, ExceptionCode&);
 	PassRefPtr<WebCLMem> createImage2D(int, HTMLVideoElement*, ExceptionCode&);
 	PassRefPtr<WebCLMem> createImage2D(int, ImageData*, ExceptionCode&);
+    
 	PassRefPtr<WebCLMem> createImage2D(int,unsigned int,unsigned int, ArrayBuffer*, ExceptionCode&);
 	PassRefPtr<WebCLMem> createImage3D(int, unsigned int, unsigned int, unsigned int,ArrayBuffer*, ExceptionCode&);
 	PassRefPtr<WebCLSampler> createSampler(bool, int, int, ExceptionCode&);
@@ -123,18 +133,18 @@ public:
 	cl_context getCLContext();
 	// Fixed-size cache of reusable image buffers for video texImage2D calls.
 	class LRUImageBufferCache {
-	public:
-		LRUImageBufferCache(int capacity);
-		// The pointer returned is owned by the image buffer map.
-		ImageBuffer* imageBuffer(const IntSize& size);
-	private:
-		void bubbleToFront(int idx);
-		OwnArrayPtr<OwnPtr<ImageBuffer> > m_buffers;
-		int m_capacity;
-	};
+	    public:
+            LRUImageBufferCache(int capacity);
+            // The pointer returned is owned by the image buffer map.
+            ImageBuffer* imageBuffer(const IntSize& size);
+        private:
+            void bubbleToFront(int idx);
+            OwnArrayPtr<OwnPtr<ImageBuffer> > m_buffers;
+            int m_capacity;
+    };
 	LRUImageBufferCache m_videoCache;
 
-	private:
+private:
 	WebCLContext(WebCL*, cl_context);
 	WebCL* m_context;
 	cl_context m_cl_context;
@@ -158,9 +168,7 @@ public:
 	RefPtr<WebCLCommandQueue> m_command_queue;
 	
 	PassRefPtr<Image> videoFrameToImage(HTMLVideoElement*);
-
 };
-
 
 
 } // namespace WebCore

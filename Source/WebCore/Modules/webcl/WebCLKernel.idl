@@ -43,5 +43,16 @@ module webcl {
 	void setKernelArgLocal(in unsigned long argIndex,
 				in unsigned long argSize) raises(DOMException);
 	void releaseCL() raises(DOMException);	
+	
+	[Custom] void setArg(in unsigned long argIndex,
+											 in DOMObject kernelObject,
+											 in long type ) raises(DOMException);
+											 
+	[Custom] void setArg(in unsigned long argIndex, 
+				in WebCLMem argValue) raises(DOMException);
+	
+	[Custom] void setArg(in unsigned long argIndex,
+			in unsigned long argSize) raises(DOMException);
+	
 	};
 }

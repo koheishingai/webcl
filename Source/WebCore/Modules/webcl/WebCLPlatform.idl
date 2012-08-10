@@ -31,7 +31,7 @@ module webcl {
 		Conditional=WEBCL,
 	] WebCLPlatform {
 	
-	WebCLDeviceList getDevices(in long deviceType) raises(DOMException);
+	WebCLDeviceList getDevices(in [Optional] long deviceType) raises(DOMException);
 	[StrictTypeChecking, Custom]  void getInfo (in long platformInfo) raises(DOMException);		
 	//DOMString getSupportedExtensions()  raises(DOMException);
 	[StrictTypeChecking, Custom] void getSupportedExtensions() raises(DOMException);

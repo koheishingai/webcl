@@ -187,8 +187,34 @@ public:
 	}
 
 
-	void enqueueBarrier( ExceptionCode&);
-	void enqueueMarker(WebCLEvent*, ExceptionCode&);
+	void enqueueBarrier(WebCLEventList* ,WebCLEvent*,ExceptionCode&);
+    
+    void enqueueBarrier(WebCLEventList* eventWaitList ,ExceptionCode& ec)
+    {
+        return(enqueueBarrier(eventWaitList,NULL,ec)); 
+    }
+    
+    void enqueueBarrier(ExceptionCode& ec)
+    {
+        return(enqueueBarrier(NULL,NULL,ec));
+    }
+    
+    void enqueueMarker(WebCLEventList* ,WebCLEvent*,ExceptionCode&);
+    
+    void enqueueMarker(WebCLEventList* eventWaitList ,ExceptionCode& ec)
+    {
+        return(enqueueMarker(eventWaitList,NULL,ec)); 
+    }
+    
+    void enqueueMarker(ExceptionCode& ec)
+    {
+        return(enqueueMarker(NULL,NULL,ec));
+    }
+    
+    
+	
+    
+    
 	void enqueueWaitForEvents(WebCLEventList*, ExceptionCode&);
 	PassRefPtr<WebCLEvent> enqueueTask( WebCLKernel* ,int, ExceptionCode&);
 	cl_command_queue getCLCommandQueue();	

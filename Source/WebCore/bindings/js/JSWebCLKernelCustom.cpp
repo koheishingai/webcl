@@ -58,6 +58,7 @@
 #include "JSWebCLDevice.h"
 #include "JSWebCLKernel.h"
 #include "JSWebCLCustom.h"
+#include "JSWebCLMem.h"
 #include <stdio.h>
 
 using namespace JSC;
@@ -138,6 +139,94 @@ JSValue JSWebCLKernel::setKernelArg(ExecState* exec)
 	return jsUndefined();
 
 }
+JSValue JSWebCLKernel::setArg(ExecState* exec)
+{
+	
+	unsigned count = exec->argumentCount();
+	
+
+	if (count < 2)
+		return throwSyntaxError(exec);
+
+	ExceptionCode ec = 0;
+	WebCLKernel* kernel = static_cast<WebCLKernel*>(impl());	
+	if (exec->hadException())
+		return jsUndefined();
+
+	unsigned argIndex  = exec->argument(0).toInt32(exec);
+	if (exec->hadException())
+		return jsUndefined();
+
+	if(count  == 3)
+	{
+		JSValue value = exec->argument(1);	
+		ScriptValue object(exec->globalData(), exec->argument(1));
+		if (exec->hadException())
+			return jsUndefined();
+
+		unsigned argType  = exec->argument(2).toInt32(exec);
+		if (exec->hadException())
+			return jsUndefined();
+   		kernel->setArg(argIndex, object.toWebCLKernelTypeValue(exec),argType, ec);
+		if (ec) {
+			setDOMException(exec, ec);
+		return jsUndefined();
+		}
+
+
+		return jsUndefined();
+	}
+	else{
+		if(count == 2){
+
+			unsigned argIndex  = exec->argument(0).toInt32(exec);
+			if (exec->hadException())
+			return jsUndefined();
+			
+			if(exec->argument(1).isInt32()){
+
+				unsigned argSize = exec->argument(1).toInt32(exec);
+				kernel->setArg(argIndex, argSize, ec);
+
+
+			}
+			else
+			{
+				WebCLMem* value = toWebCLMem(exec->argument(1));
+				ScriptValue object(exec->globalData(), exec->argument(1));
+				if (exec->hadException())
+					return jsUndefined();
+				//kernel->setArg(argIndex, object.toWebCLMem(exec), ec);
+				kernel->setArg(argIndex, value, ec);
+				return jsUndefined();
+
+			}			
+
+			if (ec) {
+				setDOMException(exec, ec);
+				return jsUndefined();
+			}
+			return jsUndefined();
+
+
+		}
+		else{
+			if (ec) {
+				setDOMException(exec, ec);
+				return jsUndefined();
+			}
+			return jsUndefined();
+
+		
+		}
+
+	}
+
+
+	
+
+}
+
 
 } // namespace WebCore
 

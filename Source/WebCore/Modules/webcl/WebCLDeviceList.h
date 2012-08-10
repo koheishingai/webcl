@@ -46,7 +46,7 @@ public:
 	virtual ~WebCLDeviceList();
 	static PassRefPtr<WebCLDeviceList> create(WebCL*, cl_platform_id, int);
 	static PassRefPtr<WebCLDeviceList> create(WebCL* ,cl_device_id*, int);
-	cl_device_id getCLDevices();
+	cl_device_id* getCLDevices();
 	unsigned length() const;
 	WebCLDevice* item(unsigned index);
 

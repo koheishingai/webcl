@@ -51,7 +51,7 @@ WebCLSampler::WebCLSampler(WebCL* compute_context, cl_sampler sampler)
 	m_num_samplers = 0;
 }
 
-WebCLGetInfo WebCLSampler::getInfo(cl_sampler_info param_name, ExceptionCode& ec)
+WebCLGetInfo WebCLSampler::getInfo(int param_name, ExceptionCode& ec)
 {
 	cl_int err = 0;
 	cl_uint uint_units = 0;
@@ -63,6 +63,8 @@ WebCLGetInfo WebCLSampler::getInfo(cl_sampler_info param_name, ExceptionCode& ec
 		printf("Error: Invalid Sampler\n");
 		return WebCLGetInfo();
 	}
+         printf(" param_name %d  ",param_name);
+	//cout<<param_name;
 	switch(param_name)
 	{
 		case WebCL::SAMPLER_REFERENCE_COUNT:

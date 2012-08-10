@@ -25,35 +25,50 @@
 * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef WebCLSampler_h
-#define WebCLSampler_h
+#ifndef WebCLImageDescriptor_h
+#define WebCLImageDescriptor_h
 
 #include <OpenCL/opencl.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
-#include <PlatformString.h>
-
-#include "WebCLGetInfo.h"
+#include "WebCLException.h"
 
 namespace WebCore {
 
 class WebCL;
 
-class WebCLSampler : public RefCounted<WebCLSampler> {
+class WebCLImageDescriptor : public RefCounted<WebCLImageDescriptor>
+{
 public:
-	virtual ~WebCLSampler();
-	static PassRefPtr<WebCLSampler> create(WebCL*, cl_sampler);
-	WebCLGetInfo getInfo(int, ExceptionCode&);
-	void releaseCL( ExceptionCode&);
-private:
-	WebCLSampler(WebCL*, cl_sampler);	
-	WebCL* m_context;
-	cl_sampler m_cl_sampler;
-	long m_num_samplers;
-	Vector<RefPtr<WebCLSampler> > m_sampler_list;
-	cl_sampler getCLSampler();
+    virtual ~WebCLImageDescriptor();
+
+    static PassRefPtr<WebCLImageDescriptor> create();
+
+
+    WebCLImageDescriptor();
+
+    long objchannelOrder;
+    void setChannelOrder(long);
+    long channelOrder() const;
+
+    long objchannelType;
+    void setChannelType(long);
+    long channelType() const;
+
+    long objwidth;
+    void setWidth(long);
+    long width() const;
+
+    long objheight;
+    void setHeight(long);
+    long height() const;
+
+    long objrowPitch ;
+    void setRowPitch(long);
+    long rowPitch() const;
+
 };
 
 } // namespace WebCore
 
-#endif // WebCLSampler_h
+#endif // WebCLImageDescriptor_h

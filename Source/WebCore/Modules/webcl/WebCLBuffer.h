@@ -31,12 +31,13 @@
 #include <OpenCL/opencl.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
+#include <WebCLMem.h>
 
 namespace WebCore {
 
 class WebCL;
 
-class WebCLBuffer : public RefCounted<WebCLBuffer> {
+class WebCLBuffer : public RefCounted<WebCLBuffer>  {
 public:
 	virtual ~WebCLBuffer();
 	static PassRefPtr<WebCLBuffer> create(WebCL*, cl_mem, bool);
@@ -53,4 +54,4 @@ private:
 
 } // namespace WebCore
 
-#endif // WebCLBuffer_h
+#endif // WebCLBuffer_hWebCLMem

@@ -54,6 +54,7 @@
 #include "JSWebCLDevice.h"
 #include "JSWebCLProgram.h"
 #include "JSWebCLCustom.h"
+#include "JSWebCLFinishCallback.h"
 #include <stdio.h>
 
 using namespace JSC;
@@ -100,6 +101,85 @@ JSValue JSWebCLProgram::getBuildInfo(JSC::ExecState* exec)
 		return jsUndefined();
 	}
 	return toJS(exec, globalObject(), info);
+}
+
+static PassRefPtr<WebCLFinishCallback> createFinishCallback(ExecState* exec, JSDOMGlobalObject* globalObject, JSValue value)
+{
+        //if (!value.inherits(&JSFunction::info)) {
+        //      setDOMException(exec, TYPE_MISMATCH_ERR);
+        //      return 0;
+        //}
+        if (value.isUndefinedOrNull())
+        {
+                setDOMException(exec, TYPE_MISMATCH_ERR);
+                return 0;
+        }
+        JSObject* object = asObject(value);
+        return JSWebCLFinishCallback::create(object, globalObject);
+}
+
+JSValue JSWebCLProgram::build(JSC::ExecState* exec)
+{
+	 if (exec->argumentCount() != 2)
+	        return throwSyntaxError(exec);
+
+	 if (exec->hadException())
+			return jsUndefined();
+
+
+	 WebCLDeviceList* devices = toWebCLDeviceList(exec->argument(0));
+
+ 
+
+	 String options = (ustringToString(exec->argument(1).toString(exec)->value(exec)));
+
+	 //PassRefPtr<WebCLFinishCallback> whenFinished;
+
+	 ExceptionCode ec = 0;
+	 RefPtr<WebCLFinishCallback> callback;
+	int userData =  exec->argument(3).toInt32(exec);
+	if(exec->argument(2).getObject() == NULL)
+	{
+
+		 m_impl->build(devices,options,NULL, userData, ec);
+
+
+	}	
+	else
+	{
+
+		if (!exec->argument(2).isUndefinedOrNull()) {
+			JSObject* object = exec->argument(2).getObject();
+			if (!object) {
+				setDOMException(exec, TYPE_MISMATCH_ERR);
+				return jsUndefined();
+			}
+
+			callback = JSWebCLFinishCallback::create(object, static_cast<JSDOMGlobalObject*>(globalObject()));
+		}
+
+		RefPtr<WebCLFinishCallback> finishCallback = createFinishCallback(exec, static_cast<JSDOMGlobalObject*>(exec->lexicalGlobalObject()), exec->argument(2));
+
+	
+
+		if (exec->hadException())
+	     	 	return jsUndefined();
+	
+
+	 	m_impl->build(devices,options,callback.release(), userData, ec);
+
+
+	 }
+
+		
+	
+	 if (ec) {
+			 setDOMException(exec, ec);
+			 return jsUndefined();
+	 }
+	
+	 return jsUndefined();
+
 }
 
 } // namespace WebCore

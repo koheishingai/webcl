@@ -51,10 +51,20 @@ public:
 	static PassRefPtr<WebCLKernel> create(WebCL*, cl_kernel);
 	WebCLGetInfo getInfo (int, ExceptionCode&);
 	WebCLGetInfo getWorkGroupInfo(WebCLDevice*, int, ExceptionCode&);			
+
 	void setKernelArg(unsigned int, PassRefPtr<WebCLKernelTypeValue>, int, ExceptionCode&);
 	void setKernelArgGlobal(unsigned int, WebCLMem*, ExceptionCode&);
 	void setKernelArgConstant(unsigned int, WebCLMem*, ExceptionCode&);
 	void setKernelArgLocal(unsigned int,unsigned int, ExceptionCode&);
+
+
+	void setArg(unsigned int, PassRefPtr<WebCLKernelTypeValue>, unsigned int, ExceptionCode& ec);
+	void setArg(unsigned int, WebCLMem*, ExceptionCode& ec);
+	void setArg(unsigned int, unsigned int, ExceptionCode& ec);
+
+
+
+
 	//unsigned long getKernelWorkGroupInfo(WebCLDeviceList*, int);
 	void releaseCL( ExceptionCode&);
 	void setDevice(RefPtr<WebCLDevice>);

@@ -49,7 +49,15 @@ module webcl {
 	WebCLSampler createSampler(in boolean normCords, in long addrMode,
 			in long fltrMode) raises(DOMException);	
 	void releaseCL() raises(DOMException);				
-	WebCLMem createImage2D(in long flags, 
+	
+    WebCLMem createImage(in long flags,in HTMLCanvasElement canvasElement) raises(DOMException);
+	WebCLMem createImage(in long flags,in HTMLImageElement imageElement) raises(DOMException);
+	WebCLMem createImage(in long flags,in HTMLVideoElement videoElement) raises(DOMException);
+	WebCLMem createImage(in long flags,in ImageData data) raises(DOMException);
+    
+    [StrictTypeChecking, Custom] WebCLMem createImageWithDescriptor(in long flags,in WebCLImageDescriptor descriptor,in [Optional] ArrayBuffer srcBuffer) raises(DOMException);
+	
+    WebCLMem createImage2D(in long flags, 
 				in HTMLCanvasElement canvasElement) raises(DOMException);
 	WebCLMem createImage2D(in long flags, 
 				in HTMLImageElement imageElement) raises(DOMException);
@@ -57,7 +65,9 @@ module webcl {
 				in HTMLVideoElement videoElement) raises(DOMException);
 	WebCLMem createImage2D(in long flags, 
 				in ImageData data) raises(DOMException);
-	WebCLMem createImage2D(in long flags,
+    
+    
+    WebCLMem createImage2D(in long flags,
 				in unsigned long width,
 				in unsigned long height,
 				in ArrayBuffer data) raises(DOMException);

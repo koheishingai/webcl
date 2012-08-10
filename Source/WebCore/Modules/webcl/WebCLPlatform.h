@@ -47,6 +47,10 @@ public:
 	static PassRefPtr<WebCLPlatform> create(WebCL* context, cl_platform_id platform_id);
 	WebCLGetInfo getInfo (int, ExceptionCode&);
 	PassRefPtr<WebCLDeviceList> getDevices(int, ExceptionCode&);
+    PassRefPtr<WebCLDeviceList> getDevices(ExceptionCode& ec)
+    {
+        return(getDevices(0,ec));
+    }
 	Vector<String> getSupportedExtensions(ExceptionCode&);
 	cl_platform_id getCLPlatform();
 

@@ -75,9 +75,9 @@ WebCLPlatformList::WebCLPlatformList(WebCL* ctx) : m_context(ctx)
 	
 }
 
-cl_platform_id WebCLPlatformList::getCLPlatforms()
+cl_platform_id* WebCLPlatformList::getCLPlatforms()
 {
-	return *m_cl_platforms;
+	return m_cl_platforms;
 }
 
 unsigned WebCLPlatformList::length() const

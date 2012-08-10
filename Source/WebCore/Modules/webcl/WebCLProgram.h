@@ -36,6 +36,7 @@
 
 #include "WebCLDevice.h"
 #include "WebCLDeviceList.h"
+#include "WebCLFinishCallback.h"
 
 namespace WebCore {
 
@@ -58,9 +59,22 @@ public:
 	void setDevice(RefPtr<WebCLDevice>);
 	PassRefPtr<WebCLKernelList> createKernelsInProgram( ExceptionCode&); 
 	cl_program getCLProgram();
+	void build(WebCLDeviceList*,const String&, PassRefPtr<WebCLFinishCallback>, int, ExceptionCode&);
+	void build(WebCLDeviceList* devices,const String& options,PassRefPtr<WebCLFinishCallback> finishCallBack, ExceptionCode& ec)
+	{
+		return build(devices,options,finishCallBack,0,ec);
+	}
+	void build(WebCLDeviceList* devices,const String& options, ExceptionCode& ec)
+	{
+		return build(devices,options,NULL,0,ec);
+	}
+	RefPtr<WebCLFinishCallback> m_finishCallback;
 
 private:
 	WebCLProgram(WebCL*, cl_program);
+	//static void CL_CALLBACK finishCallBack(cl_program program,void *user_data);
+	static void finishCallBack(cl_program program,void *user_data);
+	static WebCLProgram *this_pointer;
 	WebCL* m_context;
 	cl_program m_cl_program;
 	long m_num_programs;

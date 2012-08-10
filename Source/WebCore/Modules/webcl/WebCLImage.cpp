@@ -122,6 +122,147 @@ int WebCLImage::getGLtextureInfo(int paramNameobj, ExceptionCode& ec)
       
 }
 
+/*HashMap<String,int> WebCLImage::getInfo(ExceptionCode& ec)
+{
+	HashMap<String,int> objMap;
+	if(ec != 1)
+	{
+		printf(" ec not 1 ");
+	}
+	objMap.add("channelOrder",10);
+	objMap.add("channelType",30);
+	objMap.add("width",50);
+	objMap.add("height",70);
+	objMap.add("rowPitch",80);
+
+	  return(objMap);
+
+}*/
+
+PassRefPtr<WebCLImageDescriptor> WebCLImage::getInfo(ExceptionCode& ec)
+{
+      cl_int err = 0;
+
+      if (m_cl_mem == NULL) {
+		printf("Error: Invalid CL Context\n");
+		ec = WebCLException::INVALID_MEM_OBJECT;
+		return NULL;
+	  }
+
+      cl_int int_units = 0;
+
+      long channelOrder;
+      long channelType;
+      long width;
+      long height;
+      long rowPitch;
+
+      PassRefPtr<WebCLImageDescriptor> objectWebCLImageDescriptor = WebCLImageDescriptor::create();
+
+      int iflag = 0;
+
+      err = clGetImageInfo (m_cl_mem,CL_IMAGE_FORMAT,sizeof(cl_int), &int_units, NULL);
+
+      if(err == CL_SUCCESS )
+      {
+             channelOrder = (long)int_units;
+             iflag = 1;
+      }
+
+      err = clGetImageInfo (m_cl_mem,CL_IMAGE_ELEMENT_SIZE,sizeof(cl_int), &int_units, NULL);
+
+      if(err == CL_SUCCESS && iflag ==1)
+      {
+             channelType = (long)int_units;
+      }
+      else
+	  {
+		  iflag = 0;
+	  }
+
+      err = clGetImageInfo (m_cl_mem,CL_IMAGE_WIDTH,sizeof(cl_int), &int_units, NULL);
+
+      if(err == CL_SUCCESS && iflag ==1 )
+      {
+             width = (long)int_units;
+      }
+      else
+      {
+    	  iflag = 0;
+      }
+
+      err = clGetImageInfo (m_cl_mem,CL_IMAGE_HEIGHT,sizeof(cl_int), &int_units, NULL);
+
+      if(err == CL_SUCCESS && iflag ==1)
+      {
+           height = (long)int_units;
+      }
+      else
+	  {
+		  iflag = 0;
+	  }
+
+      err = clGetImageInfo (m_cl_mem,CL_IMAGE_ROW_PITCH,sizeof(cl_int), &int_units, NULL);
+
+      if(err == CL_SUCCESS && iflag ==1)
+      {
+          rowPitch = (long)int_units;
+      }
+      else
+	  {
+		  iflag = 0;
+	  }
+
+
+      if(err == CL_SUCCESS && iflag ==1)
+      {
+    	  
+
+    	  objectWebCLImageDescriptor->setChannelOrder(channelOrder);
+    	  objectWebCLImageDescriptor->setChannelType(channelType);
+    	  objectWebCLImageDescriptor->setWidth(width);
+    	  objectWebCLImageDescriptor->setHeight(height);
+    	  objectWebCLImageDescriptor->setRowPitch(rowPitch);
+
+    	  return (objectWebCLImageDescriptor);
+      }
+      else
+      {
+    	  switch (err) {
+				case CL_INVALID_MEM_OBJECT:
+					ec = WebCLException::INVALID_MEM_OBJECT;
+					printf("Error: CL_INVALID_MEM_OBJECT  \n");
+					break;
+				case CL_INVALID_GL_OBJECT:
+					ec = WebCLException::INVALID_GL_OBJECT;
+					printf("Error: CL_INVALID_GL_OBJECT \n");
+					break;
+				case CL_INVALID_VALUE:
+					ec = WebCLException::INVALID_VALUE;
+					printf("Error: CL_INVALID_VALUE \n");
+					break;
+					case CL_OUT_OF_RESOURCES:
+					ec = WebCLException::OUT_OF_RESOURCES;
+					printf("Error: CL_OUT_OF_RESOURCES \n");
+					break;
+				case CL_OUT_OF_HOST_MEMORY:
+					ec = WebCLException::OUT_OF_HOST_MEMORY;
+					printf("Error: CL_OUT_OF_HOST_MEMORY  \n");
+					break;
+				default:
+					ec = WebCLException::FAILURE;
+					printf("Invaild Error Type\n");
+					break;
+
+    	  }
+      }
+
+	return(objectWebCLImageDescriptor);
+
+}
+
+
+
 } // namespace WebCore
 
 #endif // ENABLE(WEBCL)

@@ -47,6 +47,14 @@ module webcl {
 	void buildProgram(	in long options, 
 					in long pfnNotify, 
 					in long userData) raises(DOMException);
+	
+	 [StrictTypeChecking, Custom] void build(in WebCLDeviceList devices, 
+               in DOMString options, 
+               in [Optional] WebCLFinishCallback whenFinished,
+               in [Optional] long userdata) raises(DOMException);
+               
+               
+					
 	void releaseCL() raises(DOMException);
 	
 	

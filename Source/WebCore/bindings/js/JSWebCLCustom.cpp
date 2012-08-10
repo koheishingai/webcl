@@ -78,6 +78,9 @@
 #include "WebCLKernelTypes.h" //not needeed
 #include "ScriptValue.h"  //not needeed
 #include "JSWebCLCustom.h"
+#include "WebCLContextProperties.h"
+#include <wtf/PassRefPtr.h>
+#include <wtf/RefCounted.h>
 #include <stdio.h>
 
 using namespace JSC;
@@ -112,6 +115,84 @@ JSValue JSWebCL::getImageInfo(JSC::ExecState* exec)
 	}
 	return toJS(exec, globalObject(), info);
 }
+JSValue JSWebCL::createContext(JSC::ExecState* exec)
+{
+	ExceptionCode ec = 0;
+    RefPtr<WebCLContext> objWebCLContext;
+    
+    //printf(" inside  JSWebCL::createContext ");
+    
+	if (exec->argumentCount() == 0)
+	{
+       // m_impl->createContext(NULL,ec);
+        
+        objWebCLContext  = m_impl->createContext(NULL,ec);
+        if (ec) {
+            setDOMException(exec, ec);
+            return jsUndefined();
+        }
+        else
+        {
+            return toJS(exec, globalObject(), objWebCLContext.get());
+        }
+
+        return jsUndefined();
+    }
+    else
+    {
+        if(exec->argumentCount() == 1)
+        {
+            PassRefPtr<WebCore::WebCLContextProperties> objWebCLContextProperties = WebCLContextProperties::create();
+            if (exec->argumentCount() == 1 && exec->argument(0).isObject()) {
+                
+                JSObject* jsAttrs = exec->argument(0).getObject();
+                
+                Identifier platform(exec, "platform");
+                if (jsAttrs->hasProperty(exec, platform))
+                    objWebCLContextProperties->setPlatform(toWebCLPlatform(jsAttrs->get(exec, platform)));
+                
+                Identifier devices(exec, "devices");
+                if (jsAttrs->hasProperty(exec, devices))
+                    objWebCLContextProperties->setDevices(toWebCLDeviceList(jsAttrs->get(exec, devices)));
+                
+                Identifier deviceType(exec, "deviceType");
+                if (jsAttrs->hasProperty(exec, deviceType))
+                    objWebCLContextProperties->setDeviceType(jsAttrs->get(exec, deviceType).toInt32(exec));
+                
+                Identifier shareGroup(exec, "shareGroup");
+                if (jsAttrs->hasProperty(exec, shareGroup))
+                    objWebCLContextProperties->setShareGroup(jsAttrs->get(exec, shareGroup).toInt32(exec));
+                
+                Identifier hint(exec, "hint");
+                if (jsAttrs->hasProperty(exec, hint))
+                    //ustringToString(exec->argument(0).toString(exec)->value(exec))
+                    objWebCLContextProperties->setHint(ustringToString(jsAttrs->get(exec, hint).toString(exec)->value(exec)));
+                
+                
+                
+                objWebCLContext  = m_impl->createContext(objWebCLContextProperties.get() ,ec);
+                if (ec) {
+                        setDOMException(exec, ec);
+                        return jsUndefined();
+                }
+                else
+                {
+                    return toJS(exec, globalObject(), objWebCLContext.get());
+                }
+                return jsUndefined();
+                
+            }
+                return jsUndefined();
+            
+        }
+    }
+    
+    return jsUndefined();
+	
+
+}
+
+    
 EncodedJSValue JSC_HOST_CALL JSWebCLConstructor::constructJSWebCL(ExecState* exec)
 {
 	JSWebCLConstructor* jsConstructor = static_cast<JSWebCLConstructor*>(exec->callee());
