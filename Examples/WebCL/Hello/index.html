@@ -118,9 +118,12 @@ function InitCL()
 		}
 		device = devices[0];
 
-		// Create a compute context - takes defualt device
+		// Create a compute context
 		//
+		//context = cl.createContext(null, device, null, null);
 		context = cl.createContext();
+		// also allow the following form since can use one or more devices
+		// context = cl.createContext(null, devices, null, null);
 
 		// Create a command queue
 		//
@@ -148,8 +151,8 @@ function InitCL()
 
 		// Create the input and output arrays in device memory for our calculation
 		//
-		input = context.createBuffer(cl.MEM_READ_ONLY,  Float32Array.BYTES_PER_ELEMENT * count, null);
-		output = context.createBuffer( cl.MEM_WRITE_ONLY, Float32Array.BYTES_PER_ELEMENT * count, null);
+		input = context.createBuffer(cl.MEM_READ_ONLY,  Float32Array.BYTES_PER_ELEMENT * count);
+        output = context.createBuffer( cl.MEM_WRITE_ONLY, Float32Array.BYTES_PER_ELEMENT * count);
 		if (input === null || output === null)
 		{
 			console.error("Failed to allocate device memory");
@@ -158,7 +161,7 @@ function InitCL()
 
 		// Write our data set into the input array in device memory
 		//
-		queue.enqueueWriteBuffer( input, true, 0, Float32Array.BYTES_PER_ELEMENT * count, data, null);
+		queue.enqueueWriteBuffer( input, true, 0, Float32Array.BYTES_PER_ELEMENT * count, data );
 
 		// Set the arguments to our compute kernel
 		//
@@ -185,7 +188,7 @@ function InitCL()
 		
 		// Read back the results from the device to verify the output
 		//
-		queue.enqueueReadBuffer(output, true, 0, Float32Array.BYTES_PER_ELEMENT * count, results, null);
+		queue.enqueueReadBuffer(output, true, 0, Float32Array.BYTES_PER_ELEMENT * count, results);
 
 		// Validate our results (to 6 figure accuracy)
 		//
@@ -205,12 +208,12 @@ function InitCL()
 
 		// Shutdown and cleanup
 		//
-		input.release();
-		output.release();
-		program.release();
-		kernel.release();
-		queue.release();
-		context.release();
+		input.releaseCL();
+		output.releaseCL();
+		program.releaseCL();
+		kernel.releaseCL();
+		queue.releaseCL();
+		context.releaseCL();
 	}
 	catch (e)
 	{

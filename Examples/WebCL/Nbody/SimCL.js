@@ -78,13 +78,13 @@ function InitCL() {
 
 		// Create CL working buffers (will be copied to current buffers after computation)
 		//
-		nxtPosBuffer = context.createBuffer(cl.MEM_READ_WRITE, bufferSize, null);
+		nxtPosBuffer = context.createBuffer(cl.MEM_READ_WRITE, bufferSize);
 		if(nxtPosBuffer === null) {
 			console.error("Failed to allocate device memory");
 			return null;
 		}
 
-		nxtVelBuffer = context.createBuffer(cl.MEM_READ_WRITE, bufferSize, null);
+		nxtVelBuffer = context.createBuffer(cl.MEM_READ_WRITE, bufferSize);
 		if(nxtVelBuffer === null) {
 			console.error("Failed to allocate device memory");
 			return null;
@@ -98,7 +98,7 @@ function InitCL() {
 		//queue.enqueueAcquireGLObjects(curVelBuffer, null);
 		queue.enqueueAcquireGLObjects(curVelBuffer);
 
-		queue.enqueueWriteBuffer(curVelBuffer, true, 0, bufferSize, userData.curVel, null);
+		queue.enqueueWriteBuffer(curVelBuffer, true, 0, bufferSize, userData.curVel);
 
 		//queue.enqueueReleaseGLObjects(curVelBuffer, null);
 		queue.enqueueReleaseGLObjects(curVelBuffer);
@@ -136,7 +136,7 @@ function SimulateCL(cl) {
 		kernel.setKernelArgLocal(5, localMemSize);  // __local: val (ignored) and size
 		kernel.setKernelArgGlobal(6, nxtPosBuffer);
 		kernel.setKernelArgGlobal(7, nxtVelBuffer);
-		queue.enqueueNDRangeKernel(kernel, null, globalWorkSize, localWorkSize, null);
+		queue.enqueueNDRangeKernel(kernel, null, globalWorkSize, localWorkSize );
 
 		queue.finish();
 		queue.enqueueCopyBuffer(nxtPosBuffer, curPosBuffer, bufferSize);
@@ -151,8 +151,8 @@ function SimulateCL(cl) {
 		}
 
 		if(!userData.isGLCLshared || userData.drawMode === JS_DRAW_MODE) {
-			queue.enqueueReadBuffer(curPosBuffer, true, 0, bufferSize, userData.curPos, null);
-			queue.enqueueReadBuffer(curVelBuffer, true, 0, bufferSize, userData.curVel, null);
+			queue.enqueueReadBuffer(curPosBuffer, true, 0, bufferSize, userData.curPos);
+			queue.enqueueReadBuffer(curVelBuffer, true, 0, bufferSize, userData.curVel);
 		}
 	}
 	catch (e)

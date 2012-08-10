@@ -5,19 +5,19 @@ Tested platform
 ---------------
 - OS: Mac OSX
 - GPU: Nvidia GPU with OpenCL 1.0 support
-- GPU: AMD GPU with OpenCL 1.0 support
+- GPU: AMD GPU with OpenCL 1.1 support
 
 ---------------------
 Tested WebKit version
 ---------------------
-r110533
+r124616
 
 ------------
 How to build
 ------------
 1. Download a zipped file from Downloads menu to your work directory 
    (let's say, ~/work).
-2. tar -zvxf webcl-20120601.tar 
+2. tar -zvxf webcl-20121008.tar.gz 
 3. cd webkit
 4. Tools/Scripts/build-webkit
 
@@ -38,7 +38,7 @@ How to run samples
 	$ Tools/Scripts/run-safari Examples/WebCL/Deform/index.html
    
 ----------------------------------------------------
-How to update source code using svn [WebKit r110533]
+How to update source code using svn [WebKit r124616]
 ----------------------------------------------------
 1. cd ~/work
 2. svn checkout https://webcl.googlecode.com/svn/trunk/ webcl --usename <you_email_address>
