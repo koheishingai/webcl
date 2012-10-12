@@ -28,7 +28,12 @@
 #ifndef WebCLCommandQueue_h
 #define WebCLCommandQueue_h
 
+#if OS(DARWIN)
 #include <OpenCL/opencl.h>
+#else
+#include <CL/opencl.h>
+#endif
+
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>

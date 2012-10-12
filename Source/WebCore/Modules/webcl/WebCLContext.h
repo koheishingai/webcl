@@ -51,7 +51,6 @@
 #include "ImageBuffer.h"
 #include "CachedImage.h"
 #include <wtf/ArrayBuffer.h>
-#include "CanvasPixelArray.h"
 
 
 #include <wtf/OwnPtr.h>
@@ -62,7 +61,11 @@
 #include <wtf/Noncopyable.h>
 #include <wtf/Vector.h>
 #include <PlatformString.h>
+#if OS(DARWIN)
 #include <OpenCL/opencl.h>
+#else
+#include <CL/opencl.h>
+#endif
 #include <wtf/ArrayBuffer.h>
 
 namespace WebCore {

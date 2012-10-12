@@ -62,19 +62,28 @@ function InitCL() {
 		// Create CL buffers from GL VBOs
 		// (Initial load of positions is via gl.bufferData)
 		//
-		curPosBuffer = context.createFromGLBuffer(cl.MEM_READ_WRITE, userData.curPosVBO);
+        bufferSize = NBODY * POS_ATTRIB_SIZE * Float32Array.BYTES_PER_ELEMENT;
+        if (userData.isGLCLshared) {
+            curPosBuffer = context.createFromGLBuffer(cl.MEM_READ_WRITE, userData.curPosVBO);  
+        } else {
+            curPosBuffer = context.createBuffer(cl.MEM_READ_WRITE, bufferSize, null);
+        }
+        
 		if(curPosBuffer === null) {
 			console.error("Failed to allocate device memory");
 			return null;
 		}
-
-		curVelBuffer = context.createFromGLBuffer(cl.MEM_READ_WRITE, userData.curVelVBO);
+        
+        if (userData.isGLCLshared) {
+            curVelBuffer = context.createFromGLBuffer(cl.MEM_READ_WRITE, userData.curVelVBO);
+        } else {
+            curVelBuffer = context.createBuffer(cl.MEM_READ_WRITE, bufferSize, null);           
+        }
+        
 		if(curVelBuffer === null) {
 			console.error("Failed to allocate device memory");
 			return null;
 		}
-
-		bufferSize = NBODY * POS_ATTRIB_SIZE * Float32Array.BYTES_PER_ELEMENT;
 
 		// Create CL working buffers (will be copied to current buffers after computation)
 		//
@@ -93,15 +102,27 @@ function InitCL() {
 		globalWorkSize[0] = NBODY;   
 		localWorkSize[0] = Math.min(workGroupSize, NBODY);
 
+ 		// Initial load of position data
+        if (userData.isGLCLshared) {
+            queue.enqueueAcquireGLObjects(curPosBuffer);
+        }
+
+		queue.enqueueWriteBuffer(curPosBuffer, true, 0, bufferSize, userData.curPos, null);
+
+        if (userData.isGLCLshared) {
+            queue.enqueueReleaseGLObjects(curPosBuffer);
+        }
+        
 		// Initial load of velocity data
-		//
-		//queue.enqueueAcquireGLObjects(curVelBuffer, null);
-		queue.enqueueAcquireGLObjects(curVelBuffer);
+        if (userData.isGLCLshared) {
+            queue.enqueueAcquireGLObjects(curVelBuffer);
+        }
 
 		queue.enqueueWriteBuffer(curVelBuffer, true, 0, bufferSize, userData.curVel, null);
 
-		//queue.enqueueReleaseGLObjects(curVelBuffer, null);
-		queue.enqueueReleaseGLObjects(curVelBuffer);
+        if (userData.isGLCLshared) {
+            queue.enqueueReleaseGLObjects(curVelBuffer);
+        }
 
 		queue.finish(GetNullResults, 0);
 	}
@@ -162,7 +183,7 @@ function SimulateCL(cl) {
 	}
 }
 
-function GetWorkGroupSize() {
+function GetWorkGroupSize(glContext) {
 	try {
 		if(typeof(WebCL) === "undefined") {
 			console.error("WebCL is yet to be defined");
@@ -196,9 +217,14 @@ function GetWorkGroupSize() {
 		device = devices[0];
 
 		// Create a compute context
-		//
-		//context = cl.createContext(null, device, null, null);
-		context = cl.createSharedContext(cl.DEVICE_TYPE_GPU, null, null);
+        var properties = new WebCLContextProperties();
+        properties.platform = platform;
+        properties.devices = devices;
+        if (userData.isGLCLshared) {
+            properties.sharedWebGLContext = glContext;
+        }
+        context = cl.createContext(properties);
+		//context = cl.createSharedContext(cl.DEVICE_TYPE_GPU, null, null);
 
 		// Create a command queue
 		//

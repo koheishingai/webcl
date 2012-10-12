@@ -85,6 +85,7 @@ function UserData() {
 	this.isSimRunning	= true;
 	this.is3D			= true;
 	this.isGLCLshared   = GLCL_SHARE_MODE;
+    //this.isGLCLshared   = NO_SHARE_MODE;
 
 	this.ctx            = null;         // handle for Canvas2D context
 	this.gl             = null;         // handle for GL context
@@ -110,16 +111,17 @@ function onLoad() {
 	userData.simSampler = new MSecSampler(SAMPLEPERIOD, "sms");
 	userData.drawSampler = new MSecSampler(SAMPLEPERIOD, "dms");
 	//Init Controller to Get the WorkGroupSize & Set NBODY to multiple of it.
-	//
 	InitController();
-	NBODY = 4 * GetWorkGroupSize() ;
+	NBODY = 4 * GetWorkGroupSize(userData.gl);
 	//Init Controller to Get the CL Object.
-	//
 	InitController();
 	userData.cl  = InitCL();
 
-	SetSimMode(JS_SIM_MODE);
+	//SetSimMode(JS_SIM_MODE);
 	SetDrawMode(JS_DRAW_MODE);
+	
+	SetSimMode(CL_SIM_MODE);
+	//SetDrawMode(GL_DRAW_MODE);
 
 	setInterval( MainLoop, 0 );
 	setInterval( function() { userData.fpsSampler.display(); }, DISPLAYPERIOD);
@@ -162,8 +164,8 @@ function ShowFLOPS() {
 function InitParticles() {
 	//InitRandomParticles();
 	//InitParticlesOnSphere();
-	//InitParticlesOnDisc();
-	InitParticlesOnSpinningDisc();
+	InitParticlesOnDisc();
+	//InitParticlesOnSpinningDisc();
 	//InitParticlesOnRing();
 	//InitTwoParticles();
 	//InitFourParticles();

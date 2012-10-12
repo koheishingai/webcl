@@ -38,6 +38,7 @@
 #include "WebCLDeviceList.h"
 #include "WebCLDevice.h"
 #include "WebCLContext.h"
+#include "WebCLContextProperties.h"
 #include "WebCLCommandQueue.h"
 #include "WebCLProgram.h"
 #include "WebCLKernel.h"
@@ -66,7 +67,13 @@
 
 #include <PlatformString.h>
 #include "WebCLImage.h"
+
+#if OS(DARWIN)
 #include <OpenCL/opencl.h>
+#else
+#include <CL/opencl.h>
+#endif
+
 #include <stdlib.h>
 #include <wtf/ArrayBuffer.h>
 
@@ -82,8 +89,8 @@ class IntSize;
 class WebCLKernelTypeObject;
 class WebCLKernelTypeValue;
 
-class WebCL : public RefCounted<WebCL>, 
-	public ActiveDOMObject {
+class WebCL : public RefCounted<WebCL> 
+	/*public ActiveDOMObject*/ {
 public: 
 	static PassRefPtr<WebCL> create(ScriptExecutionContext*);
 	virtual ~WebCL();
@@ -500,12 +507,12 @@ public:
 
 	//cl_gl_texture_info param value
 
-       OBJECT_BUFFER 	                    = 0x2000,
-       OBJECT_TEXTURE2D 	                    = 0x2001,
-       OBJECT_TEXTURE3D                         = 0x2002,
-       OBJECT_RENDERBUFFER                      = 0x2003,
-       TEXTURE_TARGET                           = 0x2004,
-       MIPMAP_LEVEL    		             = 0x2005
+    OBJECT_BUFFER                            = 0x2000,
+    OBJECT_TEXTURE2D 	                     = 0x2001,
+    OBJECT_TEXTURE3D                         = 0x2002,
+    OBJECT_RENDERBUFFER                      = 0x2003,
+    TEXTURE_TARGET                           = 0x2004,
+    MIPMAP_LEVEL    		                 = 0x2005
 };
 virtual WebCL* toWebCL() { return this; }
 
@@ -518,6 +525,8 @@ PassRefPtr<WebCLContext> createContext(int, WebCLDeviceList*, int, int, Exceptio
 PassRefPtr<WebCLContext> createContext(int, WebCLDevice*, int, int, ExceptionCode&);
 PassRefPtr<WebCLContext> createContextFromType(int, int, int, int, ExceptionCode&);
 PassRefPtr<WebCLContext> createSharedContext(int, int, int, ExceptionCode&);
+// From latest WebCL spec
+PassRefPtr<WebCLContext> createContext(WebCLContextProperties*, ExceptionCode&);
 void unloadCompiler( ExceptionCode&);
 
 private:

@@ -33,8 +33,8 @@
 #include "WebCLEventList.h"
 #include "WebCL.h"
 #include <wtf/ArrayBuffer.h>
-#include <wtf/ByteArray.h>
-#include "CanvasPixelArray.h"
+//#include <wtf/ByteArray.h>
+//#include "CanvasPixelArray.h"
 #include "WebCLException.h"
 
 namespace WebCore {
@@ -253,8 +253,8 @@ PassRefPtr<WebCLEvent> WebCLCommandQueue::enqueueWriteBuffer(WebCLMem* mem, bool
 				}
 		}
 
-		unsigned char* buffer = ptr->data()->data()->data();
-        buffer_size =  ptr->data()->data()->length();
+		unsigned char* buffer = ptr->data()->data();
+        buffer_size =  ptr->data()->length();
 
 		//Copy ImageData to a float array
 		//	imageData = (float*) malloc(sizeof(float) * ptr->data()->length());
@@ -356,8 +356,8 @@ PassRefPtr<WebCLEvent>  WebCLCommandQueue::enqueueReadBuffer(WebCLMem* mem, bool
 		//Copy ImageData to a float array
 		//float* imageData = (float*) malloc(sizeof(float) * ptr->data()->length());
 
-		unsigned char* buffer = ptr->data()->data()->data();
-		buffer_size =  ptr->data()->data()->length();
+		unsigned char* buffer = ptr->data()->data();
+		buffer_size =  ptr->data()->length();
 
 
 		// TODO(siba samal) - NULL parameters need to be addressed later

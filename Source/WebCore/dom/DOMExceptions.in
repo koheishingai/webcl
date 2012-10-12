@@ -1,0 +1,13 @@
+namespace=Exception
+
+DOMCoreException
+EventException
+FileException conditional=BLOB
+IDBDatabaseException conditional=INDEXED_DATABASE
+OperationNotAllowedException conditional=BLOB
+RangeException
+SQLException conditional=SQL_DATABASE
+SVGException conditional=SVG
+WebCLException conditional=WEBCL
+XMLHttpRequestException
+XPathException

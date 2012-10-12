@@ -52,7 +52,7 @@ function getKernel(id) {
 	return kernelScript.firstChild.textContent;
 }
 
-function InitCL() {
+function InitCL(gl) {
 
 	try  {
 		if(typeof(WebCL) === "undefined") {
@@ -86,9 +86,13 @@ function InitCL() {
 		}
 		device = devices[0];
 
-		// Create a compute context
-		//
-		context = cl.createSharedContext(cl.DEVICE_TYPE_GPU, null, null);
+		// Create a shared compute context
+		var properties = new WebCLContextProperties();
+		properties.platform = platform;
+		properties.devices = devices;
+		properties.sharedWebGLContext = gl;
+		context = cl.createContext(properties);
+		//context = cl.createSharedContext(cl.DEVICE_TYPE_GPU, null, null);
 
 		// Create a command queue
 		//
@@ -145,14 +149,21 @@ function InitCLBuffers(cl) {
 
 		// Create CL buffers from GL VBOs
 		// (Initial load of positions is via gl.bufferData)
-		//
-		curPosBuffer = context.createFromGLBuffer(cl.MEM_READ_WRITE, userData.curPosVBO);
+		if (GLCL_SHARE_MODE) {
+            curPosBuffer = context.createFromGLBuffer(cl.MEM_READ_WRITE, userData.curPosVBO);
+        } else {
+            curPosBuffer = context.createBuffer(cl.MEM_READ_WRITE, bufferSize, null);
+        }
 		if(curPosBuffer === null) {
 			console.error("Failed to allocate device memory");
 			return null;
 		}
 
-		curNorBuffer = context.createFromGLBuffer(cl.MEM_READ_WRITE, userData.curNorVBO);
+        if (GLCL_SHARE_MODE) {
+            curNorBuffer = context.createFromGLBuffer(cl.MEM_READ_WRITE, userData.curNorVBO);
+        } else {
+            curNorBuffer = context.createBuffer(cl.MEM_READ_WRITE, bufferSize, null);
+        }
 		if(curNorBuffer === null) {
 			console.error("Failed to allocate device memory");
 			return null;
@@ -216,7 +227,7 @@ function SimulateCL(cl)
 		if(GLCL_SHARE_MODE) {
 			//queue.enqueueAcquireGLObjects(curPosBuffer, null);
 			//queue.enqueueAcquireGLObjects(curPosBuffer, null);
-			queue.enqueueAcquireGLObjects(curNorBuffer);
+			queue.enqueueAcquireGLObjects(curPosBuffer);
 			queue.enqueueAcquireGLObjects(curNorBuffer);
 		}
 
@@ -237,8 +248,8 @@ function SimulateCL(cl)
 		kernel.setKernelArg(11, userData.roughness, cl.KERNEL_ARG_FLOAT);
 		kernel.setKernelArg(12, userData.nVertices, cl.KERNEL_ARG_INT);
 		
-		queue.enqueueNDRangeKernel(kernel, new Int32Array(0,0), globalWorkSize, localWorkSize, null);
-		//queue.enqueueNDRangeKernel(kernel,null, globalWorkSize, null, null);
+		//queue.enqueueNDRangeKernel(kernel, new Int32Array(0,0), globalWorkSize, localWorkSize, null);
+		queue.enqueueNDRangeKernel(kernel,null, globalWorkSize, null, null);
 
 		queue.finish();
 

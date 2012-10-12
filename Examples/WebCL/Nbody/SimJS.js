@@ -113,9 +113,14 @@ function CheckBoundry(i) {
     //if(r2 > 1) {
     
     if(x > 1 || x < -1 || y > 1 || y < -1 || z > 1 || z < -1) {    
-        var r = 0.1 *  RAND0TO1();
-	    var theta = Math.PI * RAND0TO1();
-        var phi = 2 * Math.PI * RAND0TO1();
+        //var r = 0.1 *  RAND0TO1();
+        //var r = 0.5;
+        var rand = (1.0 * i) / NBODY;
+        var r = 0.1 * rand;
+        var theta = 3.1415926 * rand;
+        var phi = 2 * 3.1415926 * rand;
+	    //var theta = Math.PI * RAND0TO1();
+        //var phi = 2 * Math.PI * RAND0TO1();
         nxtPos[ii + 0] = r * Math.sin(theta) * Math.cos(phi);
         nxtPos[ii + 1] = r * Math.sin(theta) * Math.sin(phi);
         nxtPos[ii + 2] = r * Math.cos(theta);

@@ -153,12 +153,13 @@
 		// check boundry
 		if(newPos.x > 1.0f || newPos.x < -1.0f || newPos.y > 1.0f || newPos.y < -1.0f || newPos.z > 1.0f || newPos.z < -1.0f) {
 			float rand = (1.0f * gid) / numBodies;
-			float r = 0.05f *  rand;
-			float theta = rand;
-			float phi = 2 * rand;
+			//float r = 0.05f *  rand;
+            float r = 0.1f *  rand;
+			float theta = 3.1415926f * rand;
+			float phi = 2 * 3.1415926f * rand;
 			newPos.x = r * sinpi(theta) * cospi(phi);
 			newPos.y = r * sinpi(theta) * sinpi(phi);
-			newPos.x = r * cospi(theta);
+			newPos.z = r * cospi(theta);
 			newVel.x = 0.0f;
 			newVel.y = 0.0f;
 			newVel.z = 0.0f;

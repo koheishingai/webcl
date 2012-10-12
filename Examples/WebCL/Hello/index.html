@@ -106,6 +106,19 @@ function InitCL()
 			return;
 		}
 		platform = platforms[0];
+		
+		{
+			var platform_profile = platform.getInfo(cl.PLATFORM_PROFILE);
+			console.info(platform_profile);
+			var platform_version = platform.getInfo(cl.PLATFORM_VERSION);
+			console.info(platform_version);
+			var platform_name = platform.getInfo(cl.PLATFORM_NAME);
+			console.info(platform_name);
+			var platform_verdor = platform.getInfo(cl.PLATFORM_VENDOR);
+			console.info(platform_verdor);
+			var platform_extension = platform.getInfo(cl.PLATFORM_EXTENSIONS);
+			console.info(platform_extension);
+		}
 
 		// Connect to a compute device
 		//
@@ -117,10 +130,25 @@ function InitCL()
 			return;
 		}
 		device = devices[0];
+		{
+			var device_name = device.getInfo(cl.DEVICE_NAME);
+			console.info(device_name);
+		    var device_vendor = device.getInfo(cl.DEVICE_VENDOR);
+			console.info(device_vendor);
+		    var device_version = device.getInfo(cl.DEVICE_VERSION);
+			console.info(device_version);
+		    var driver_version = device.getInfo(cl.DRIVER_VERSION);
+			console.info(driver_version);
+		    var device_extensions = device.getInfo(cl.DEVICE_EXTENSIONS);
+			console.info(device_extensions);
+		}
 
 		// Create a compute context - takes defualt device
-		//
-		context = cl.createContext();
+		var properties = new WebCLContextProperties();
+		properties.platform = platform;
+		properties.devices = devices;
+		
+		context = cl.createContext(properties);
 
 		// Create a command queue
 		//
@@ -205,12 +233,12 @@ function InitCL()
 
 		// Shutdown and cleanup
 		//
-		input.release();
-		output.release();
-		program.release();
-		kernel.release();
-		queue.release();
-		context.release();
+		input.releaseCL();
+		output.releaseCL();
+		program.releaseCL();
+		kernel.releaseCL();
+		queue.releaseCL();
+		context.releaseCL();
 	}
 	catch (e)
 	{

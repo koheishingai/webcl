@@ -28,7 +28,11 @@
 #ifndef WebCLImage_h
 #define WebCLImage_h
 
+#if OS(DARWIN)
 #include <OpenCL/opencl.h>
+#else
+#include <CL/opencl.h>
+#endif
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include "WebCLException.h"

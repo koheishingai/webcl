@@ -39,11 +39,9 @@
 #include "ImageBuffer.h"
 #include "CachedImage.h"
 #include <wtf/ArrayBuffer.h>
-#include "CanvasPixelArray.h"
 #include "HTMLCanvasElement.h"
 #include "WebCLException.h"
 #include <stdio.h>
-#include <wtf/ByteArray.h>
 #include <CanvasRenderingContext.h>
 
 class CanvasRenderingContext;
@@ -52,7 +50,8 @@ using namespace JSC;
 
 namespace WebCore {   
 
-	WebCL::WebCL(ScriptExecutionContext* context) : ActiveDOMObject(context, this)																				
+	WebCL::WebCL(ScriptExecutionContext* context) 
+        //: ActiveDOMObject(context, this)
 	{
 		m_num_mems = 0;
 		m_num_programs = 0;
@@ -60,6 +59,7 @@ namespace WebCore {
 		m_num_samplers = 0;
 		m_num_contexts = 0;
 		m_num_commandqueues = 0;
+
 	}
 
 	PassRefPtr<WebCL> WebCL::create(ScriptExecutionContext* context)
@@ -480,13 +480,40 @@ namespace WebCore {
 		cl_int err = 0;
 		cl_context cl_context_id = NULL;
 
-		CGLContextObj kCGLContext = CGLGetCurrentContext();
-		CGLShareGroupObj kCGLShareGroup = CGLGetShareGroup(kCGLContext);
-
+        // TODO: Add GL support
+#if OS(DARWIN)
 		cl_context_properties properties[] = {
 			CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE,
-			(cl_context_properties)kCGLShareGroup, 0
+			(cl_context_properties)CGLGetShareGroup(CGLGetCurrentContext()), 0
+            (cl_context_properties)NULL, 0
 		};
+#endif
+
+#if OS(WINDOWS)
+      	cl_context_properties properties[] = {
+            CL_GL_CONTEXT_KHR, 
+            (cl_context_properties)wglGetCurrentContext(),
+            CL_WGL_HDC_KHR,
+            (cl_context_properties)wglGetCurrentDC(),
+			CL_CONTEXT_PLATFORM, 
+            (cl_context_properties)m_platform_id->getCLPlatforms(),
+            0
+		};   
+#endif
+
+#if OS(LINUX)
+      	cl_context_properties properties[] = {
+            CL_GL_CONTEXT_KHR, 
+            (cl_context_properties)glXGetCurrentContext(),
+            CL_WGL_HDC_KHR,
+            (cl_context_properties)glXGetCurrentDisplay(),
+			CL_CONTEXT_PLATFORM, 
+            (cl_context_properties)m_platform_id->getCLPlatforms(),
+            0
+		}; 
+#endif
+
+
 		// TODO (siba samal) Handle NULL parameters
 		cl_context_id = clCreateContext(properties, 0, 0, 0, 0, &err);
 
@@ -627,6 +654,154 @@ namespace WebCore {
 		return NULL;
 	}
 
+
+	// Frome latest WebCL spec
+	PassRefPtr<WebCLContext> WebCL::createContext(WebCLContextProperties* properties, ExceptionCode& ec)
+	{
+		cl_platform_id platform_id = 0;
+		if (properties && properties->platform()) {
+			platform_id = properties->platform()->getCLPlatform();
+		} else {
+			cl_int err = 0;
+			// typically there is only 1 platform
+			err = clGetPlatformIDs(1, &platform_id, NULL);
+			if (err != CL_SUCCESS) {
+				switch (err) {
+					case CL_INVALID_VALUE:
+						ec = WebCLException::INVALID_VALUE;
+						break;
+					case CL_OUT_OF_HOST_MEMORY:
+						ec = WebCLException::OUT_OF_HOST_MEMORY;
+						break;
+					default:
+						ec = WebCLException::FAILURE;
+						break;
+				}
+				return NULL;
+			}
+		}
+
+		// Use default device type if no properties provided.
+		cl_device_type device_type = WebCL::DEVICE_TYPE_DEFAULT;
+		if (properties)
+			device_type = properties->deviceType();
+
+		cl_device_id device_id = 0;
+		if (properties && properties->devices())
+			device_id = properties->devices()->getCLDevices();
+
+		cl_context cl_context_id = 0;
+		bool shareResource = false;
+		cl_context_properties sharedContext = 0;
+		cl_context_properties sharedDisplay = 0;
+		if (properties && properties->sharedWebGLContext()) {
+			GraphicsContext3D* gc3d = properties->sharedWebGLContext()->graphicsContext3D();
+			if (gc3d != NULL) {
+				PlatformGraphicsContext3D pgc3d = gc3d->platformGraphicsContext3D();
+				PlatformDisplay3D pd3d = gc3d->platformDisplay3D();
+				if (!pgc3d || !pd3d) {
+					printf("Error: PlatformGraphicsContext3D or PlatformDisplay3D is NULL\n");
+					ec = WebCLException::FAILURE;
+					return NULL;
+				}
+
+				sharedContext = (cl_context_properties)pgc3d;
+				sharedDisplay = (cl_context_properties)pd3d;
+				shareResource = true;
+			} else {
+				printf("Error: No GraphicsContext3D is found with the WebGLContext\n");
+				ec = WebCLException::FAILURE;
+				return NULL;
+			}
+		}
+
+		cl_int err = 0;
+		if (shareResource) {
+			cl_context_properties context_properties[] = {
+#if OS(WINDOWS)
+				CL_GL_CONTEXT_KHR, 
+				//(cl_context_properties)wglGetCurrentContext(),
+				sharedContext,
+				CL_WGL_HDC_KHR,
+				//(cl_context_properties)wglGetCurrentDC(),
+				sharedDisplay,
+#endif
+#if OS(LINUX)
+				CL_GL_CONTEXT_KHR, 
+				//(cl_context_properties)glXGetCurrentContext(),
+				sharedContext,
+				CL_GLX_DISPLAY_KHR,
+				//(cl_context_properties)glXGetCurrentDisplay(),
+				sharedDisplay,
+#endif
+#if OS(DARWIN)
+				CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE,
+				(cl_context_properties)CGLGetShareGroup(CGLGetCurrentContext()),
+#endif
+				CL_CONTEXT_PLATFORM,
+				(cl_context_properties)platform_id,
+				0
+			};
+
+			if (properties && properties->devices()) {
+				// deviceType will be ignored
+				cl_context_id = clCreateContext(context_properties, 1, &device_id, NULL, NULL, &err);
+			} else {
+				// deviceType will be used
+				cl_context_id = clCreateContextFromType(context_properties, device_type, NULL, NULL, &err);
+			}
+		} else {
+			cl_context_properties context_properties[] = {
+				CL_CONTEXT_PLATFORM,
+				(cl_context_properties)platform_id,
+				0,
+			};
+
+			if (properties && properties->devices()) {
+				cl_context_id = clCreateContext(context_properties, 1, &device_id, NULL, NULL, &err);
+			} else {
+				cl_context_id = clCreateContextFromType(context_properties, device_type, NULL, NULL, &err);
+			}
+		} // shareResource
+
+		if (err != CL_SUCCESS) {
+			switch (err) {
+				case CL_INVALID_PLATFORM:
+					ec = WebCLException::INVALID_PLATFORM;
+					break;
+				case CL_INVALID_PROPERTY:
+					ec = WebCLException::INVALID_PROPERTY;
+					break;
+				case CL_INVALID_VALUE:
+					ec = WebCLException::INVALID_VALUE;
+					break;
+				case CL_INVALID_DEVICE:
+					ec = WebCLException::INVALID_DEVICE;
+					break;
+				case CL_DEVICE_NOT_AVAILABLE:
+					ec = WebCLException::DEVICE_NOT_AVAILABLE;
+					break;
+				case CL_OUT_OF_RESOURCES:
+					ec = WebCLException::OUT_OF_RESOURCES;
+					break;
+				case CL_OUT_OF_HOST_MEMORY:
+					ec = WebCLException::OUT_OF_HOST_MEMORY;
+					break;
+				default:
+					ec = WebCLException::FAILURE;
+					break;
+			}
+			return NULL;
+		}
+
+		RefPtr<WebCLContext> O = WebCLContext::create(this, cl_context_id);
+		if (O != NULL) {
+			m_context = O;
+			return O;
+		} else {
+			return NULL;
+		}
+	}
 
 	void WebCL::unloadCompiler(ExceptionCode& ec)
 	{

@@ -40,6 +40,8 @@
 #include "WebCL.h"
 #include "WebCLException.h"
 
+#include <gl/GL.h>
+
 namespace WebCore {
 
 WebCLContext::~WebCLContext()
@@ -447,7 +449,7 @@ PassRefPtr<WebCLMem> WebCLContext::createImage2D(int flags,
 				return NULL;
 		}	
 		ImageBuffer* imageBuffer = NULL;
-		RefPtr<ByteArray> bytearray = NULL;
+		RefPtr<Uint8Array> bytearray = NULL;
 		if (canvasElement != NULL) {
 				image_format.image_channel_data_type = CL_UNSIGNED_INT8;
 				image_format.image_channel_order = CL_RGBA;
@@ -777,8 +779,7 @@ PassRefPtr<WebCLMem> WebCLContext::createImage2D(int flags, ImageData* data, Exc
 		cl_uint width = 0;
 		cl_uint height = 0;
 
-		CanvasPixelArray* pixelarray = NULL;
-		ByteArray* bytearray = NULL;
+		Uint8ClampedArray* pixelarray = NULL;
 		if (m_cl_context == NULL) {
 				printf("Error: Invalid CL Context\n");
 				ec = WebCLException::FAILURE;
@@ -788,11 +789,9 @@ PassRefPtr<WebCLMem> WebCLContext::createImage2D(int flags, ImageData* data, Exc
 				image_format.image_channel_data_type = CL_UNSIGNED_INT8;
 				image_format.image_channel_order = CL_RGBA;
 				pixelarray = data->data();
-				if(pixelarray != NULL)
+				if(pixelarray == NULL)
 				{
-						bytearray = pixelarray->data();
-						if(bytearray == NULL)
-								return NULL;
+				    return NULL;
 				}			
 				width = (cl_uint) data->width();
 				height = (cl_uint) data->height();
@@ -805,11 +804,11 @@ PassRefPtr<WebCLMem> WebCLContext::createImage2D(int flags, ImageData* data, Exc
 		switch (flags) {
 				case WebCL::MEM_READ_ONLY:
 						cl_mem_image = clCreateImage2D(m_cl_context, CL_MEM_READ_ONLY|CL_MEM_USE_HOST_PTR, 
-										&image_format, width, height, 0, (void*)bytearray, &err);
+										&image_format, width, height, 0, (void*)(pixelarray->data()), &err);
 						break;
 				case WebCL::MEM_WRITE_ONLY:
 						cl_mem_image = clCreateImage2D(m_cl_context, CL_MEM_WRITE_ONLY, 
-										&image_format, width, height, 0, (void*)bytearray, &err);
+										&image_format, width, height, 0, (void*)(pixelarray->data()), &err);
 						break;
 						// TODO (siba samal) Support other flags & testing
 		}

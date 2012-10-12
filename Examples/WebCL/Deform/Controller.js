@@ -57,7 +57,8 @@ function UserData() {
     this.cl             = null;         // handle for CL context
     this.glLoaded		= false;		// indicates completion of geometry initialization
     this.clLoaded		= false;		// indicates completion of buffer initialization
-    this.clSimMode      = NO_SIM;       // toggles between simulation modes
+    //this.clSimMode      = JS_SIM;       // toggles between simulation modes
+    this.clSimMode      = CL_SIM;
     this.fpsSampler     = null;         // FPS sampler
     this.simSampler     = null;         // Sim time sampler
     this.drawSampler    = null;         // Draw time sampler
@@ -84,7 +85,7 @@ function onLoad() {
     userData.drawSampler = new MSecSampler(SAMPLEPERIOD, "dms");
     
     userData.gl  = InitGL();
-    userData.cl  = InitCL();
+    userData.cl  = InitCL(userData.gl);
     
     SetSimButton();
     

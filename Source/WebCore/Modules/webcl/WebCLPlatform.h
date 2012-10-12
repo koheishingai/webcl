@@ -32,7 +32,7 @@
 #include <wtf/RefCounted.h>
 #include <PlatformString.h>
 #include <wtf/Vector.h>
-#include <OpenCL/opencl.h>
+#include <CL/opencl.h>
 
 #include "WebCLGetInfo.h"
 #include "WebCLDeviceList.h"

@@ -28,7 +28,11 @@
 #ifndef WebCLProgram_h
 #define WebCLProgram_h
 
+#if OS(DARWIN)
 #include <OpenCL/opencl.h>
+#else
+#include <CL/opencl.h>
+#endif
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <PlatformString.h>

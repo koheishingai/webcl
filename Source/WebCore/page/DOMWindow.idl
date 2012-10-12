@@ -507,6 +507,8 @@ module window {
         attribute [Conditional=WEBGL] WebGLTextureConstructor WebGLTexture;
         attribute [Conditional=WEBGL] WebGLUniformLocationConstructor WebGLUniformLocation;
 
+        attribute [Conditional=WEBCL] WebCLContextPropertiesConstructor WebCLContextProperties;
+
         attribute DOMStringMapConstructor DOMStringMap;
 
         attribute ArrayBufferConstructor ArrayBuffer; // Usable with new operator
