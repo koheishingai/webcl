@@ -37,77 +37,77 @@
 namespace WebCore {
 
 class WebCLException : public ExceptionBase {
-public:
-    static PassRefPtr<WebCLException> create(const ExceptionCodeDescription& description)
-    {
-        return adoptRef(new WebCLException(description));
-    }
+	public:
+		static PassRefPtr<WebCLException> create(const ExceptionCodeDescription& description)
+		{
+			return adoptRef(new WebCLException(description));
+		}
 
-    static const int WebCLExceptionOffset = 0;
-    static const int WebCLExceptionMax = 51;
+		static const int WebCLExceptionOffset = 0;
+		static const int WebCLExceptionMax = 51;
 
-    enum WebCLExceptionCode {
-        SUCCESS 								 = WebCLExceptionOffset,
-        DEVICE_NOT_FOUND                         =  WebCLExceptionOffset + 1,
-        DEVICE_NOT_AVAILABLE                     =  WebCLExceptionOffset + 2,
-        COMPILER_NOT_AVAILABLE                   =  WebCLExceptionOffset + 3,
-        MEM_OBJECT_ALLOCATION_FAILURE            =  WebCLExceptionOffset + 4,
-        OUT_OF_RESOURCES                         =  WebCLExceptionOffset + 5,
-        OUT_OF_HOST_MEMORY                       =  WebCLExceptionOffset + 6,
-        PROFILING_INFO_NOT_AVAILABLE             =  WebCLExceptionOffset + 7,
-        MEM_COPY_OVERLAP                         =  WebCLExceptionOffset + 8,
-        IMAGE_FORMAT_MISMATCH                    =  WebCLExceptionOffset + 9,
-        IMAGE_FORMAT_NOT_SUPPORTED               =  WebCLExceptionOffset + 10,
-        BUILD_PROGRAM_FAILURE                    =  WebCLExceptionOffset + 11,
-        MAP_FAILURE                              =  WebCLExceptionOffset + 12,
-        MISALIGNED_SUB_BUFFER_OFFSET             =  WebCLExceptionOffset + 13,
-        EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST =  WebCLExceptionOffset + 14,
+		enum WebCLExceptionCode {
+			SUCCESS 								 = WebCLExceptionOffset,
+			DEVICE_NOT_FOUND                         =  WebCLExceptionOffset + 1,
+			DEVICE_NOT_AVAILABLE                     =  WebCLExceptionOffset + 2,
+			COMPILER_NOT_AVAILABLE                   =  WebCLExceptionOffset + 3,
+			MEM_OBJECT_ALLOCATION_FAILURE            =  WebCLExceptionOffset + 4,
+			OUT_OF_RESOURCES                         =  WebCLExceptionOffset + 5,
+			OUT_OF_HOST_MEMORY                       =  WebCLExceptionOffset + 6,
+			PROFILING_INFO_NOT_AVAILABLE             =  WebCLExceptionOffset + 7,
+			MEM_COPY_OVERLAP                         =  WebCLExceptionOffset + 8,
+			IMAGE_FORMAT_MISMATCH                    =  WebCLExceptionOffset + 9,
+			IMAGE_FORMAT_NOT_SUPPORTED               =  WebCLExceptionOffset + 10,
+			BUILD_PROGRAM_FAILURE                    =  WebCLExceptionOffset + 11,
+			MAP_FAILURE                              =  WebCLExceptionOffset + 12,
+			MISALIGNED_SUB_BUFFER_OFFSET             =  WebCLExceptionOffset + 13,
+			EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST =  WebCLExceptionOffset + 14,
 
-        INVALID_VALUE                            =  WebCLExceptionOffset + 15, 
-        INVALID_DEVICE_TYPE                      =  WebCLExceptionOffset + 16,
-        INVALID_PLATFORM                         =  WebCLExceptionOffset + 17,
-        INVALID_DEVICE                           =  WebCLExceptionOffset + 18,
-        INVALID_CONTEXT                          =  WebCLExceptionOffset + 19,
-        INVALID_QUEUE_PROPERTIES                 =  WebCLExceptionOffset + 20,
-        INVALID_COMMAND_QUEUE                    =  WebCLExceptionOffset + 21,
-        INVALID_HOST_PTR                         =  WebCLExceptionOffset + 22,
-        INVALID_MEM_OBJECT                       =  WebCLExceptionOffset + 23,
-        INVALID_IMAGE_FORMAT_DESCRIPTOR          =  WebCLExceptionOffset + 24,
-        INVALID_IMAGE_SIZE                       =  WebCLExceptionOffset + 25,
-        INVALID_SAMPLER                          =  WebCLExceptionOffset + 26,
-        INVALID_BINARY                           =  WebCLExceptionOffset + 27,
-        INVALID_BUILD_OPTIONS                    =  WebCLExceptionOffset + 28,
-        INVALID_PROGRAM                          =  WebCLExceptionOffset + 29,
-        INVALID_PROGRAM_EXECUTABLE               =  WebCLExceptionOffset + 30,
-        INVALID_KERNEL_NAME                      =  WebCLExceptionOffset + 31,
-        INVALID_KERNEL_DEFINITION                =  WebCLExceptionOffset + 32,
-        INVALID_KERNEL                           =  WebCLExceptionOffset + 33,
-        INVALID_ARG_INDEX                        =  WebCLExceptionOffset + 34,
-        INVALID_ARG_VALUE                        =  WebCLExceptionOffset + 35,
-        INVALID_ARG_SIZE                         =  WebCLExceptionOffset + 36,
-        INVALID_KERNEL_ARGS                      =  WebCLExceptionOffset + 37,
-        INVALID_WORK_DIMENSION                   =  WebCLExceptionOffset + 38,
-        INVALID_WORK_GROUP_SIZE                  =  WebCLExceptionOffset + 39,
-        INVALID_WORK_ITEM_SIZE                   =  WebCLExceptionOffset + 40,
-        INVALID_GLOBAL_OFFSET                    =  WebCLExceptionOffset + 41,
-        INVALID_EVENT_WAIT_LIST                  =  WebCLExceptionOffset + 42,
-        INVALID_EVENT                            =  WebCLExceptionOffset + 43,
-        INVALID_OPERATION                        =  WebCLExceptionOffset + 44,
-        INVALID_GL_OBJECT                        =  WebCLExceptionOffset + 45,
-        INVALID_BUFFER_SIZE                      =  WebCLExceptionOffset + 46,
-        INVALID_MIP_LEVEL                        =  WebCLExceptionOffset + 47,
-        INVALID_GLOBAL_WORK_SIZE                 =  WebCLExceptionOffset + 48,
-        INVALID_PROPERTY                         =  WebCLExceptionOffset + 49,
-        FAILURE 								 =  WebCLExceptionOffset + 50,
-    };
+			INVALID_VALUE                            =  WebCLExceptionOffset + 15, 
+			INVALID_DEVICE_TYPE                      =  WebCLExceptionOffset + 16,
+			INVALID_PLATFORM                         =  WebCLExceptionOffset + 17,
+			INVALID_DEVICE                           =  WebCLExceptionOffset + 18,
+			INVALID_CONTEXT                          =  WebCLExceptionOffset + 19,
+			INVALID_QUEUE_PROPERTIES                 =  WebCLExceptionOffset + 20,
+			INVALID_COMMAND_QUEUE                    =  WebCLExceptionOffset + 21,
+			INVALID_HOST_PTR                         =  WebCLExceptionOffset + 22,
+			INVALID_MEM_OBJECT                       =  WebCLExceptionOffset + 23,
+			INVALID_IMAGE_FORMAT_DESCRIPTOR          =  WebCLExceptionOffset + 24,
+			INVALID_IMAGE_SIZE                       =  WebCLExceptionOffset + 25,
+			INVALID_SAMPLER                          =  WebCLExceptionOffset + 26,
+			INVALID_BINARY                           =  WebCLExceptionOffset + 27,
+			INVALID_BUILD_OPTIONS                    =  WebCLExceptionOffset + 28,
+			INVALID_PROGRAM                          =  WebCLExceptionOffset + 29,
+			INVALID_PROGRAM_EXECUTABLE               =  WebCLExceptionOffset + 30,
+			INVALID_KERNEL_NAME                      =  WebCLExceptionOffset + 31,
+			INVALID_KERNEL_DEFINITION                =  WebCLExceptionOffset + 32,
+			INVALID_KERNEL                           =  WebCLExceptionOffset + 33,
+			INVALID_ARG_INDEX                        =  WebCLExceptionOffset + 34,
+			INVALID_ARG_VALUE                        =  WebCLExceptionOffset + 35,
+			INVALID_ARG_SIZE                         =  WebCLExceptionOffset + 36,
+			INVALID_KERNEL_ARGS                      =  WebCLExceptionOffset + 37,
+			INVALID_WORK_DIMENSION                   =  WebCLExceptionOffset + 38,
+			INVALID_WORK_GROUP_SIZE                  =  WebCLExceptionOffset + 39,
+			INVALID_WORK_ITEM_SIZE                   =  WebCLExceptionOffset + 40,
+			INVALID_GLOBAL_OFFSET                    =  WebCLExceptionOffset + 41,
+			INVALID_EVENT_WAIT_LIST                  =  WebCLExceptionOffset + 42,
+			INVALID_EVENT                            =  WebCLExceptionOffset + 43,
+			INVALID_OPERATION                        =  WebCLExceptionOffset + 44,
+			INVALID_GL_OBJECT                        =  WebCLExceptionOffset + 45,
+			INVALID_BUFFER_SIZE                      =  WebCLExceptionOffset + 46,
+			INVALID_MIP_LEVEL                        =  WebCLExceptionOffset + 47,
+			INVALID_GLOBAL_WORK_SIZE                 =  WebCLExceptionOffset + 48,
+			INVALID_PROPERTY                         =  WebCLExceptionOffset + 49,
+			FAILURE 								 =  WebCLExceptionOffset + 50,
+		};
 
-    static bool initializeDescription(ExceptionCode, ExceptionCodeDescription*);
+		static bool initializeDescription(ExceptionCode, ExceptionCodeDescription*);
 
-private:
-    WebCLException(const ExceptionCodeDescription& description)
-        : ExceptionBase(description)
-    {
-    }
+	private:
+		WebCLException(const ExceptionCodeDescription& description)
+			: ExceptionBase(description)
+		{
+		}
 };
 
 } // namespace WebCore

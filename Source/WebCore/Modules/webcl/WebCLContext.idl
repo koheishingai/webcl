@@ -41,23 +41,11 @@ module webcl {
 	//WebCLCommandQueue createCommandQueue(in WebCLDevice devices, 
 	//			in long prop) raises(DOMException);
 	WebCLProgram createProgram(in DOMString kernelSource) raises(DOMException);
-	//WebCLMem createBuffer(in long flags, in long size, in long host_ptr) raises(DOMException);	
-	
-    	[StrictTypeChecking] WebCLMem createBuffer(in long memFlags, in ImageData srcPixels) raises(DOMException);	
-    	[StrictTypeChecking] WebCLMem createBuffer(in long memFlags, in HTMLCanvasElement srcCanvas) raises(DOMException);	
-    	[StrictTypeChecking] WebCLMem createBuffer(in long memFlags, in long sizeInBytes, in [Optional] ArrayBuffer srcBuffer) raises(DOMException);		
+	WebCLMem createBuffer(in long flags, in long size, in long host_ptr) raises(DOMException);			
 	WebCLSampler createSampler(in boolean normCords, in long addrMode,
 			in long fltrMode) raises(DOMException);	
 	void releaseCL() raises(DOMException);				
-	
-    WebCLMem createImage(in long flags,in HTMLCanvasElement canvasElement) raises(DOMException);
-	WebCLMem createImage(in long flags,in HTMLImageElement imageElement) raises(DOMException);
-	WebCLMem createImage(in long flags,in HTMLVideoElement videoElement) raises(DOMException);
-	WebCLMem createImage(in long flags,in ImageData data) raises(DOMException);
-    
-    [StrictTypeChecking, Custom] WebCLMem createImageWithDescriptor(in long flags,in WebCLImageDescriptor descriptor,in [Optional] ArrayBuffer srcBuffer) raises(DOMException);
-	
-    WebCLMem createImage2D(in long flags, 
+	WebCLMem createImage2D(in long flags, 
 				in HTMLCanvasElement canvasElement) raises(DOMException);
 	WebCLMem createImage2D(in long flags, 
 				in HTMLImageElement imageElement) raises(DOMException);
@@ -65,9 +53,7 @@ module webcl {
 				in HTMLVideoElement videoElement) raises(DOMException);
 	WebCLMem createImage2D(in long flags, 
 				in ImageData data) raises(DOMException);
-    
-    
-    WebCLMem createImage2D(in long flags,
+	WebCLMem createImage2D(in long flags,
 				in unsigned long width,
 				in unsigned long height,
 				in ArrayBuffer data) raises(DOMException);

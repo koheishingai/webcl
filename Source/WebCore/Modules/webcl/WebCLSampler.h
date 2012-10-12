@@ -43,7 +43,7 @@ class WebCLSampler : public RefCounted<WebCLSampler> {
 public:
 	virtual ~WebCLSampler();
 	static PassRefPtr<WebCLSampler> create(WebCL*, cl_sampler);
-	WebCLGetInfo getInfo(int, ExceptionCode&);
+	WebCLGetInfo getInfo(cl_sampler_info, ExceptionCode&);
 	void releaseCL( ExceptionCode&);
 private:
 	WebCLSampler(WebCL*, cl_sampler);	

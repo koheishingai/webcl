@@ -34,9 +34,8 @@
 #endif
 
 #include <wtf/ExportMacros.h>
-#include "PlatformExportMacros.h"
-
 #include <runtime/JSExportMacros.h>
+#include "PlatformExportMacros.h"
 
 #ifdef __APPLE__
 #define HAVE_FUNC_USLEEP 1
@@ -93,7 +92,7 @@
 // are used from wx headers. On GTK+ for Mac many GTK+ files include <libintl.h>
 // or <glib/gi18n-lib.h>, which in turn include <xlocale/_ctype.h> which uses
 // isacii(). 
-#if !PLATFORM(QT) && !PLATFORM(WX) && !PLATFORM(CHROMIUM) && !(OS(DARWIN) && PLATFORM(GTK)) && !OS(QNX) && !defined(_LIBCPP_VERSION)
+#if !PLATFORM(QT) && !PLATFORM(WX) && !PLATFORM(CHROMIUM) && !(OS(DARWIN) && PLATFORM(GTK)) && !defined(_LIBCPP_VERSION)
 #include <wtf/DisallowCType.h>
 #endif
 
@@ -122,6 +121,10 @@
 // New theme
 #define WTF_USE_NEW_THEME 1
 #endif // PLATFORM(MAC)
+
+#if OS(UNIX) || OS(WINDOWS)
+#define WTF_USE_OS_RANDOMNESS 1
+#endif
 
 #if PLATFORM(CHROMIUM)
 
@@ -154,13 +157,19 @@ typedef float CGFloat;
 #define WTF_USE_CA 1
 #endif
 
+#if PLATFORM(QT) && USE(V8) && defined(Q_WS_X11)
+/* protect ourselves from evil X11 defines */
+#include <bridge/npruntime_internal.h>
+#endif
+
 // FIXME: Move this to JavaScriptCore/wtf/Platform.h, which is where we define WTF_USE_AVFOUNDATION on the Mac.
 // https://bugs.webkit.org/show_bug.cgi?id=67334
 #if PLATFORM(WIN) && HAVE(AVCF)
 #define WTF_USE_AVFOUNDATION 1
 #endif
 
+
 #if PLATFORM(MAC)
 // Siba
- #define ENABLE_WEBCL 1 
- #endif // PLATFORM(MAC)
+#define ENABLE_WEBCL 1 
+#endif // PLATFORM(MAC)

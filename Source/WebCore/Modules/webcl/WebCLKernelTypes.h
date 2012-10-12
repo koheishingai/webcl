@@ -212,19 +212,19 @@ inline void WebCLKernelTypeObject::setNumber(const String& name, double value)
 
 inline void WebCLKernelTypeObject::setValue(const String& name, PassRefPtr<WebCLKernelTypeValue> value)
 {
-    if (m_data.set(name, value).isNewEntry)
+    if (m_data.set(name, value).second)
         m_order.append(name);
 }
 
 inline void WebCLKernelTypeObject::setObject(const String& name, PassRefPtr<WebCLKernelTypeObject> value)
 {
-    if (m_data.set(name, value).isNewEntry)
+    if (m_data.set(name, value).second)
         m_order.append(name);
 }
 
 inline void WebCLKernelTypeObject::setVector(const String& name, PassRefPtr<WebCLKernelTypeVector> value)
 {
-    if (m_data.set(name, value).isNewEntry)
+    if (m_data.set(name, value).second)
         m_order.append(name);
 }
 

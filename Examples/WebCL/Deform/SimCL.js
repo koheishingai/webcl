@@ -88,7 +88,6 @@ function InitCL() {
 
 		// Create a compute context
 		//
-		//context = cl.createContext(null, device, null, null);
 		context = cl.createSharedContext(cl.DEVICE_TYPE_GPU, null, null);
 
 		// Create a command queue
@@ -138,7 +137,7 @@ function InitCLBuffers(cl) {
 
 		// Create CL working buffers
 		//
-		initPosBuffer = context.createBuffer(cl.MEM_WRITE_ONLY, bufferSize);
+		initPosBuffer = context.createBuffer(cl.MEM_WRITE_ONLY, bufferSize, null);
 		if(initPosBuffer === null) {
 			console.error("Failed to allocate device memory");
 			return null;
@@ -195,7 +194,7 @@ function InitCLBuffers(cl) {
 
 		// Initial load of initial position data
 		//   
-		queue.enqueueWriteBuffer(initPosBuffer, true, 0, bufferSize, userData.initPos);
+		queue.enqueueWriteBuffer(initPosBuffer, true, 0, bufferSize, userData.initPos, null);
 
 		//queue.finish(null, null);
 		queue.finish();
@@ -238,7 +237,7 @@ function SimulateCL(cl)
 		kernel.setKernelArg(11, userData.roughness, cl.KERNEL_ARG_FLOAT);
 		kernel.setKernelArg(12, userData.nVertices, cl.KERNEL_ARG_INT);
 		
-		queue.enqueueNDRangeKernel(kernel, new Int32Array(0,0), globalWorkSize, localWorkSize);
+		queue.enqueueNDRangeKernel(kernel, new Int32Array(0,0), globalWorkSize, localWorkSize, null);
 		//queue.enqueueNDRangeKernel(kernel,null, globalWorkSize, null, null);
 
 		queue.finish();
@@ -251,8 +250,8 @@ function SimulateCL(cl)
 		}    
 		else {
 			var bufferSize = userData.nVertices * NUM_VERTEX_COMPONENTS * Float32Array.BYTES_PER_ELEMENT;
-			queue.enqueueReadBuffer(curPosBuffer, true, 0, bufferSize, userData.curPos );
-			queue.enqueueReadBuffer(curNorBuffer, true, 0, bufferSize, userData.curNor);
+			queue.enqueueReadBuffer(curPosBuffer, true, 0, bufferSize, userData.curPos, null);
+			queue.enqueueReadBuffer(curNorBuffer, true, 0, bufferSize, userData.curNor, null);
 		}
 	}
 	catch (e)

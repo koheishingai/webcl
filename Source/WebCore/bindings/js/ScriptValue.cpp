@@ -31,8 +31,8 @@
 #include "ScriptValue.h"
 
 #include "InspectorValues.h"
-#include "JSDOMBinding.h"
 #include "SerializedScriptValue.h"
+#include "WebCLKernelTypes.h"
 
 #include <JavaScriptCore/APICast.h>
 #include <JavaScriptCore/JSValueRef.h>
@@ -40,7 +40,6 @@
 #include <heap/Strong.h>
 #include <runtime/JSLock.h>
 #include <runtime/UString.h>
-#include "WebCLKernelTypes.h"
 
 using namespace JSC;
 
@@ -50,7 +49,7 @@ bool ScriptValue::getString(ScriptState* scriptState, String& result) const
 {
     if (!m_value)
         return false;
-    JSLockHolder lock(scriptState);
+    JSLock lock(SilenceAssertionsOnly);
     UString ustring;
     if (!m_value.get().getString(scriptState, ustring))
         return false;
@@ -105,14 +104,6 @@ bool ScriptValue::isFunction() const
 PassRefPtr<SerializedScriptValue> ScriptValue::serialize(ScriptState* scriptState, SerializationErrorMode throwExceptions)
 {
     return SerializedScriptValue::create(scriptState, jsValue(), 0, 0, throwExceptions);
-}
-
-PassRefPtr<SerializedScriptValue> ScriptValue::serialize(ScriptState* scriptState, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, bool& didThrow)
-{
-    JSValueRef exception = 0;
-    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create(toRef(scriptState), toRef(scriptState, jsValue()), messagePorts, arrayBuffers, &exception);
-    didThrow = exception ? true : false;
-    return serializedValue.release();
 }
 
 ScriptValue ScriptValue::deserialize(ScriptState* scriptState, SerializedScriptValue* value, SerializationErrorMode throwExceptions)
@@ -176,11 +167,9 @@ static PassRefPtr<InspectorValue> jsToInspectorValue(ScriptState* scriptState, J
 
 PassRefPtr<InspectorValue> ScriptValue::toInspectorValue(ScriptState* scriptState) const
 {
-    JSC::JSLockHolder holder(scriptState);
     return jsToInspectorValue(scriptState, m_value.get(), InspectorValue::maxDepth);
 }
 #endif // ENABLE(INSPECTOR)
-
 
 #if ENABLE(WEBCL)
 static PassRefPtr<WebCLKernelTypeValue> jsToWebCLKernelTypeValue(ScriptState* scriptState, JSValue value)

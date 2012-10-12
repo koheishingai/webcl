@@ -33,16 +33,14 @@
 #include <wtf/ThreadSafeRefCounted.h>
 
 namespace WebCore {
-
 class WebCL;    
-
-class WebCLFinishCallback : public ThreadSafeRefCounted<WebCLFinishCallback> {
-public:
-    virtual ~WebCLFinishCallback() { }
-    //virtual bool handleEvent(WebCL*) = 0;
-    virtual bool handleEvent(int) = 0;
-};
-
+    class WebCLFinishCallback : public ThreadSafeRefCounted<WebCLFinishCallback> {
+    public:
+        virtual ~WebCLFinishCallback() { }
+        //virtual bool handleEvent(WebCL*) = 0;
+        virtual bool handleEvent(int) = 0;
+    };
+    
 } // namespace WebCore
 
 #endif // WebCLFinishCallback_H

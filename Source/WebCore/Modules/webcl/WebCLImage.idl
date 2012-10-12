@@ -30,15 +30,13 @@ module webcl {
 		Conditional=WEBCL,
 	] WebCLImage {
 	long getGLtextureInfo (in long paramNameobj) raises(DOMException);
-	 //HashMap<DOMString,long> 
-    WebCLImageDescriptor getInfo() raises(DOMException);	
+		
 	};
 
-	/*dictionary WebCLImageDescriptor {
-            in long channelOrder=0x10B5;
-            in long channelType=0x10D2;             
-            in long width=0;
-	     in long height = 0;
-            in long rowPitch=0;        
-	};*/
+	dictionary WebCLImageDescriptor {
+            in long channelOrder=10;
+            in long channelType=11;             
+            in long width=12;
+            in long rowPitch=14;
+        };
 }

@@ -44,7 +44,7 @@ public:
 	virtual ~WebCLPlatformList();
 	static PassRefPtr<WebCLPlatformList> create(WebCL*);
 	WebCLPlatformList();
-	cl_platform_id* getCLPlatforms();
+	cl_platform_id getCLPlatforms();
 	
 	unsigned length() const;
 	WebCLPlatform* item(unsigned index);

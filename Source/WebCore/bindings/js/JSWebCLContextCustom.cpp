@@ -44,11 +44,6 @@
 #include "WebCLGetInfo.h"
 #include "JSWebCLContext.h"
 #include "JSWebCLCustom.h"
-#include "WebCLContext.h"
-#include "WebCLImageDescriptor.h"
-#include "WebCLBuffer.h"
-#include "JSArrayBuffer.h"
-#include <wtf/ArrayBufferView.h>
 #include <stdio.h>
 
 using namespace JSC;
@@ -75,74 +70,6 @@ JSValue JSWebCLContext::getInfo(JSC::ExecState* exec)
 		return jsUndefined();
 	}
 	return toJS(exec, globalObject(), info);
-}
-    
-JSValue JSWebCLContext::createImageWithDescriptor(JSC::ExecState* exec)
-{
-    if (exec->argumentCount() == 0)
-        return throwSyntaxError(exec);
-    
-    ExceptionCode ec = 0;
-    PassRefPtr<WebCore::WebCLImageDescriptor> objWebCLImageDescriptor = WebCLImageDescriptor::create();
-    JSObject* jsAttrs = NULL;
-    unsigned flag  = exec->argument(0).toInt32(exec);
-    RefPtr<ArrayBuffer> buffer = NULL;
-    RefPtr<WebCLMem> objWebCLMem; 
-    
-    if (exec->argumentCount() >= 2 && exec->argument(1).isObject())
-    {
-        
-        jsAttrs = exec->argument(1).getObject();
-        
-        Identifier channelOrder(exec, "channelOrder");
-        if (jsAttrs->hasProperty(exec, channelOrder))
-            objWebCLImageDescriptor->setChannelOrder(jsAttrs->get(exec, channelOrder).toInt32(exec));
-        
-        Identifier channelType(exec, "channelType");
-        if (jsAttrs->hasProperty(exec, channelType))
-            objWebCLImageDescriptor->setChannelType(jsAttrs->get(exec, channelType).toInt32(exec));
-        
-        Identifier width(exec, "width");
-        if (jsAttrs->hasProperty(exec, width))
-            objWebCLImageDescriptor->setWidth(jsAttrs->get(exec, width).toInt32(exec));
-        
-        Identifier height(exec, "height");
-        if (jsAttrs->hasProperty(exec, height))
-            objWebCLImageDescriptor->setHeight(jsAttrs->get(exec, height).toInt32(exec));
-        
-        Identifier rowPitch(exec, "rowPitch");
-        if (jsAttrs->hasProperty(exec, rowPitch))
-            objWebCLImageDescriptor->setRowPitch(jsAttrs->get(exec, rowPitch).toInt32(exec));   
-        
-    }
-        
-    if(exec->argumentCount() == 2)
-    {
-        objWebCLMem = m_impl->createImageWithDescriptor(flag,objWebCLImageDescriptor.get(),ec);
-    }
-    
-    if(exec->argumentCount() == 3)
-    {
-        buffer = toArrayBuffer(exec->argument(2));
-        objWebCLMem = m_impl->createImageWithDescriptor(flag,objWebCLImageDescriptor.get(),buffer.get(),ec);
-    }
-    
-    if (ec) {
-        setDOMException(exec, ec);
-        return jsUndefined();
-    }
-    else
-    {
-        return toJS(exec, globalObject(), objWebCLMem.get());
-    }
-    
-    return jsUndefined();
-
-    
-    
-    
-        
-    
 }
 
 } // namespace WebCore

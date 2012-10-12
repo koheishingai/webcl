@@ -39,32 +39,29 @@
 namespace WebCore {
 
 class WebCL;
-class WebCLEvent;
+
 class WebCLEvent : public RefCounted<WebCLEvent> {
 public:
-    virtual ~WebCLEvent();
-    static PassRefPtr<WebCLEvent> create(WebCL*, cl_event);
-    WebCLGetInfo getInfo(int, ExceptionCode&);
-    WebCLGetInfo getProfilingInfo(int, ExceptionCode&);
-    void setCallback(int, PassRefPtr<WebCLFinishCallback>, int , ExceptionCode&);
-    void setUserEventStatus (int, ExceptionCode&);
-    void releaseCL( ExceptionCode&);
-    cl_event getCLEvent();
-    RefPtr<WebCLFinishCallback> m_finishCallback;
-    WebCL*  getContext();
-    int b;
-
+        virtual ~WebCLEvent();
+        static PassRefPtr<WebCLEvent> create(WebCL*, cl_event);
+		WebCLGetInfo getInfo(int, ExceptionCode&);
+		WebCLGetInfo getProfilingInfo(int, ExceptionCode&);
+		void setEventCallback(int, PassRefPtr<WebCLFinishCallback>, int , ExceptionCode&);
+		void setUserEventStatus (int, ExceptionCode&);
+		void releaseCL( ExceptionCode&);
+        cl_event getCLEvent();
+		RefPtr<WebCLFinishCallback> m_finishCallback;
+		WebCL*  getContext();
+		int b;
+		
 private:
-    WebCLEvent(WebCL*, cl_event);
-    //void CL_CALLBACK execComplete(cl_event ev, cl_int event_status, void* user_data) const;
-    //static void CL_CALLBACK execComplete(cl_event ev, cl_int event_status, void* this_pointer);
-    static void execComplete(cl_event ev, cl_int event_status, void* this_pointer);
-    static void callme(void* this_poonter);
-    WebCL* m_context;
-    Vector<RefPtr<WebCLEvent> > m_event_list;
-    cl_event m_cl_Event;
-    long m_num_events;
-    static WebCLEvent *this_pointer;
+        WebCLEvent(WebCL*, cl_event);
+		//	void CL_CALLBACK execComplete(cl_event ev, cl_int event_status, void* user_data);
+		//static 	void  execComplete(cl_event ev, cl_int event_status, void* this_pointer);
+        WebCL* m_context;
+		Vector<RefPtr<WebCLEvent> > m_event_list;
+        cl_event m_cl_Event;
+		long m_num_events;
 };
 
 } // namespace WebCore
