@@ -1,45 +1,53 @@
-README for WebCL/WebKit
+README for WebCL/Chromium
 
 ---------------
 Tested platform
 ---------------
-- OS: Mac OSX
-- GPU: Nvidia GPU with OpenCL 1.0 support
-- GPU: AMD GPU with OpenCL 1.0 support
+- OS: Window 7
+- GPU: Intel IvyBridge Platform with OpenCL-OpenGL interop supported.
 
 ---------------------
-Tested WebKit version
+Tested Chromium version
 ---------------------
-r110533
+21.0.1163.0
 
 ------------
 How to build
 ------------
-1. Download a zipped file from Downloads menu to your work directory 
-   (let's say, ~/work).
-2. tar -zvxf webcl-20120601.tar 
-3. cd webkit
-4. Tools/Scripts/build-webkit
+1. Following http://dev.chromium.org/developers/how-tos/get-the-code to get
+   Chromium 21.0.1163.0 source code:
+   gclient config https://src.chromium.org/chrome/releases/21.0.1163.0
+2. Following http://www.chromium.org/developers/how-tos/build-instructions-windows
+   to make sure you can build chromium successfully first.
+3. Download the webcl-chromium and patch it to your Chromium source. Note:
+   Source ----Map to Chromium----> src/third_party/WebKit/Source
+   Tools ----Map to Chromium----> src/third_party/WebKit/Tools
+   chromium-src ----Map to Chromium----> src/
+4. Download Intel OpenCL libary and install it.
+5. Add Intel OpenCL library path to Visual Studio:
+   a. Add  $(INTELOCLSDKROOT)\include; to the beginning of the 'IncludePath' property in %LOCALAPPDATA%\Microsoft\MSBuild\v4.0\Microsoft.Cpp.Win32.user.props. Note, these files only exist after you have launched and exited Visual Studio at least once.
+   b. Add  $(INTELOCLSDKROOT)\lib\x86; to the beginning of the 'LibraryPath' property in the same file. At this point the .props file will look like this:
+
+	<?xml version="1.0" encoding="utf-8"?>
+	<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	  <PropertyGroup>
+		<IncludePath>$(INTELOCLSDKROOT)\include;$(IncludePath)</IncludePath>
+		<LibraryPath>$(INTELOCLSDKROOT)\lib\x86;$(LibraryPath)</LibraryPath>
+	  </PropertyGroup>
+	</Project>
+6. Build the patched chromium in VS.
 
 ------------------
 How to run samples
 ------------------
-1. Enable WebGL
-  For older Safari < 5,
-	$ defaults write com.apple.Safari WebKitWebGLEnabled -bool YES
-  For newer Safari 5.1, you need to enable 'Developer' menu from 'Preferences' and check 'Enable WebGL' under the menu.
-  The screenshot of this process is available at http://fairerplatform.com/2011/05/new-in-os-x-lion-safari-5-1-brings-webgl-do-not-track-and-more/.
-  
-2. Hello example:
-	$ Tools/Scripts/run-safari Examples/WebCL/Hello/index.html
-3. N-body example:
-	$ Tools/Scripts/run-safari Examples/WebCL/Nbody/index.html
-4. Deform example:
-	$ Tools/Scripts/run-safari Examples/WebCL/Deform/index.html
+1. Run chrome.exe in cmd with below parameters:
+   --single-process  --in-process-webgl --disable-accelerated-compositing --use-gl=desktop --allow-file-access-from-files
    
-----------------------------------------------------
-How to update source code using svn [WebKit r110533]
-----------------------------------------------------
-1. cd ~/work
-2. svn checkout https://webcl.googlecode.com/svn/trunk/ webcl --usename <you_email_address>
-3. cp -Ri webcl/trunk/* webkit
+   Note: it may crash at first startup because single-process mode is not supported by Chromium officially now and have some bugs.
+2. In Chromium tab, run chrome://gpu to check whether webgl is enabled.
+3. Hello example:
+	goto Examples/WebCL/Hello/index.html
+4. N-body example:
+	goto Examples/WebCL/Nbody/index.html
+5. Deform example:
+	goto Examples/WebCL/Deform/index.html
